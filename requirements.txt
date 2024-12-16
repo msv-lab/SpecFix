@@ -1,0 +1,3 @@
+openai==1.55.3
+crosshair-tool==0.0.78
+python-dotenv==1.0.0

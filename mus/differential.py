@@ -1,6 +1,6 @@
-from .cluster import Cluster
-from .utils import execute_inputs, execute_requirement, check_discrepancy
-from .model import Model
+from mus.cluster import Cluster
+from mus.utils import execute_inputs, execute_requirement, check_discrepancy
+from mus.model import Model
 
 
 def differential_tester(generated_programs, test_inputs):
@@ -23,7 +23,7 @@ def differential_tester(generated_programs, test_inputs):
     return program_clusters
 
 
-def requirement_differential_tester(requirement, test_inputs, num, model, api_key, temperature):
+def probe_tester(requirement, test_inputs, num, model, api_key, temperature):
     model = Model(model, api_key, temperature)
     # Store test results
     program_clusters = []

@@ -1,11 +1,11 @@
 from wrapt_timeout_decorator import *
 
-from .prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
+from mus.prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
     prompt_probe
 
 
-def post_process(content):
-    return content.strip().removeprefix("```python").removeprefix("```").strip("`").strip()
+# def post_process(content):
+#     return content.strip().removeprefix("```python").removeprefix("```").strip("`").strip()
 
 
 @timeout(10)
@@ -69,5 +69,5 @@ def check_discrepancy(requirement, programs, inp, outputs, model):
 
 def unwrap(string, label):
     return string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
-        0] if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
+        0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
         f"</{label}>") else string

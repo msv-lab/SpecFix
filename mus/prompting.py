@@ -1,20 +1,21 @@
-instruction_generate_code = "You are an assistant that generates Python code based on requirement. Do not wrap any text in triple backticks such as ```python or ```."
+instruction_generate_code = "You are an assistant that generates Python code based on requirement."
 
 
 def prompt_generate_code(requirement):
     return f"""
-Implement a python function that adheres to the requirements. Wrap the generated code in <code></code>. Here is an example:
+Implement a python function that adheres to the requirements. Wrap the generated code in <code></code> tags. Here is an example:
 # Example
 
 ## Requirements
 
 Write a function that computes the square of a given number.
 
-## Program
+## Code
 
+<code>
 def f(x):
     return x ** 2
-
+</code>
 
 # Your task
 
@@ -31,7 +32,7 @@ instruction_find_discrepancy = "You are an assistant that finds discrepancies be
 
 def prompt_find_discrepancy(requirement):
     return f"""    
-Given requirements, find the discrepancies between requirements. Wrap the discrepancies in the <discrepancy></discrepancy>. Here is an example:
+Given requirements, find the discrepancies between requirements. Wrap the discrepancies in the <discrepancy></discrepancy> tags. Here is an example:
 
 # Example
 
@@ -42,7 +43,9 @@ Requirement 2: Write a function that removes consecutive duplicates while sortin
 
 ## Discrepancy
 
+<discrepancy>
 The requirement1 specifies to remove duplicates first and then sort the array, while requirement2 doesn't specify the order of operations.
+</discrepancy>
 
 # Your task
 
@@ -62,7 +65,7 @@ def prompt_find_discrepancy_DRS(requirement, DRS_list):
     for i, drs in enumerate(DRS_list):
         drs_str += f"### DRS {i + 1}\n {drs}\n"
     return f"""
-Given requirement and corresponding DRS, find the discrepancies between DRSs. Wrap the discrepancies in the <discrepancy></discrepancy>. Here is an example:
+Given requirement and corresponding DRS, find the discrepancies between DRSs. Wrap the discrepancies in the <discrepancy></discrepancy> tags. Here is an example:
 # Example
 
 ## Requirement
@@ -87,7 +90,9 @@ sorts(x, y, t1), removes(x, z, y, t2)
 
 ## Discrepancy
 
+<discrepancy>
 The order of operation (i.e., sort and remove) is different in DRS1 and DRS2. DRS1 specifies to remove duplicates first and then sort the array, while DRS2 specifies to sort the array first and then remove duplicates.
+</discrepancy>
 
 # Your task
 
@@ -107,7 +112,7 @@ instruction_repair_requirement = "You are an assistant that repairs requirements
 
 def prompt_repair_requirement(requirement, q_a):
     return f"""
-Given the clarifying question and corresponding answer, repair the requirements. Wrap the repaired requirement in <requirement></requirement>. Here is an example:
+Given the clarifying question and corresponding answer, repair the requirements. Wrap the repaired requirement in <requirement></requirement> tags. Here is an example:
 # Example
 
 ## Requirements
@@ -121,7 +126,9 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 ## Repaired Requirements
 
+<requirement>
 Write a function that removes all consecutive duplicates in the given array and then sorts the array.
+</requirement>
 
 # Your task
 
@@ -136,12 +143,12 @@ Write a function that removes all consecutive duplicates in the given array and 
 """
 
 
-instruction_generate_test = "You are an assistant that generates Python code inputs based on requirement. Do not wrap any text in triple backticks such as ```python or ```."
+instruction_generate_test = "You are an assistant that generates Python code inputs based on requirement."
 
 
 def prompt_generate_test(requirement):
     return f"""
-Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Save the input for one function as a list, then combine all lists into a single collection. Wrap the inputs in <test></test>. Here is an example:
+Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Organize the inputs for each function into lists, combine them into a single collection, and wrap the collection in <test></test> tags. Here is an example:
 
 # Example
 
@@ -151,7 +158,9 @@ Write a function that sorts string while removing the consecutive duplicates.
 
 ## Test inputs
 
+<test>
 [["1234567"], ["123123"], ["1122334455"], ["5432112345"], ["000000000"]]
+</test>
 
 # Your task
 
@@ -168,7 +177,7 @@ instruction_minimize_requirement = "You are an assistant that minimizes requirem
 
 def prompt_minimize_requirement(requirement):
     return f"""
-Given the requirement, minimize the requirements while keeping the functionality intact. Wrap the minimized requirement in <requirement></requirement>. Here is an example:
+Given the requirement, minimize the requirements while keeping the functionality intact. Wrap the minimized requirement in <requirement></requirement> tags. Here is an example:
 
 # Example
     
@@ -181,7 +190,9 @@ Given the requirement, minimize the requirements while keeping the functionality
 
 # Minimized Requirements
 
+<requirement>
 Write a function to individually reverse words in a given string.
+</requirement>
 
 # Your task
 
@@ -198,7 +209,7 @@ instruction_generate_requirement = "You are an assistant who reads code and gene
 
 def prompt_generate_requirement(program):
     return f"""
-Write a detailed problem description based on the solution source code. Wrap the generate requirement in <requirement></requirement>. Here is an example:
+Write a detailed problem description based on the solution source code. Wrap the generate requirement in <requirement></requirement> tags. Here is an example:
 # Example
 
 ## Program
@@ -206,9 +217,11 @@ Write a detailed problem description based on the solution source code. Wrap the
 def f(x):
     return x ** 2
     
-## Problem description    
+## Problem requirement    
 
+<requirement>
 Write a function that computes the square of a given number.
+</requirement>
 
 # Your task
 
@@ -216,7 +229,7 @@ Write a function that computes the square of a given number.
 
 {program}
 
-## Problem Description
+## Problem requirement
 """
 
 
@@ -225,7 +238,7 @@ instruction_generate_DRS = "You are an assistant that generates Discourse Repres
 
 def prompt_generate_DRS(requirements):
     return f"""
-Given the requirements, generate the corresponding Discourse Representation Structures, a way to represent the meaning of natural language sentences and their relationships in a structured formalism. Wrap the generated DRS in <drs></drs>. "##########" are used as intervals between different DRS. Here is an example:
+Given the requirements, generate the corresponding Discourse Representation Structures, a way to represent the meaning of natural language sentences and their relationships in a structured formalism. Wrap the generated DRS in <drs></drs> tags. "##########" are used as intervals between different DRS. Here is an example:
 
 # Example
 
@@ -236,6 +249,7 @@ Requirement 2: Write a function that removes consecutive duplicates while sortin
 
 ## DRS
 
+<drs>
 x, y, z, t1, t2
 program(x), array(y), duplicates(z), consecutive(z)
 t1 < t2,
@@ -245,6 +259,7 @@ x, y, z, t1, t2
 program(x), array(y), duplicates(z), consecutive(z)
 t1 < t2,
 sorts(x, y, t1), removes(x, z, y, t2)
+</drs>
 
 # Your task
 
@@ -261,7 +276,7 @@ instruction_simulated_answer = "You are an assistant that answers clarifying que
 
 def prompt_simulated_answer(requirement, program, tests, question):
     return f""" 
-You will be given a user requirement, reference program and its test cases. Your task is to answer some clarifying questions about the requirement using the information. Wrap the answer in <answer></answer>. Here is an example:
+You will be given a user requirement, reference program and its test cases. Your task is to answer some clarifying questions about the requirement using the information. Wrap the answer in <answer></answer> tags. Here is an example:
 
 # Example
 
@@ -288,10 +303,13 @@ def reverse_words(s):
 2. Should the blank spaces be preserved?
 
 ## Answer
+
+<answer>
 1. Should the words be reversed individually or the whole string?
 - The words should be reversed individually.
 2. Should the blank spaces be preserved?
 - Yes, the blank spaces should be preserved.
+</answer>
 
 # Your task
 
@@ -320,7 +338,7 @@ instruction_probe = "You are an assistant that generates the corresponding outpu
 
 def prompt_probe(requirement, inp):
     return f"""
-Given a problem requirement and an input, think step-by-step and describe how to get output from the input. Wrap the output in <output></output>. Here is an example:
+Given a problem requirement and an input, think step-by-step and describe how to get output from the input. Wrap the output in <output></output> tags. Here is an example:
 
 # Example
 
@@ -334,11 +352,10 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 ## Output
 
-[1, 2, 3, 4]
-==========Description==========
+<output>
 1. Remove consecutive duplicates from the array. [2, 3, 1, 4]
-
 2. Sort the array. [1, 2, 3, 4]
+</output>
 
 # Your task
 
@@ -363,7 +380,7 @@ def prompt_find_discrepancy_probe(requirement, probe):
         probe_str += f"### Probe {i + 1}\n {c}\n"
 
     return f"""
-Given the requirement and corresponding execution probes, find the discrepancies between the execution probes. Wrap the discrepancies in the <discrepancy></discrepancy>. Here is an example:
+Given the requirement and corresponding execution probes, find the discrepancies between the execution probes. Wrap the discrepancies in the <discrepancy></discrepancy> tags. Here is an example:
 
 # Example
 
@@ -387,7 +404,9 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 ## Discrepancy
 
+<discrepancy>
 The order of operation (i.e., sort and remove) is different in Probe1 and Probe2. Probe1 specifies to remove duplicates first and then sort the array, while Probe2 specifies to sort the array first and then remove duplicates.
+</discrepancy>
 
 # Your task
 

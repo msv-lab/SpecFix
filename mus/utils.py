@@ -1,7 +1,7 @@
 from wrapt_timeout_decorator import *
 
 from mus.prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
-    prompt_probe
+    prompt_probe, instruction_judge_discrepancy_probe, prompt_judge_discrepancy_probe
 
 
 # def post_process(content):
@@ -43,11 +43,11 @@ def construct_test_case(program, inputs):
     return assertions
 
 
-def execute_requirement(requirement, inp, model):
+def execute_requirement(requirement, model):
     print("EXECUTE REQUIREMENT")
     response = model.get_response(instruction_probe,
-                                  prompt_probe(requirement, inp))
-    return response.replace("## Output\n", "").strip()
+                                  prompt_probe(requirement))
+    return unwrap(response, "output")
 
 
 def check_discrepancy(requirement, programs, inp, outputs, model):
@@ -63,8 +63,19 @@ def check_discrepancy(requirement, programs, inp, outputs, model):
         output += "### Output " + str(i) + "\n" + repr(o) + "\n"
     response = model.get_response(instruction_check_code_generation,
                                   prompt_check_code_generation(requirement, program, inp, output))
-    response = response.replace("## Judgement\n", "").strip()
+    response = unwrap(response, "answer")
     return response
+
+
+def judge_discrepancy_probe(requirements, probes, model):
+    print("JUDGE DISCREPANCY WITH PROBE")
+    response = model.get_response(instruction_judge_discrepancy_probe,
+                                  prompt_judge_discrepancy_probe(requirements, probes))
+    response = unwrap(response, "judgement")
+    if response == "No":
+        return False
+    else:
+        return response
 
 
 def unwrap(string, label):

@@ -65,13 +65,6 @@ class MUSAccuracyEvaluator:
                                            )
         return unwrap(response, "discrepancy")
 
-    def find_discrepancy_probe(self, requirements, clusters):
-        print("FIND DISCREPANCY WITH PROBE")
-        probe_list = [cluster.probe for cluster in clusters]
-        response = self.model.get_response(instruction_find_discrepancy_probe,
-                                           prompt_find_discrepancy_probe(requirements, probe_list))
-        return unwrap(response, "discrepancy")
-
     def simulate_answer(self, requirement, program, inputs, question):
         tests = construct_test_case(program, inputs)
         print("SIMULATE ANSWER")
@@ -79,10 +72,10 @@ class MUSAccuracyEvaluator:
                                            prompt_simulated_answer(requirement, program, tests, question))
         return unwrap(response, "answer")
 
-    def minimize_requirement(self, requirements):
+    def minimize_requirement(self, ori_req, repaired_req):
         print("MINIMIZE REQUIREMENT")
         response = self.model.get_response(instruction_minimize_requirement,
-                                           prompt_minimize_requirement(requirements))
+                                           prompt_minimize_requirement(ori_req, repaired_req))
         return unwrap(response, "requirement")
 
     def mus_code(self, program, initial_requirement, task_id, N, max_iterations=10, DRS=False):
@@ -152,27 +145,24 @@ class MUSAccuracyEvaluator:
     def mus_probe(self, program, initial_requirement, task_id, N, max_iterations=10):
         self.total_runs += 1
         requirement = initial_requirement
-        test_inputs = self.generate_tests(requirement)
         try:
             for iteration in range(max_iterations):
                 print("REQUIREMENT:", task_id)
                 print(requirement)
                 print(f"PROBING FOR ITERATION {iteration}:")
-                requirement_clusters = self.differential_tester(requirement, N, test_inputs)
-                if len(requirement_clusters) == 1:
+                discrepancies = self.differential_tester(requirement, N, self.model)
+                if len(discrepancies) == 0:
                     self.successful_runs += 1
                     self.run_details.append({
                         'task_id': task_id,
-                        'initial_requirement': initial_requirement,
+                        'requirement': requirement,
                         'iterations_to_success': iteration + 1,
                         'success': True
                     })
-                    return requirement
-                cots = ""
-                for i, cluster in enumerate(requirement_clusters):
-                    cots += f"COT {i + 1}: {random.choice(cluster.descriptions)}\n"
-                clarifying_question = self.find_discrepancy_probe(requirement, requirement_clusters)
-                answer = self.simulate_answer(requirement, program, test_inputs, clarifying_question)
+                    return self.minimize_requirement(initial_requirement, requirement)
+                clarifying_question = self.generate_clarifying_question(requirement, discrepancies)
+                answer = self.simulate_answer(requirement, program, self.generate_tests(initial_requirement),
+                                              clarifying_question)
                 requirement = self.repair_requirements(requirement, answer)
 
         except Exception as e:
@@ -209,3 +199,9 @@ class MUSAccuracyEvaluator:
 
     def get_probability(self):
         return self.successful_runs / self.total_runs if self.total_runs > 0 else 0
+
+    def generate_clarifying_question(self, requirement, information):
+        print("GENERATE CLARIFYING QUESTION")
+        response = self.model.get_response(instruction_generate_clarifying_question,
+                                           prompt_generate_clarifying_question(requirement, information))
+        return unwrap(response, "question")

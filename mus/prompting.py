@@ -172,16 +172,20 @@ Write a function that sorts string while removing the consecutive duplicates.
 """
 
 
-instruction_minimize_requirement = "You are an assistant that minimizes requirements based on the functionality."
+instruction_minimize_requirement = "You are an assistant that minimizes requirements."
 
 
-def prompt_minimize_requirement(requirement):
+def prompt_minimize_requirement(original_requirement, repaired_requirement):
     return f"""
-Given the requirement, minimize the requirements while keeping the functionality intact. Wrap the minimized requirement in <requirement></requirement> tags. Here is an example:
+Given an original requirement and a repaired requirement, minimize the repaired requirements to get a minimal edit distance from original code while keep the functionality of repaired requirement. Wrap the minimized requirement in <requirement></requirement> tags. Here is an example:
 
 # Example
-    
-## Requirements
+
+## Original Requirement
+
+Write a function to reverse words in a given string.
+
+## Repaired Requirement
     
 - Input: A string `s` containing words separated by spaces.
 - Output: A string with the individually reversed words.
@@ -198,7 +202,13 @@ Write a function to individually reverse words in a given string.
 
 ## Requirement
 
-{requirement}
+### Original Requirement
+
+{original_requirement}
+
+### Repaired Requirement
+
+{repaired_requirement}
 
 ## Minimized Requirements
 """
@@ -271,6 +281,43 @@ sorts(x, y, t1), removes(x, z, y, t2)
 """
 
 
+instruction_generate_clarifying_question = "You are an assistant that generates clarifying questions to clarify the requirement."
+
+
+def prompt_generate_clarifying_question(requirement, discrepancies):
+    return f"""
+given the requirement and discrepancies, generate a clarifying question to clarify the requirement. Wrap the generated question in <question></question> tags. Here is an example:
+
+# Example
+
+## Requirement
+
+Write a function that sorts array while removing the consecutive duplicates.
+
+## Discrepancies
+
+Probes 1 and 2 have different order of operations. Probe 1 removes duplicates first and then sorts the array, while Probe 2 sorts the array first and then removes duplicates.
+
+## Clarifying Question
+
+<question>
+What is the order of the sort and duplicate removal?
+</question>
+
+# Your task
+
+## Requirement
+
+{requirement}
+
+## Discrepancies
+
+{discrepancies}
+
+## Clarifying Question
+"""
+
+
 instruction_simulated_answer = "You are an assistant that answers clarifying questions based on the requirement, program, and tests."
 
 
@@ -333,28 +380,30 @@ def reverse_words(s):
 """
 
 
-instruction_probe = "You are an assistant that generates the corresponding output based on the requirement and input."
+instruction_probe = "You are an assistant that generates problem-solving process based on the requirement and input."
 
 
-def prompt_probe(requirement, inp):
+def prompt_probe(requirement):
     return f"""
-Given a problem requirement and an input, think step-by-step and describe how to get output from the input. Wrap the output in <output></output> tags. Here is an example:
+Given a problem requirement, write a rough problem-solving process using three programming structures (i.e., sequential, branch, and loop structures). Wrap the output in <output></output> tags. Here is an example:
 
 # Example
 
 ## Requirement
 
-Write a function that sorts array while removing the consecutive duplicates.
-
-## Input
-
-[2, 2, 3, 3, 3, 1, 1, 4, 4, 4, 4]
+Write a python function to find sum of prime numbers between 1 to n.
 
 ## Output
 
 <output>
-1. Remove consecutive duplicates from the array. [2, 3, 1, 4]
-2. Sort the array. [1, 2, 3, 4]
+1. Initialize a list "prime" with True values.
+2. Initialize a variable "p" with 2.
+3. While p * p is less than or equal to 10:
+4.   If prime[p] is True:
+5.     Set all the multiples of p to False.
+6.   Increment the variable "p" by 1.
+7. Compute the sum of the prime numbers.
+8. Return the sum.
 </output>
 
 # Your task
@@ -363,24 +412,20 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 {requirement}
 
-## Input
-
-{inp}
-
 ## Output
 """
 
 
-instruction_find_discrepancy_probe = "You are an assistant that finds discrepancies between the execution probes based on requirement"
+instruction_judge_discrepancy_probe = "You are an assistant that judge whether discrepancies exist between the execution probes based on requirement"
 
 
-def prompt_find_discrepancy_probe(requirement, probe):
+def prompt_judge_discrepancy_probe(requirement, probe):
     probe_str = ""
     for i, c in enumerate(probe):
         probe_str += f"### Probe {i + 1}\n {c}\n"
 
     return f"""
-Given the requirement and corresponding execution probes, find the discrepancies between the execution probes. Wrap the discrepancies in the <discrepancy></discrepancy> tags. Here is an example:
+Given the requirement and corresponding execution probes, check whether discrepancies exist between the execution probes. Output discrepancies if exist; output "No" for no discrepancies. Wrap the judgement in the <judgement></judgement> tags. Here is an example:
 
 # Example
 
@@ -402,11 +447,11 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 2. Remove consecutive duplicates from the array. [1, 2, 3, 4]
 
-## Discrepancy
+## Judgement
 
-<discrepancy>
-The order of operation (i.e., sort and remove) is different in Probe1 and Probe2. Probe1 specifies to remove duplicates first and then sort the array, while Probe2 specifies to sort the array first and then remove duplicates.
-</discrepancy>
+<judgement>
+Probes 1 and 2 have different order of operations. Probe 1 removes duplicates first and then sorts the array, while Probe 2 sorts the array first and then removes duplicates.
+</judgement>
 
 # Your task
 
@@ -418,7 +463,7 @@ The order of operation (i.e., sort and remove) is different in Probe1 and Probe2
 
 {probe_str}
 
-## Discrepancy
+## Judgement
 """
 
 
@@ -427,7 +472,7 @@ instruction_check_code_generation = "You are an assistant that checks the genera
 
 def prompt_check_code_generation(requirement, program, inputs, outputs):
     return f"""
-Given the requirement, LLM generate several programs, which output different results under same inputs. Your task is to judge whether the output discrepancy is due to ambiguous requirement. Ambiguous requirement indicates that the requirement can be interpreted in different ways.  Output "Yes" for discrepancy is due to ambiguous requirement; output "No" for discrepancy isn't due to ambiguous requirement. Here is an example:
+Given the requirement, LLM generate several programs, which output different results under same inputs. Your task is to judge whether the output discrepancy is due to ambiguous requirement. Ambiguous requirement indicates that the requirement can be interpreted in different ways.  Output "Yes" for discrepancy is due to ambiguous requirement; output "No" for discrepancy isn't due to ambiguous requirement. Wrap answer in <answer></answer> tags Here is an example:
 
 # Example
 
@@ -463,7 +508,9 @@ def sort_remove_consecutive_duplicates(arr):
 
 ## Judgement
 
+<answer>
 Yes
+</answer>
 
 ## Your task
 

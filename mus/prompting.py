@@ -3,7 +3,7 @@ instruction_generate_code = "You are an assistant that generates Python code bas
 
 def prompt_generate_code(requirement):
     return f"""
-Implement a python function that adheres to the requirements. Do NOT output any explanation. Here is an example:
+Implement a python function that adheres to the requirements. Wrap the generated code in <code></code>. Here is an example:
 # Example
 
 ## Requirements
@@ -26,23 +26,23 @@ def f(x):
 """
 
 
-instruction_generate_clarifying_question = "You are an assistant that asks clarifying questions based on requirements."
+instruction_find_discrepancy = "You are an assistant that finds discrepancies between the requirements."
 
 
-def prompt_generate_clarifying_question(requirement):
+def prompt_find_discrepancy(requirement):
     return f"""    
-Given requirements, find the discrepancies between requirements and ask questions to clarify. Do NOT output any explanation. Here is an example:
+Given requirements, find the discrepancies between requirements. Wrap the discrepancies in the <discrepancy></discrepancy>. Here is an example:
 
 # Example
 
 ## Requirements
 
-Requirement 1: Write a function that sorts array while removing the consecutive duplicates.
+Requirement 1: Write a function that sorts array then removes the consecutive duplicates.
 Requirement 2: Write a function that removes consecutive duplicates while sorting array.
 
-## Clarifying Questions
+## Discrepancy
 
-1. What is the order of the sort and duplicate removal?
+The requirement1 specifies to remove duplicates first and then sort the array, while requirement2 doesn't specify the order of operations.
 
 # Your task
 
@@ -50,22 +50,22 @@ Requirement 2: Write a function that removes consecutive duplicates while sortin
 
 {requirement}
 
-## Clarifying Questions
+## Discrepancy
 """
 
 
-instruction_generate_clarifying_question_DRS = "You are an assistant that asks clarifying questions based on Discourse Representation Structures(DRS)."
+instruction_find_discrepancy_DRS = "You are an assistant that finds discrepancies between the Discourse Representation Structures(DRS)."
 
 
-def prompt_generate_clarifying_question_DRS(requirement, DRS_list):
+def prompt_find_discrepancy_DRS(requirement, DRS_list):
     drs_str = ""
     for i, drs in enumerate(DRS_list):
         drs_str += f"### DRS {i + 1}\n {drs}\n"
     return f"""
-Clarifying the requirement by asking clarifying questions based on Discourse Representation Structures(DRS). Do NOT output any explanation. Here is an example:
+Given requirement and corresponding DRS, find the discrepancies between DRSs. Wrap the discrepancies in the <discrepancy></discrepancy>. Here is an example:
 # Example
 
-## Requirements
+## Requirement
 
 Write a function that sorts array while removing the consecutive duplicates.
 
@@ -85,9 +85,9 @@ program(x), array(y), duplicates(z), consecutive(z)
 t1 < t2,
 sorts(x, y, t1), removes(x, z, y, t2)
 
-## Clarifying Questions
+## Discrepancy
 
-1. What is the order of the sort and duplicate removal?
+The order of operation (i.e., sort and remove) is different in DRS1 and DRS2. DRS1 specifies to remove duplicates first and then sort the array, while DRS2 specifies to sort the array first and then remove duplicates.
 
 # Your task
 
@@ -98,7 +98,7 @@ sorts(x, y, t1), removes(x, z, y, t2)
 ## DRS
 {drs_str}
 
-## Clarifying Questions
+## Discrepancy
 """
 
 
@@ -107,7 +107,7 @@ instruction_repair_requirement = "You are an assistant that repairs requirements
 
 def prompt_repair_requirement(requirement, q_a):
     return f"""
-Given the clarifying question and corresponding answer, repair the requirements. Do NOT output any explanation. Here is an example:
+Given the clarifying question and corresponding answer, repair the requirements. Wrap the repaired requirement in <requirement></requirement>. Here is an example:
 # Example
 
 ## Requirements
@@ -141,7 +141,7 @@ instruction_generate_test = "You are an assistant that generates Python code inp
 
 def prompt_generate_test(requirement):
     return f"""
-Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Save the input for one function as a list, then combine all lists into a single collection. Do not generate null or empty inputs. Do NOT output any explanation. Here is an example:
+Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Save the input for one function as a list, then combine all lists into a single collection. Wrap the inputs in <test></test>. Here is an example:
 
 # Example
 
@@ -168,7 +168,7 @@ instruction_minimize_requirement = "You are an assistant that minimizes requirem
 
 def prompt_minimize_requirement(requirement):
     return f"""
-Given the requirement, minimize the requirements while keeping the functionality intact. Do NOT output any explanation. Here is an example:
+Given the requirement, minimize the requirements while keeping the functionality intact. Wrap the minimized requirement in <requirement></requirement>. Here is an example:
 
 # Example
     
@@ -198,7 +198,7 @@ instruction_generate_requirement = "You are an assistant who reads code and gene
 
 def prompt_generate_requirement(program):
     return f"""
-Write a detailed problem description based on the solution source code. Do NOT output any explanation. Here is an example:
+Write a detailed problem description based on the solution source code. Wrap the generate requirement in <requirement></requirement>. Here is an example:
 # Example
 
 ## Program
@@ -225,7 +225,7 @@ instruction_generate_DRS = "You are an assistant that generates Discourse Repres
 
 def prompt_generate_DRS(requirements):
     return f"""
-Given the requirements, generate the corresponding Discourse Representation Structures, a way to represent the meaning of natural language sentences and their relationships in a structured formalism. "##########" are used as intervals between different DRS. Do NOT output any explanation. Here is an example:
+Given the requirements, generate the corresponding Discourse Representation Structures, a way to represent the meaning of natural language sentences and their relationships in a structured formalism. Wrap the generated DRS in <drs></drs>. "##########" are used as intervals between different DRS. Here is an example:
 
 # Example
 
@@ -261,7 +261,7 @@ instruction_simulated_answer = "You are an assistant that answers clarifying que
 
 def prompt_simulated_answer(requirement, program, tests, question):
     return f""" 
-You will be given a user requirement, reference program and its test cases. Your task is to answer some clarifying questions about the requirement using the information. Do NOT output any explanation.
+You will be given a user requirement, reference program and its test cases. Your task is to answer some clarifying questions about the requirement using the information. Wrap the answer in <answer></answer>. Here is an example:
 
 # Example
 
@@ -315,12 +315,12 @@ def reverse_words(s):
 """
 
 
-instruction_execute_requirement = "You are an assistant that generates the corresponding output based on the requirement and input."
+instruction_probe = "You are an assistant that generates the corresponding output based on the requirement and input."
 
 
-def prompt_execute_requirement(requirement, inp):
+def prompt_probe(requirement, inp):
     return f"""
-Given a problem requirement and an input, generate the corresponding output. Describe step by step that how to get output from input. Output and description are separated by "==========Description==========". Here is an example:
+Given a problem requirement and an input, think step-by-step and describe how to get output from the input. Wrap the output in <output></output>. Here is an example:
 
 # Example
 
@@ -354,16 +354,16 @@ Write a function that sorts array while removing the consecutive duplicates.
 """
 
 
-instruction_generate_clarifying_question_probe = "You are an assistant that generates clarifying questions based on execution probe."
+instruction_find_discrepancy_probe = "You are an assistant that finds discrepancies between the execution probes based on requirement"
 
 
-def prompt_generate_clarifying_question_probe(requirement, probe):
+def prompt_find_discrepancy_probe(requirement, probe):
     probe_str = ""
     for i, c in enumerate(probe):
         probe_str += f"### Probe {i + 1}\n {c}\n"
 
     return f"""
-Clarifying the requirement by asking clarifying questions based on the execution probe. Do NOT output any explanation. Here is an example:
+Given the requirement and corresponding execution probes, find the discrepancies between the execution probes. Wrap the discrepancies in the <discrepancy></discrepancy>. Here is an example:
 
 # Example
 
@@ -385,9 +385,9 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 2. Remove consecutive duplicates from the array. [1, 2, 3, 4]
 
-## Clarifying Questions
+## Discrepancy
 
-1. What is the order of the sort and duplicate removal?
+The order of operation (i.e., sort and remove) is different in Probe1 and Probe2. Probe1 specifies to remove duplicates first and then sort the array, while Probe2 specifies to sort the array first and then remove duplicates.
 
 # Your task
 
@@ -399,7 +399,7 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 {probe_str}
 
-## Clarifying Questions
+## Discrepancy
 """
 
 

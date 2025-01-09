@@ -1,7 +1,7 @@
 from wrapt_timeout_decorator import *
 
-from .prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_execute_requirement, \
-    prompt_execute_requirement
+from .prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
+    prompt_probe
 
 
 def post_process(content):
@@ -45,8 +45,8 @@ def construct_test_case(program, inputs):
 
 def execute_requirement(requirement, inp, model):
     print("EXECUTE REQUIREMENT")
-    response = model.get_response(instruction_execute_requirement,
-                                  prompt_execute_requirement(requirement, inp))
+    response = model.get_response(instruction_probe,
+                                  prompt_probe(requirement, inp))
     return response.replace("## Output\n", "").strip()
 
 
@@ -65,3 +65,9 @@ def check_discrepancy(requirement, programs, inp, outputs, model):
                                   prompt_check_code_generation(requirement, program, inp, output))
     response = response.replace("## Judgement\n", "").strip()
     return response
+
+
+def unwrap(string, label):
+    return string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
+        0] if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
+        f"</{label}>") else string

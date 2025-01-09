@@ -3,8 +3,9 @@ import pandas as pd
 
 from .prompting import *
 from .model import Model
-from .utils import post_process, construct_test_case
+from .utils import post_process, construct_test_case, unwrap
 from evalplus.sanitize import sanitize
+
 
 class MUSAccuracyEvaluator:
     def __init__(self, api_key, differential_tester, model="qwen2.5-coder-7b-instruct", temperature=1.0):
@@ -21,7 +22,7 @@ class MUSAccuracyEvaluator:
         print("GENERATE PROGRAMS")
         response = self.model.get_response(instruction_generate_code,
                                            prompt_generate_code(requirements))
-        return sanitize(response.replace("## Program\n", ""))
+        return unwrap(response)
 
     def generate_tests(self, requirements):
         print("GENERATE TESTS INPUTS")
@@ -54,22 +55,22 @@ class MUSAccuracyEvaluator:
     def generate_clarifying_question_DRS(self, requirements, clusters):
         print("GENERATE CLARIFYING QUESTION WITH DRS")
         DRS_list = [cluster.DRS for cluster in clusters]
-        response = self.model.get_response(instruction_generate_clarifying_question_DRS,
-                                           prompt_generate_clarifying_question_DRS(requirements, DRS_list))
+        response = self.model.get_response(instruction_find_discrepancy_DRS,
+                                           prompt_find_discrepancy_DRS(requirements, DRS_list))
         return response.replace("## Clarifying Questions\n", "")
 
     def generate_clarifying_question(self, requirements):
         print("GENERATE CLARIFYING QUESTION")
-        response = self.model.get_response(instruction_generate_clarifying_question,
-                                           prompt_generate_clarifying_question(requirements),
+        response = self.model.get_response(instruction_find_discrepancy,
+                                           prompt_find_discrepancy(requirements),
                                            )
         return response.replace("## Clarifying Questions\n", "")
 
     def generate_clarifying_question_probe(self, requirements, clusters):
         print("GENERATE CLARIFYING QUESTION WITH PROBE")
         probe_list = [cluster.probe for cluster in clusters]
-        response = self.model.get_response(instruction_generate_clarifying_question_probe,
-                                           prompt_generate_clarifying_question_probe(requirements, probe_list))
+        response = self.model.get_response(instruction_find_discrepancy_probe,
+                                           prompt_find_discrepancy_probe(requirements, probe_list))
         return response.replace("## Clarifying Questions\n", "")
 
     def simulate_answer(self, requirement, program, inputs, question):

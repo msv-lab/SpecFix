@@ -1,18 +1,18 @@
-import os
-
 import jsonlines
 import random
-from dotenv import load_dotenv, find_dotenv
 from mus.evaluator import MUSAccuracyEvaluator
 from mus.differential import differential_tester, model_verifier
-load_dotenv()
-verifier_name = "o1-mini"
-verifier_api_key = os.getenv("API_KEY")
+import configparser
 
+config = configparser.ConfigParser()
+config.read('../../.config')
+
+verifier_name = "o1-mini"
+verifier_api_key = config['API_KEY']['openai_key']
 
 dataset_path = '../../dataset/TACO_lite.jsonl'
 model_name = "qwen2.5-coder-14b-instruct"
-api_key = os.getenv("API_KEY")
+api_key = config['API_KEY']['qwen_key']
 N = 10
 mus_accuracy_evaluator = MUSAccuracyEvaluator(
     api_key=api_key,

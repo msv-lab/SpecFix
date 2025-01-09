@@ -33,26 +33,15 @@ You can find TACO_lite in `dataset` folder.
    cd mus
    ```
 
-2. Create and activate a virtual environment (optional but recommended):
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. Install required dependencies:
+2. Install required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
    Make sure you have the following libraries installed (they might already be in the `requirements.txt`):
-    - `pandas`
-    - `multiprocessing` (part of the Python standard library)
-    - `openai`
-    - `jsonlines`
-    - `optparse` (part of the Python standard library)
-
-4. (Optional) If you want to interact with Qwen’s model, configure
-   the [DashScope environment](https://dashscope.aliyun.com/) with an appropriate API key.
+   - `openai`
+   - `jsonlines`
+   - `evalplus`
 
 ## Usage
 

@@ -1,11 +1,27 @@
+import random
+import re
+import types
+
 from wrapt_timeout_decorator import *
 
 from mus.prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
     prompt_probe, instruction_judge_discrepancy_probe, prompt_judge_discrepancy_probe
 
+import re
 
-def post_process(content):
-    return content.strip().removeprefix("```python").removeprefix("```").strip("`").strip()
+
+def post_process(text: str) -> str:
+    python_pattern = re.compile(r'```python\s*(.*?)\s*```', re.DOTALL)
+    match = python_pattern.search(text)
+    if match:
+        return match.group(1)
+
+    general_pattern = re.compile(r'```(.*?)```', re.DOTALL)
+    match = general_pattern.search(text)
+    if match:
+        return match.group(1)
+
+    return text.strip()
 
 
 @timeout(10)
@@ -13,10 +29,17 @@ def execute(func_str, func_args, entry_point):
     try:
         local_env = {}
         exec(func_str, local_env)
-        func = local_env[entry_point]
+        if entry_point in local_env:
+            func = local_env[entry_point]
+        else:
+            target_func = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
+            if len(target_func) == 1:
+                func = target_func[0]
+            else:
+                func = random.choice(target_func)
         return func(*func_args)
     except Exception as e:
-        return str(e)
+        return repr(e)
 
 
 def execute_inputs(func_str, inputs_list, entry_point):
@@ -60,8 +83,9 @@ def check_discrepancy(requirement, programs, inp, outputs, model):
         output += "### Output " + str(i) + "\n" + repr(o) + "\n"
     response = model.get_response(instruction_check_code_generation,
                                   prompt_check_code_generation(requirement, program, inp, output))
-    response = unwrap(response, "answer")
-    return response
+    answer = unwrap(response, "answer")
+    explanation = unwrap(response, "explanation")
+    return answer, explanation
 
 
 def judge_discrepancy_probe(requirements, probes, model):

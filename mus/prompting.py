@@ -472,7 +472,7 @@ instruction_check_code_generation = "You are an assistant that checks the genera
 
 def prompt_check_code_generation(requirement, program, inputs, outputs):
     return f"""
-Given the requirement, LLM generate several programs, which output different results under same inputs. Your task is to judge whether the output discrepancy is due to ambiguous requirement. Ambiguous requirement indicates that the requirement can be interpreted in different ways.  Output "Yes" for discrepancy is due to ambiguous requirement; output "No" for discrepancy isn't due to ambiguous requirement. Wrap answer in <answer></answer> tags Here is an example:
+Given the requirement, LLM generate several programs, which output different results under same inputs. Your task is to judge whether the output discrepancy is due to ambiguous requirement and give the explanation. Ambiguous requirement indicates that the requirement can be interpreted in different ways.  Output "Yes" for discrepancy is due to ambiguous requirement; output "No" for discrepancy isn't due to ambiguous requirement. Wrap answer in <answer></answer> tags. Wrap explanation in <explanation></explanation> tags. Here is an example:
 
 # Example
 
@@ -511,6 +511,10 @@ def sort_remove_consecutive_duplicates(arr):
 <answer>
 Yes
 </answer>
+
+<explanation>
+Program 1 removes duplicates first and then sorts the array, while Program 2 sorts the array first and then removes duplicates. Since the requirement doesn't specify the order of operations, the discrepancy is due to ambiguous requirement.
+</explanation>
 
 ## Your task
 

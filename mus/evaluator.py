@@ -21,7 +21,11 @@ class MUSAccuracyEvaluator:
         print("GENERATE PROGRAMS")
         response = self.model.get_response(instruction_generate_code,
                                            prompt_generate_code(requirements))
-        return unwrap(response, "code")
+
+        code = unwrap(response, "code")
+        if len(code) == 0:
+            raise Exception("No programs generated")
+        return code
 
     def generate_tests(self, requirements):
         print("GENERATE TESTS INPUTS")
@@ -29,6 +33,10 @@ class MUSAccuracyEvaluator:
                                            prompt_generate_test(requirements))
         try:
             response = eval(unwrap(response, "test"))
+            if isinstance(response, list) and all(isinstance(t, list) for t in response):
+                return response
+            else:
+                raise Exception
         except Exception as e:
             response = self.generate_tests(requirements)
         return response

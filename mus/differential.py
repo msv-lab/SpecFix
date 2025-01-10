@@ -41,7 +41,7 @@ def probe_tester(requirement, num, model):
 
 def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=None, temperature=1):
     model = Model(model, api_key, temperature)
-    result = check_discrepancy(requirement, program, inp, outputs, model)
-    if result.startswith("Yes"):
+    answer, explanation = check_discrepancy(requirement, program, inp, outputs, model)
+    if answer.startswith("Yes"):
         return True
     return False

@@ -21,7 +21,7 @@ class MUSAccuracyEvaluator:
         print("GENERATE PROGRAMS")
         response = self.model.get_response(instruction_generate_code,
                                            prompt_generate_code(requirements))
-        return unwrap(response)
+        return unwrap(response, "code")
 
     def generate_tests(self, requirements):
         print("GENERATE TESTS INPUTS")

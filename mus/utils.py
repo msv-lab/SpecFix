@@ -4,28 +4,25 @@ from mus.prompting import instruction_check_code_generation, prompt_check_code_g
     prompt_probe, instruction_judge_discrepancy_probe, prompt_judge_discrepancy_probe
 
 
-# def post_process(content):
-#     return content.strip().removeprefix("```python").removeprefix("```").strip("`").strip()
+def post_process(content):
+    return content.strip().removeprefix("```python").removeprefix("```").strip("`").strip()
 
 
 @timeout(10)
-def execute(func_str, func_args):
+def execute(func_str, func_args, entry_point):
     try:
         local_env = {}
         exec(func_str, local_env)
-        possible_funcs = [v for v in local_env.values() if callable(v)]
-        if not possible_funcs:
-            raise "No callable function found in func_str"
-        func = possible_funcs[0]
+        func = local_env[entry_point]
         return func(*func_args)
     except Exception as e:
         return str(e)
 
 
-def execute_inputs(func_str, inputs_list, timeout=10):
+def execute_inputs(func_str, inputs_list, entry_point):
     results = []
     for inputs in inputs_list:
-        results.append(execute(func_str, inputs))
+        results.append(execute(func_str, inputs, entry_point))
     return results
 
 
@@ -79,6 +76,7 @@ def judge_discrepancy_probe(requirements, probes, model):
 
 
 def unwrap(string, label):
-    return string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
+    string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
         f"</{label}>") else string
+    return post_process(string)

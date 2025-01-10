@@ -4,12 +4,12 @@ from mus.model import Model
 from mus.utils import judge_discrepancy_probe
 
 
-def differential_tester(generated_programs, test_inputs):
+def differential_tester(generated_programs, test_inputs, entry_point):
     # Store test results
     program_clusters = []
     # Test each generated program against the reference
     for program_str in generated_programs:
-        result_list = execute_inputs(program_str, test_inputs)
+        result_list = execute_inputs(program_str, test_inputs, entry_point)
         result_tuple = tuple(result_list)
 
         # Use class Cluster to add program to cluster

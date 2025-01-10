@@ -3,18 +3,18 @@ instruction_generate_code = "You are an assistant that generates Python code bas
 
 def prompt_generate_code(requirement):
     return f"""
-Implement a python function that adheres to the requirements. Wrap the generated code in <code></code> tags. Here is an example:
+Implement a python function that adheres to the requirements. Wrap the generated code in <code></code> tags.  Here is an example:
 # Example
 
-## Requirements
+## Requirement
 
-Write a function that computes the square of a given number.
+Write a function that sorts array then removing the consecutive duplicates.
 
 ## Code
 
 <code>
-def f(x):
-    return x ** 2
+def sort_remove_consecutive_duplicates(arr):
+    return sorted(set(arr), key=arr.index)
 </code>
 
 # Your task
@@ -23,7 +23,7 @@ def f(x):
 
 {requirement}
 
-## Program
+## Code
 """
 
 

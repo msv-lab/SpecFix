@@ -28,6 +28,7 @@ with jsonlines.open(dataset_path) as reader, jsonlines.open("ambiguity.json", "w
     incorrect_generation = []
     for i, obj in enumerate(reader):
         requirement = obj['question']
+        entry_point = obj['entry_point']
         print("Case", i, ":", requirement)
         test_inputs = mus_accuracy_evaluator.generate_tests(requirement)
         generated_programs = []
@@ -37,7 +38,7 @@ with jsonlines.open(dataset_path) as reader, jsonlines.open("ambiguity.json", "w
 
         # Check for clusters
         print("Differential testing...")
-        clusters = differential_tester(generated_programs, test_inputs)
+        clusters = differential_tester(generated_programs, test_inputs, entry_point)
         if len(clusters) > 1:
             print("Case", i, ": *********Discrepancy found!*********")
             cluster1, cluster2 = random.sample(clusters, k=2)
@@ -54,7 +55,10 @@ with jsonlines.open(dataset_path) as reader, jsonlines.open("ambiguity.json", "w
                                    "program1": cluster1.programs_str, "program2": cluster2.programs_str,
                                    'output1': cluster1.outputs[num], 'output2': cluster2.outputs[num]}
                         incorrect_generation.append(problem)
-                        incorrect_generation_file.write(problem)
+                        try:
+                            incorrect_generation_file.write(problem)
+                        except:
+                            pass
                         break
             else:
                 print("*********Ambiguity found!*********")
@@ -62,7 +66,10 @@ with jsonlines.open(dataset_path) as reader, jsonlines.open("ambiguity.json", "w
                            'outputs': [cluster.outputs for cluster in clusters],
                            'programs': [cluster.programs_str for cluster in clusters]}
                 ambiguity.append(problem)
-                ambiguity_file.write(problem)
+                try:
+                    ambiguity_file.write(problem)
+                except:
+                    pass
         else:
             print("Case", i, ": No discrepancy found.")
 print("Ambiguity number:", len(ambiguity))

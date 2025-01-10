@@ -1,5 +1,6 @@
 import jsonlines
 import random
+from mus.utils import construct_requirement
 from mus.evaluator import MUSAccuracyEvaluator
 from mus.differential import differential_tester, model_verifier
 import configparser
@@ -27,8 +28,12 @@ with jsonlines.open(dataset_path) as reader, jsonlines.open("ambiguity.json", "w
     ambiguity = []
     incorrect_generation = []
     for i, obj in enumerate(reader):
-        requirement = obj['question']
+        if i == 100:
+            break
+        starter_code = obj['starter_code']
         entry_point = obj['entry_point']
+        requirement = obj['question']
+        requirement = construct_requirement(requirement, starter_code)
         print("Case", i, ":", requirement)
         test_inputs = mus_accuracy_evaluator.generate_tests(requirement)
         generated_programs = []

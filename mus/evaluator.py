@@ -86,7 +86,7 @@ class MUSAccuracyEvaluator:
                                            prompt_minimize_requirement(ori_req, repaired_req))
         return unwrap(response, "requirement")
 
-    def mus_code(self, program, initial_requirement, task_id, N, max_iterations=10, DRS=False):
+    def mus_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1
         requirement = initial_requirement
         test_inputs = self.generate_tests(requirement)
@@ -102,7 +102,7 @@ class MUSAccuracyEvaluator:
                     print(generated_programs[i])
 
                 # Check for clusters
-                clusters = self.differential_tester(generated_programs, test_inputs)
+                clusters = self.differential_tester(generated_programs, test_inputs, entry_point)
                 if len(clusters) == 1:
                     self.successful_runs += 1
                     self.run_details.append({

@@ -80,3 +80,12 @@ def transform_code(original_code):
     transformed_code = ast.unparse(tree)
 
     return transformed_code
+
+
+def transform_starter_code(original_starter_code):
+    lines = original_starter_code.split("\n")
+    for line in lines:
+        if "def " in line:
+            if "(self, " in line or "(self," in line:
+                line = line.replace("self, ", "").replace("self,", "")
+            return line.strip() + "\n"

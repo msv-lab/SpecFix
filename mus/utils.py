@@ -1,5 +1,4 @@
 import random
-import re
 import types
 
 from wrapt_timeout_decorator import *
@@ -8,6 +7,8 @@ from mus.prompting import instruction_check_code_generation, prompt_check_code_g
     prompt_probe, instruction_judge_discrepancy_probe, prompt_judge_discrepancy_probe
 
 import re
+
+from mus.solution_transformer import transform_starter_code
 
 
 def post_process(text: str) -> str:
@@ -104,3 +105,8 @@ def unwrap(string, label):
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
         f"</{label}>") else string
     return post_process(string)
+
+
+def construct_requirement(requirement, starter_code):
+    starter_code = transform_starter_code(starter_code)
+    return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""

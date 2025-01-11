@@ -108,5 +108,4 @@ def unwrap(string, label):
 
 
 def construct_requirement(requirement, starter_code):
-    starter_code = transform_starter_code(starter_code)
     return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""

@@ -3,11 +3,13 @@ import time
 
 
 class Model:
-    def __init__(self, model, api_key, temperature=1):
+    def __init__(self, model, api_key, temperature=1, top_p=1, frequency_penalty=0):
         self.model = model
         self.api_key = api_key
         self.client = self.model_setup()
         self.temperature = temperature
+        self.top_p = top_p
+        self.frequency_penalty = frequency_penalty
 
     def model_setup(self):
         if "qwen" in self.model:
@@ -34,7 +36,7 @@ class Model:
             raise ValueError("Invalid model")
         return client
 
-    def get_response(self, instruction, prompt):
+    def get_response(self, instruction, prompt, temperature=None):
         for _ in range(5):
             try:
                 chat_completion = self.client.chat.completions.create(
@@ -43,7 +45,9 @@ class Model:
                         {"role": "user", "content": prompt, }
                     ],
                     model=self.model,
-                    temperature=self.temperature
+                    temperature=self.temperature if temperature is None else temperature,
+                    top_p=self.top_p,
+                    frequency_penalty=self.frequency_penalty,
                 )
                 response = chat_completion.choices[0].message.content
                 if response:

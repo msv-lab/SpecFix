@@ -148,18 +148,18 @@ instruction_generate_test = "You are an assistant that generates Python code inp
 
 def prompt_generate_test(requirement):
     return f"""
-Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Organize the inputs for each function into lists, combine them into a single collection, and wrap the collection in <test></test> tags. Here is an example:
+Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Store each test case in a list as function input. If an parameter type is list, it is nested inside the outer list. Gather all test cases into a general list. Wrap the collection in <test></test> tags. Here is an example:
 
 # Example
 
 ## Requirements
 
-Write a function that sorts string while removing the consecutive duplicates.
+Write a function that sorts a list and select the kth smallest element.
 
 ## Test inputs
 
 <test>
-[["1234567"], ["123123"], ["1122334455"], ["5432112345"], ["000000000"]]
+[[[1, 2, 3, 2, 3], 2], [[1, 2, 3, 4, 5], 3], [[1, 2, 3, 4, 5], 1]]
 </test>
 
 # Your task
@@ -472,67 +472,74 @@ instruction_check_code_generation = "You are an assistant that checks the genera
 
 def prompt_check_code_generation(requirement, program, inputs, outputs):
     return f"""
-Given the requirement, LLM generate several programs, which output different results under same inputs. Your task is to judge whether the output discrepancy is due to ambiguous requirement and give the explanation. Ambiguous requirement indicates that the requirement can be interpreted in different ways.  Output "Yes" for discrepancy is due to ambiguous requirement; output "No" for discrepancy isn't due to ambiguous requirement. Wrap answer in <answer></answer> tags. Wrap explanation in <explanation></explanation> tags. Here is an example:
+You are given a requirement and several programs that produce different outputs for the same inputs. Your task is to determine if the discrepancy in outputs is caused by an ambiguous requirement. A requirement is considered ambiguous if it can be interpreted in multiple ways due to missing or unclear information (e.g., vague definitions, unspecified relationships, or incomplete instructions).  
+  
+1. If the output discrepancy arises from an ambiguous requirement, answer "Yes".  
+2. Otherwise, answer "No".  
+3. Provide a step-by-step explanation for your judgment.  
+  
+Format your final response in the following tags:  
 
-# Example
+<answer>Yes or No</answer>
+<explanation>Your step-by-step reasoning</explanation>
 
-## Requirement
-
-Write a function that sorts array while removing the consecutive duplicates.
-
-## Program
-
-### Program 1
+Use the example below as a reference:
+ 
+# Example 
+ 
+#Requirement
+Write a function that sorts an array while removing the consecutive duplicates.
+ 
+## Programs 
+ 
+### Program 1 
 
 def sort_remove_consecutive_duplicates(arr):
     return sorted(set(arr), key=arr.index)
-    
-### Program 2
+
+### Program 2  
 
 def sort_remove_consecutive_duplicates(arr):
     return [v for i, v in enumerate(sorted(arr)) if i == 0 or v != arr[i-1]]
-    
-## Inputs
+
+ 
+## Inputs 
 
 [5, 2, 3, 2, 3]
 
-## Outputs
-
-### Output 1
+## Outputs  
+ 
+### Output 1  
 
 [5, 2, 3]
-
-### Output 2
+ 
+### Output 2  
 
 [2, 2, 3, 5]
 
-## Judgement
+## Judgement  
 
 <answer>
 Yes
 </answer>
-
 <explanation>
-Program 1 removes duplicates first and then sorts the array, while Program 2 sorts the array first and then removes duplicates. Since the requirement doesn't specify the order of operations, the discrepancy is due to ambiguous requirement.
+Program 1 removes duplicates before sorting, while Program 2 sorts first and then removes duplicates. Since the requirement doesn't specify the sequence of these two operations, the discrepancy is due to an ambiguous requirement.
 </explanation>
 
-## Your task
-
-## Requirement
-
-{requirement}
-
-## Program
-
-{program}
-
-## Inputs
-
-{inputs}
-
-## Outputs
-
-{outputs}
-
-## Judgement
+ 
+# Your task  
+ 
+## Requirement  
+{requirement}  
+ 
+## Program  
+{program}  
+ 
+## Inputs  
+{inputs} 
+ 
+## Outputs  
+{outputs}  
+ 
+## Judgement  
 """

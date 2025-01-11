@@ -43,5 +43,5 @@ def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=
     model = Model(model, api_key, temperature)
     answer, explanation = check_discrepancy(requirement, program, inp, outputs, model)
     if answer.startswith("Yes"):
-        return True, ""
+        return True, explanation
     return False, explanation

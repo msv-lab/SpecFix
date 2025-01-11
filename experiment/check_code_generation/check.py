@@ -30,7 +30,7 @@ def process_problems(
                 break
 
             requirement = problem['question'] if 'question' in problem else problems[problem]['prompt']
-            entry_point = problem['entry_point'] if 'entry_point' in problem else None
+            entry_point = problem['entry_point'] if 'entry_point' in problem else problems[problem]['entry_point']
             # 若是 TACO 题目，也可能在 problem 里存了 starter_code，需要构造 requirement
             if 'question' in problem and 'starter_code' in problem:
                 requirement = construct_requirement(problem['question'], problem['starter_code'])
@@ -84,9 +84,12 @@ def process_problems(
                     print("*********Ambiguity found!*********")
                     problem_dict = {
                         'requirement': requirement,
-                        'test_input': test_inputs,
-                        'outputs': [cluster.outputs for cluster in clusters],
-                        'programs': [cluster.programs_str for cluster in clusters]
+                        'test_input': test_input,
+                        'program1': cluster1.programs_str,
+                        'program2': cluster2.programs_str,
+                        'output1': cluster1.outputs[test_i],
+                        'output2': cluster2.outputs[test_i],
+                        'explanation': explanation
                     }
                     ambiguity.append(problem_dict)
                     try:

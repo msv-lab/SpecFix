@@ -1,14 +1,10 @@
 import random
 import types
-
+import re
 from wrapt_timeout_decorator import *
-
 from mus.prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
     prompt_probe, instruction_judge_discrepancy_probe, prompt_judge_discrepancy_probe
-
-import re
-
-from mus.solution_transformer import transform_starter_code
+from mus.solution_transformer import remove_comments_and_asserts
 
 
 def post_process(text: str) -> str:
@@ -19,6 +15,11 @@ def post_process(text: str) -> str:
 
     general_pattern = re.compile(r'```(.*?)```', re.DOTALL)
     match = general_pattern.search(text)
+    if match:
+        return match.group(1)
+
+    single_pattern = re.compile(r'`(.*?)`', re.DOTALL)
+    match = single_pattern.search(text)
     if match:
         return match.group(1)
 
@@ -104,7 +105,13 @@ def unwrap(string, label):
     string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
         f"</{label}>") else string
-    return post_process(string)
+    string = post_process(string)
+    if label == "code":
+        try:
+            string = remove_comments_and_asserts(string).strip()
+        except:
+            return ""
+    return string
 
 
 def construct_requirement(requirement, starter_code):

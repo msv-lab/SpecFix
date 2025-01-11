@@ -49,16 +49,19 @@ with jsonlines.open(dataset_path) as reader, jsonlines.open("ambiguity.json", "w
             cluster1, cluster2 = random.sample(clusters, k=2)
             for num in range(len(test_inputs)):
                 if cluster1.outputs[num] != cluster2.outputs[num]:
-                    res = model_verifier(requirement,
-                                         [random.choice(cluster1.programs_str), random.choice(cluster2.programs_str)],
-                                         test_inputs[num],
-                                         [cluster1.outputs[num], cluster2.outputs[num]], model=verifier_name,
-                                         api_key=verifier_api_key)
+                    res, explanation = model_verifier(requirement,
+                                                      [random.choice(cluster1.programs_str),
+                                                       random.choice(cluster2.programs_str)],
+                                                      test_inputs[num],
+                                                      [cluster1.outputs[num], cluster2.outputs[num]],
+                                                      model=verifier_name,
+                                                      api_key=verifier_api_key)
                     if not res:
                         print("*********Incorrect generation found!*********")
                         problem = {'requirement': requirement, 'test_input': test_inputs[num],
                                    "program1": cluster1.programs_str, "program2": cluster2.programs_str,
-                                   'output1': cluster1.outputs[num], 'output2': cluster2.outputs[num]}
+                                   'output1': cluster1.outputs[num], 'output2': cluster2.outputs[num],
+                                   'explanation': explanation}
                         incorrect_generation.append(problem)
                         try:
                             incorrect_generation_file.write(problem)

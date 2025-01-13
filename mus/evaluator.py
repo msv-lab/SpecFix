@@ -7,7 +7,7 @@ from mus.utils import construct_test_case, unwrap
 
 
 class MUSAccuracyEvaluator:
-    def __init__(self, api_key, differential_tester, model="qwen2.5-coder-7b-instruct", temperature=1.0):
+    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
         self.differential_tester = differential_tester
         self.model = Model(model, api_key, temperature)
         self.temperature = temperature
@@ -75,6 +75,10 @@ class MUSAccuracyEvaluator:
                                            prompt_find_discrepancy(requirements),
                                            )
         return unwrap(response, "discrepancy")
+    def find_discrepancy_fact(self, requirements, code, facts, assumptions,inp, outputs):
+        print("FIND DISCREPANCY WITH FACT")
+        # response = self.model.get_response(instruction_find_discrepancy_fact,
+        return unwrap(response, "discrepancy")
 
     def simulate_answer(self, requirement, program, inputs, question):
         tests = construct_test_case(program, inputs)
@@ -88,6 +92,15 @@ class MUSAccuracyEvaluator:
         response = self.model.get_response(instruction_minimize_requirement,
                                            prompt_minimize_requirement(ori_req, repaired_req))
         return unwrap(response, "requirement")
+
+    def generate_facts(self, requirement):
+        print("GENERATE FACTS")
+        response = self.model.get_response(instruction_generate_fact,
+                                           prompt_generate_fact(requirement))
+        code = unwrap(response, "code")
+        fact = unwrap(response, "facts")
+        assumption = unwrap(response, "assumptions")
+        return code, fact, assumption
 
     def mus_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1

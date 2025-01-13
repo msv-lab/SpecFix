@@ -543,3 +543,86 @@ Program 1 removes duplicates before sorting, while Program 2 sorts first and the
  
 ## Judgement  
 """
+
+
+instruction_generate_fact = "You are an assistant that generates facts and assumptions based on the requirement."
+
+
+def prompt_generate_fact(requirement):
+    return f"""
+You are tasked with implementing a Python function based on a given requirement. Think step-by-step. Your response should include:
+
+1. Code: The Python function, wrapped in <code></code> tags.
+2. Facts and Assumptions: Facts are information can be derived explicitly from the requirement and are used in code implementation. Wrap facts in <facts></facts>` tags. Assumptions are information not explicitly stated but inferred from context or common practice and are used in code implementation. Wrap assumptions in `<assumptions></assumptions>` tags.
+
+# Example:
+
+## Requirement
+Write a function that sorts an array while removing consecutive duplicates.
+
+## Response:
+<code>
+def sort_remove_consecutive_duplicates(arr):
+    return sorted(set(arr), key=arr.index)
+</code>
+
+<facts>
+1. The function removes duplicates from the input array.
+2. The function sorts the array
+</facts>
+
+<assumptions>
+1. The function sorts the array in order of appearance.
+2. The function removes duplicates first and then sorts the array.
+</assumptions>
+
+# Your Task:
+
+## Requirement
+{requirement}
+
+## Code
+
+## Facts
+"""
+
+
+def supply_facts(requirement, code, facts, assumption):
+    return f"""
+Given a requirement, corresponding code, facts used in implementation, and assumptions used in implementation, supply additional facts that can be explicitly derived from the requirement and used in code implementation. Supply the additional assumptions that can be inferred from the requirement and used in code implementation. Wrap the additional facts in <facts></facts> tags and the additional assumptions in <assumptions></assumptions> tags. Here is an example:
+
+# Example
+
+## Requirement
+
+Write a function that sorts an array while removing consecutive duplicates.
+
+## Code
+
+def sort_remove_consecutive_duplicates(arr):
+    return sorted(set(arr), key=arr.index)
+
+## Facts
+
+1. The function removes duplicates from the input array.
+2. The function sorts the array.
+
+## Assumptions
+
+1. The function sorts the array in order of appearance.
+2. The function removes duplicates first and then sorts the array.
+
+## Additional Facts
+
+<facts>
+1. The function removes only consecutive duplicates.
+2. The function returns a list.
+</facts>
+
+## Additional Assumptions
+
+<assumptions>
+1. The input array is not empty.
+2. The input array contains integers.
+</assumptions>    
+"""

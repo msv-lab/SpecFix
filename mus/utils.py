@@ -17,12 +17,6 @@ def post_process(text: str) -> str:
     match = general_pattern.search(text)
     if match:
         return match.group(1)
-
-    single_pattern = re.compile(r'`(.*?)`', re.DOTALL)
-    match = single_pattern.search(text)
-    if match:
-        return match.group(1)
-
     return text.strip()
 
 
@@ -105,7 +99,8 @@ def unwrap(string, label):
     string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
         f"</{label}>") else string
-    string = post_process(string)
+    if "```" in string:
+        string = post_process(string)
     if label == "code":
         try:
             string = remove_comments_and_asserts(string).strip()

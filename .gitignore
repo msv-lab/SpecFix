@@ -1,1 +1,5 @@
-.env
+.venv
+.idea
+.DS_Store
+
+.config

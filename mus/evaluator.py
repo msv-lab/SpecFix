@@ -78,7 +78,7 @@ class MUSAccuracyEvaluator:
     def find_discrepancy_fact(self, requirements, code, facts, assumptions,inp, outputs):
         print("FIND DISCREPANCY WITH FACT")
         # response = self.model.get_response(instruction_find_discrepancy_fact,
-        return unwrap(response, "discrepancy")
+        # return unwrap(response, "discrepancy")
 
     def simulate_answer(self, requirement, program, inputs, question):
         tests = construct_test_case(program, inputs)
@@ -155,40 +155,6 @@ class MUSAccuracyEvaluator:
                 'success': False
             })
             return requirement
-        except Exception as e:
-            print('EXCEPTION THROWN: ', e)
-            # If max iterations reached
-            self.run_details.append({
-                'task_id': task_id,
-                'initial_requirement': initial_requirement,
-                'iterations_to_success': max_iterations,
-                'success': False
-            })
-            return requirement
-
-    def mus_probe(self, program, initial_requirement, task_id, N, max_iterations=10):
-        self.total_runs += 1
-        requirement = initial_requirement
-        try:
-            for iteration in range(max_iterations):
-                print("REQUIREMENT:", task_id)
-                print(requirement)
-                print(f"PROBING FOR ITERATION {iteration}:")
-                discrepancies = self.differential_tester(requirement, N, self.model)
-                if len(discrepancies) == 0:
-                    self.successful_runs += 1
-                    self.run_details.append({
-                        'task_id': task_id,
-                        'requirement': requirement,
-                        'iterations_to_success': iteration + 1,
-                        'success': True
-                    })
-                    return self.minimize_requirement(initial_requirement, requirement)
-                clarifying_question = self.generate_clarifying_question(requirement, discrepancies)
-                answer = self.simulate_answer(requirement, program, self.generate_tests(initial_requirement),
-                                              clarifying_question)
-                requirement = self.repair_requirements(requirement, answer)
-
         except Exception as e:
             print('EXCEPTION THROWN: ', e)
             # If max iterations reached

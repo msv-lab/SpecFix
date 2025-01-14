@@ -296,7 +296,8 @@ Write a function that sorts array while removing the consecutive duplicates.
 
 ## Discrepancies
 
-Probes 1 and 2 have different order of operations. Probe 1 removes duplicates first and then sorts the array, while Probe 2 sorts the array first and then removes duplicates.
+Discrepancy 1: The requirement specifies to remove duplicates first and then sort the array.
+Discrepancy 2: The requirement doesn't specify the order of operations.
 
 ## Clarifying Question
 
@@ -377,93 +378,6 @@ def reverse_words(s):
 {question}
 
 ## Answer
-"""
-
-
-instruction_probe = "You are an assistant that generates problem-solving process based on the requirement and input."
-
-
-def prompt_probe(requirement):
-    return f"""
-Given a problem requirement, write a rough problem-solving process using three programming structures (i.e., sequential, branch, and loop structures). Wrap the output in <output></output> tags. Here is an example:
-
-# Example
-
-## Requirement
-
-Write a python function to find sum of prime numbers between 1 to n.
-
-## Output
-
-<output>
-1. Initialize a list "prime" with True values.
-2. Initialize a variable "p" with 2.
-3. While p * p is less than or equal to 10:
-4.   If prime[p] is True:
-5.     Set all the multiples of p to False.
-6.   Increment the variable "p" by 1.
-7. Compute the sum of the prime numbers.
-8. Return the sum.
-</output>
-
-# Your task
-
-## Requirement
-
-{requirement}
-
-## Output
-"""
-
-
-instruction_judge_discrepancy_probe = "You are an assistant that judge whether discrepancies exist between the execution probes based on requirement"
-
-
-def prompt_judge_discrepancy_probe(requirement, probe):
-    probe_str = ""
-    for i, c in enumerate(probe):
-        probe_str += f"### Probe {i + 1}\n {c}\n"
-
-    return f"""
-Given the requirement and corresponding execution probes, check whether discrepancies exist between the execution probes. Output discrepancies if exist; output "No" for no discrepancies. Wrap the judgement in the <judgement></judgement> tags. Here is an example:
-
-# Example
-
-## Requirements
-
-Write a function that sorts array while removing the consecutive duplicates.
-
-## COT
-
-### Probe 1
-
-1. Remove consecutive duplicates from the array. [2, 3, 1, 4]
-
-2. Sort the array. [1, 2, 3, 4]
-
-### Probe 2
-
-1. Sort the array. [1, 2, 3, 4]
-
-2. Remove consecutive duplicates from the array. [1, 2, 3, 4]
-
-## Judgement
-
-<judgement>
-Probes 1 and 2 have different order of operations. Probe 1 removes duplicates first and then sorts the array, while Probe 2 sorts the array first and then removes duplicates.
-</judgement>
-
-# Your task
-
-## Requirement
-
-{requirement}
-
-## Probe
-
-{probe_str}
-
-## Judgement
 """
 
 

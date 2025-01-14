@@ -2,8 +2,7 @@ import random
 import types
 import re
 from wrapt_timeout_decorator import *
-from mus.prompting import instruction_check_code_generation, prompt_check_code_generation, instruction_probe, \
-    prompt_probe, instruction_judge_discrepancy_probe, prompt_judge_discrepancy_probe
+from mus.prompting import instruction_check_code_generation, prompt_check_code_generation
 from mus.solution_transformer import remove_comments_and_asserts
 
 
@@ -59,13 +58,6 @@ def construct_test_case(program, inputs):
     return assertions
 
 
-def execute_requirement(requirement, model):
-    print("EXECUTE REQUIREMENT")
-    response = model.get_response(instruction_probe,
-                                  prompt_probe(requirement))
-    return unwrap(response, "output")
-
-
 def check_discrepancy(requirement, programs, inp, outputs, model):
     """
     Check discrepancy between the program and the requirement. Return true if the requirement is ambiguous. Return false if the program is incorrectly implemented.
@@ -82,17 +74,6 @@ def check_discrepancy(requirement, programs, inp, outputs, model):
     answer = unwrap(response, "answer")
     explanation = unwrap(response, "explanation")
     return answer, explanation
-
-
-def judge_discrepancy_probe(requirements, probes, model):
-    print("JUDGE DISCREPANCY WITH PROBE")
-    response = model.get_response(instruction_judge_discrepancy_probe,
-                                  prompt_judge_discrepancy_probe(requirements, probes))
-    response = unwrap(response, "judgement")
-    if response == "No":
-        return False
-    else:
-        return response
 
 
 def unwrap(string, label):

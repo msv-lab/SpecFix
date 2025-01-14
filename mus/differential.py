@@ -1,7 +1,6 @@
 from mus.cluster import Cluster
 from mus.utils import execute_inputs, execute_requirement, check_discrepancy
 from mus.model import Model
-from mus.utils import judge_discrepancy_probe
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):
@@ -22,21 +21,6 @@ def differential_tester(generated_programs, test_inputs, entry_point):
             new_cluster.add_program_str(program_str)
             program_clusters.append(new_cluster)
     return program_clusters
-
-
-def probe_tester(requirement, num, model):
-    # Store test results
-    discrepancies = []
-    # Test each generated program against the reference
-    probes = []
-    for i in range(num):
-        probe = execute_requirement(requirement, model)
-        probes.append(probe)
-    result = judge_discrepancy_probe(requirement, probes, model)
-    if not result or "no discrepancies" in result.lower():
-        return ""
-    else:
-        return result
 
 
 def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=None, temperature=1):

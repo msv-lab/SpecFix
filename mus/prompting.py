@@ -540,3 +540,33 @@ def sort_remove_consecutive_duplicates(arr):
 2. The input array contains integers.
 </assumptions>    
 """
+
+
+instruction_classification = "You are an assistant that classifies the requirement whether it is ambiguous or not."
+
+
+def prompt_classification(requirement):
+    return f"""
+Given a requirement and corresponding code, determine if the requirement is ambiguous. A requirement is considered ambiguous if it can be interpreted in multiple ways due to missing or unclear information (e.g., vague definitions, unspecified relationships, or incomplete instructions). Think step-by-step. Your response should include:
+
+1. If the requirement is ambiguous, answer "Yes".
+2. Otherwise, answer "No".
+3. Provide Your step-by-step reasoning for your judgment.
+
+Format your final response in the following tags:
+<answer>Yes or No</answer>
+<reasoning>Your step-by-step reasoning</reasoning>
+
+# Requirement
+{requirement}
+"""
+
+
+instruction_vanilla_repair = "You are an assistant that repairs ambiguous requirements."
+
+
+def prompt_vanilla_repair(requirement):
+    return f"""
+Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap the repaired requirement in <requirement></requirement> tags.
+{requirement}
+"""

@@ -5,7 +5,6 @@ from mus.prompting import *
 from mus.model import Model
 from mus.utils import construct_test_case, unwrap
 
-
 class MUSAccuracyEvaluator:
     def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
         self.differential_tester = differential_tester
@@ -75,7 +74,8 @@ class MUSAccuracyEvaluator:
                                            prompt_find_discrepancy(requirements),
                                            )
         return unwrap(response, "discrepancy")
-    def find_discrepancy_fact(self, requirements, code, facts, assumptions,inp, outputs):
+
+    def find_discrepancy_fact(self, requirements, code, facts, assumptions, inp, outputs):
         print("FIND DISCREPANCY WITH FACT")
         # response = self.model.get_response(instruction_find_discrepancy_fact,
         # return unwrap(response, "discrepancy")
@@ -128,9 +128,8 @@ class MUSAccuracyEvaluator:
                         'success': True
                     })
                     return requirement
-                for cluster in clusters:
+                for cluster in clusters.get_clusters():
                     cluster.set_requirement(self.generate_requirement(random.choice(cluster.programs_str)))
-                    cluster.set_distribution(len(cluster.programs_str) / N)
                 requirements = ""
                 for i, cluster in enumerate(clusters):
                     requirements += f"Requirement {i + 1}: {cluster.requirement}\n"
@@ -195,3 +194,17 @@ class MUSAccuracyEvaluator:
         response = self.model.get_response(instruction_generate_clarifying_question,
                                            prompt_generate_clarifying_question(requirement, information))
         return unwrap(response, "question")
+
+    def classification(self, requirements):
+        print("CLASSIFICATION")
+        response = self.model.get_response(instruction_classification,
+                                           prompt_classification(requirements))
+        answer = unwrap(response, "answer")
+        reason = unwrap(response, "reasoning")
+        return answer, reason
+
+    def vanilla_repair(self, requirement):
+        print("VANILLA REPAIR")
+        response = self.model.get_response(instruction_vanilla_repair,
+                                           prompt_vanilla_repair(requirement))
+        return unwrap(response, "requirement")

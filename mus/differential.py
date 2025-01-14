@@ -1,25 +1,27 @@
-from mus.cluster import Cluster
-from mus.utils import execute_inputs, execute_requirement, check_discrepancy
+from mus.cluster import Cluster, Clusters
+from mus.utils import execute_inputs, check_discrepancy
 from mus.model import Model
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):
     # Store test results
-    program_clusters = []
+    program_clusters = Clusters()
     # Test each generated program against the reference
     for program_str in generated_programs:
         result_list = execute_inputs(program_str, test_inputs, entry_point)
         result_tuple = tuple(result_list)
 
         # Use class Cluster to add program to cluster
-        for cluster in program_clusters:
+        for cluster in program_clusters.get_clusters():
             if result_tuple == cluster.outputs:
                 cluster.add_program_str(program_str)
                 break
         else:
             new_cluster = Cluster(result_tuple)
             new_cluster.add_program_str(program_str)
-            program_clusters.append(new_cluster)
+            program_clusters.add_cluster(new_cluster)
+    program_clusters.calculate_distribution()
+    program_clusters.calculate_entropy()
     return program_clusters
 
 

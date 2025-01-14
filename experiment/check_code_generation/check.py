@@ -109,7 +109,7 @@ def process_problems(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset", dest="dataset",
-                        help="Name of dataset: taco, humaneval, mbpp")
+                        help="Name of dataset: taco_lite, humaneval, mbpp")
     parser.add_argument("-p", "--dataset_path", dest="dataset_path",
                         help="Path to dataset")
 
@@ -134,7 +134,7 @@ def main():
     dataset = options.dataset
     dataset_path = options.dataset_path
 
-    if dataset == "taco":
+    if dataset == "taco_lite":
         with jsonlines.open(dataset_path) as reader:
             process_problems(
                 reader,

@@ -4,19 +4,15 @@ import argparse
 import configparser
 
 from mus.evaluator import MUSAccuracyEvaluator
-from mus.differential import differential_tester, probe_tester
+from mus.differential import differential_tester
 from mus.solution_transformer import transform_code
 from mus.utils import construct_requirement
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 
 def main():
-    """
-    Entry point for the command-line interface.
-    Parses arguments, initializes the evaluator, and runs the pipeline.
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset", dest="dataset", help="Name of dataset: taco, humaneval, mbpp")
+    parser.add_argument("-d", "--dataset", dest="dataset", help="Name of dataset: taco_lite, humaneval, mbpp")
     parser.add_argument("-p", "--dataset_path", dest="dataset_path", help="Path to dataset")
     parser.add_argument("-k", "--api-key", dest="api_key", help="OpenAI API key")
     parser.add_argument("-m", "--model", dest="model", help="OpenAI model")
@@ -47,12 +43,12 @@ def main():
 
     mus_accuracy_evaluator = MUSAccuracyEvaluator(
         api_key=api_key,
-        differential_tester=differential_tester if oracle.lower() == "code" else probe_tester,
+        differential_tester=differential_tester,
         model=model,
         temperature=temperature
     )
 
-    if dataset.lower() == "taco":
+    if dataset.lower() == "taco_lite":
         with jsonlines.open(dataset_path) as reader:
             for i, obj in enumerate(reader):
                 starter_code = obj['starter_code']
@@ -66,10 +62,6 @@ def main():
                                                                               entry_point, task_id,
                                                                               num_programs,
                                                                               max_iterations)
-                elif oracle == "probe":
-                    unambiguous_requirement = mus_accuracy_evaluator.mus_probe(canonical_solution, requirement, task_id,
-                                                                               num_programs,
-                                                                               max_iterations)
                 print("***************Case", i, "***************")
                 print("The original requirement:\n", requirement)
                 print("The unambiguous requirement:\n", unambiguous_requirement)
@@ -85,11 +77,6 @@ def main():
                                                                           task_id,
                                                                           num_programs,
                                                                           max_iterations)
-            elif oracle == "probe":
-                unambiguous_requirement = mus_accuracy_evaluator.mus_probe(canonical_solution, requirement, task_id,
-                                                                           num_programs,
-                                                                           max_iterations)
-            print("\n\nThe unambiguous requirement is:", unambiguous_requirement, "\n\n")
 
     mus_accuracy_evaluator.calculate_accuracy()
 

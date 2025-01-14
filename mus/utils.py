@@ -1,7 +1,6 @@
 import random
 import types
 import re
-from wrapt_timeout_decorator import *
 from mus.prompting import instruction_check_code_generation, prompt_check_code_generation
 from mus.solution_transformer import remove_comments_and_asserts
 
@@ -19,7 +18,6 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
-@timeout(10)
 def execute(func_str, func_args, entry_point):
     try:
         local_env = {}

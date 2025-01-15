@@ -38,8 +38,8 @@ def main():
                         help="Name of dataset: taco_lite, humaneval, mbpp")
     parser.add_argument("-p", "--dataset_path", dest="dataset_path",
                         help="Path to dataset")
-    parser.add_argument("-n", "--program_number", dest="number", type=int, default=5)
-    parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.8)
+    parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
+    parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
 
     options = parser.parse_args()
 

@@ -1,8 +1,24 @@
 import random
 import types
 import re
+import functools
+import concurrent.futures
 from specfix.prompting import instruction_check_code_generation, prompt_check_code_generation
 from specfix.solution_transformer import remove_comments_and_asserts
+
+
+def timeout(seconds):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(func, *args, **kwargs)
+                try:
+                    return future.result(timeout=seconds)
+                except concurrent.futures.TimeoutError:
+                    raise TimeoutError(f"Function '{func.__name__}' timed out after {seconds} seconds")
+        return wrapper
+    return decorator
 
 
 def post_process(text: str) -> str:
@@ -18,6 +34,7 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
+@timeout(10)
 def execute(func_str, func_args, entry_point):
     try:
         local_env = {}

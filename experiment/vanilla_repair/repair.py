@@ -1,10 +1,10 @@
 import argparse
 import jsonlines
 import configparser
-from mus.differential import differential_tester
-from mus.evaluator import MUSAccuracyEvaluator
-from mus.utils import construct_requirement
-from mus.correlation import point_biserial_correlation
+from specfix.differential import differential_tester
+from specfix.evaluator import SpecFixAccuracyEvaluator
+from specfix.utils import construct_requirement
+from specfix.correlation import point_biserial_correlation
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
                         help="Name of dataset: taco_lite, humaneval, mbpp")
     parser.add_argument("-p", "--dataset_path", dest="dataset_path",
                         help="Path to dataset")
-    parser.add_argument("-n", "--program_number", dest="number", type=int, default=50, )
+    parser.add_argument("-n", "--program_number", dest="number", type=int, default=30, )
     parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.8)
 
     options = parser.parse_args()
@@ -24,7 +24,7 @@ def main():
     model_name = "qwen2.5-coder-14b-instruct"
     api_key = config['API_KEY']['qwen_key']
 
-    mus_accuracy_evaluator = MUSAccuracyEvaluator(
+    mus_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,

@@ -1,8 +1,8 @@
 import random
 import types
 import re
-from mus.prompting import instruction_check_code_generation, prompt_check_code_generation
-from mus.solution_transformer import remove_comments_and_asserts
+from specfix.prompting import instruction_check_code_generation, prompt_check_code_generation
+from specfix.solution_transformer import remove_comments_and_asserts
 
 
 def post_process(text: str) -> str:

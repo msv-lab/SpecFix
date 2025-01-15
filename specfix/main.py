@@ -3,10 +3,10 @@ import jsonlines
 import argparse
 import configparser
 
-from mus.evaluator import MUSAccuracyEvaluator
-from mus.differential import differential_tester
-from mus.solution_transformer import transform_code
-from mus.utils import construct_requirement
+from specfix.evaluator import SpecFixAccuracyEvaluator
+from specfix.differential import differential_tester
+from specfix.solution_transformer import transform_code
+from specfix.utils import construct_requirement
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 
@@ -41,7 +41,7 @@ def main():
     max_iterations = int(options.max_iterations)
     oracle = options.oracle
 
-    mus_accuracy_evaluator = MUSAccuracyEvaluator(
+    specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,
         differential_tester=differential_tester,
         model=model,
@@ -58,10 +58,10 @@ def main():
                 canonical_solution = transform_code(random.choice(obj['solutions']))
                 task_id = i
                 if oracle == "code":
-                    unambiguous_requirement = mus_accuracy_evaluator.mus_code(canonical_solution, requirement,
-                                                                              entry_point, task_id,
-                                                                              num_programs,
-                                                                              max_iterations)
+                    unambiguous_requirement = specfix_accuracy_evaluator.specfix_code(canonical_solution, requirement,
+                                                                                  entry_point, task_id,
+                                                                                  num_programs,
+                                                                                  max_iterations)
                 print("***************Case", i, "***************")
                 print("The original requirement:\n", requirement)
                 print("The unambiguous requirement:\n", unambiguous_requirement)
@@ -73,12 +73,12 @@ def main():
             canonical_solution = problem['canonical_solution']
             entry_point = problem['entry_point']
             if oracle == "code":
-                unambiguous_requirement = mus_accuracy_evaluator.mus_code(canonical_solution, requirement, entry_point,
-                                                                          task_id,
-                                                                          num_programs,
-                                                                          max_iterations)
+                unambiguous_requirement = specfix_accuracy_evaluator.specfix_code(canonical_solution, requirement, entry_point,
+                                                                              task_id,
+                                                                              num_programs,
+                                                                              max_iterations)
 
-    mus_accuracy_evaluator.calculate_accuracy()
+    specfix_accuracy_evaluator.calculate_accuracy()
 
 
 if __name__ == "__main__":

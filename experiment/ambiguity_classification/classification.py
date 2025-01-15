@@ -1,7 +1,7 @@
 import argparse
 import jsonlines
 import configparser
-from mus.evaluator import MUSAccuracyEvaluator
+from specfix.evaluator import SpecFixAccuracyEvaluator
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     model_name = "gpt-4o"
     api_key = config['API_KEY']['openai_key']
 
-    mus_accuracy_evaluator = MUSAccuracyEvaluator(
+    specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,
         model=model_name,
         temperature=0
@@ -34,7 +34,7 @@ def main():
             for problem in reader:
                 result = {}
                 requirement = problem['question']
-                answer, reasoning = mus_accuracy_evaluator.classification(requirement)
+                answer, reasoning = specfix_accuracy_evaluator.classification(requirement)
                 result['question'] = requirement
                 result['label'] = answer
                 result['reasoning'] = reasoning
@@ -46,7 +46,7 @@ def main():
             for problem in reader:
                 result = {}
                 requirement = problem['prompt']
-                answer, reasoning = mus_accuracy_evaluator.classification(requirement)
+                answer, reasoning = specfix_accuracy_evaluator.classification(requirement)
                 result['question'] = requirement
                 result['label'] = answer
                 result['reasoning'] = reasoning

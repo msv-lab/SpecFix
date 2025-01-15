@@ -1,6 +1,6 @@
-from mus.cluster import Cluster, Clusters
-from mus.utils import execute_inputs, check_discrepancy
-from mus.model import Model
+from specfix.cluster import Cluster, Clusters
+from specfix.utils import execute_inputs, check_discrepancy
+from specfix.model import Model
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):

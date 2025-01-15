@@ -59,7 +59,7 @@ class Cluster:
         return {
             'programs_str': self.programs_str,
             'requirement': self.requirement,
-            'outputs': self.outputs if any(isinstance(i, set) for i in self.outputs) else str(self.outputs),
+            'outputs': str(self.outputs),
             'distribution': self.distribution,
             'DRS': self.DRS
         }

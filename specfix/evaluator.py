@@ -1,11 +1,11 @@
 import random
 import pandas as pd
 
-from mus.prompting import *
-from mus.model import Model
-from mus.utils import construct_test_case, unwrap
+from specfix.prompting import *
+from specfix.model import Model
+from specfix.utils import construct_test_case, unwrap
 
-class MUSAccuracyEvaluator:
+class SpecFixAccuracyEvaluator:
     def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
         self.differential_tester = differential_tester
         self.model = Model(model, api_key, temperature)
@@ -102,7 +102,7 @@ class MUSAccuracyEvaluator:
         assumption = unwrap(response, "assumptions")
         return code, fact, assumption
 
-    def mus_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
+    def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1
         requirement = initial_requirement
         test_inputs = self.generate_tests(requirement)
@@ -169,7 +169,7 @@ class MUSAccuracyEvaluator:
         """Calculate and print accuracy metrics"""
         accuracy = self.successful_runs / self.total_runs if self.total_runs > 0 else 0
 
-        print("\n--- MUS Computation Accuracy ---")
+        print("\n--- SpecFix Computation Accuracy ---")
         print(f"Total Runs: {self.total_runs}")
         print(f"Successful Runs: {self.successful_runs}")
         print(f"Accuracy: {accuracy:.2%}")

@@ -6,6 +6,7 @@ from mus.evaluator import MUSAccuracyEvaluator
 from mus.utils import construct_requirement
 from mus.correlation import point_biserial_correlation
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset", dest="dataset",
@@ -75,8 +76,9 @@ def main():
                     writer.write(result)
                 entropy_list.append(clusters.entropy)
     elif dataset == "humaneval" or dataset == "mbpp":
-        with jsonlines.open(dataset_path) as reader, jsonlines.open(
-                dataset_path.replace(".jsonl", "_classification.jsonl"), mode='w', flush=True) as writer:
+        with jsonlines.open(dataset_path) as reader, jsonlines.open(f"{dataset}_{str(threshold)}_vanilla_repair.jsonl",
+                                                                    mode='w',
+                                                                    flush=True) as writer:
             for i, problem in enumerate(reader):
                 requirement = problem['prompt']
                 entry_point = problem['entry_point']

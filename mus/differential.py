@@ -6,6 +6,7 @@ from mus.model import Model
 def differential_tester(generated_programs, test_inputs, entry_point):
     # Store test results
     program_clusters = Clusters()
+    program_clusters.set_test_inputs(test_inputs)
     # Test each generated program against the reference
     for program_str in generated_programs:
         result_list = execute_inputs(program_str, test_inputs, entry_point)

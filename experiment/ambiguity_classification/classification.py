@@ -29,8 +29,8 @@ def main():
     dataset_path = options.dataset_path
 
     if dataset == "taco_lite":
-        with jsonlines.open(dataset_path) as reader, jsonlines.open(
-                dataset_path.replace(".jsonl", "_classification.jsonl"), mode='w', flush=True) as writer:
+        with jsonlines.open(dataset_path) as reader, jsonlines.open(f"{dataset}_classification.jsonl", mode='w',
+                                                                    flush=True) as writer:
             for problem in reader:
                 result = {}
                 requirement = problem['question']
@@ -41,8 +41,8 @@ def main():
                 print(result)
                 writer.write(result)
     elif dataset == "humaneval" or dataset == "mbpp":
-        with jsonlines.open(dataset_path) as reader, jsonlines.open(
-                dataset_path.replace(".jsonl", "_classification.jsonl"), mode='w', flush=True) as writer:
+        with jsonlines.open(dataset_path) as reader, jsonlines.open(f"{dataset}_classification.jsonl", mode='w',
+                                                                    flush=True) as writer:
             for problem in reader:
                 result = {}
                 requirement = problem['prompt']

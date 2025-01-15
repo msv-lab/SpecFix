@@ -5,12 +5,16 @@ class Clusters:
     def __init__(self):
         self.clusters = []
         self.entropy = 0
+        self.test_inputs = []
 
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
 
     def get_clusters(self):
         return self.clusters
+
+    def set_test_inputs(self, test_inputs):
+        self.test_inputs = test_inputs
 
     def calculate_distribution(self):
         total = sum([len(cluster.programs_str) for cluster in self.clusters])
@@ -25,7 +29,9 @@ class Clusters:
     def serialize(self):
         return {
             'clusters': [cluster.serialize() for cluster in self.clusters],
-            'entropy': self.entropy
+            'entropy': self.entropy,
+            'test_inputs': self.test_inputs if any(isinstance(i, set) for i in self.test_inputs) else str(
+                self.test_inputs)
         }
 
 
@@ -40,21 +46,20 @@ class Cluster:
     def add_program_str(self, program_str):
         self.programs_str.append(program_str)
 
-
     def set_requirement(self, requirement):
         self.requirement = requirement
 
     def set_DRS(self, DRS):
         self.DRS = DRS
 
-    def set_probability(self, probability):
-        self.distribution = probability
+    def set_distribution(self, distribution):
+        self.distribution = distribution
 
     def serialize(self):
         return {
             'programs_str': self.programs_str,
             'requirement': self.requirement,
-            'outputs': self.outputs,
+            'outputs': self.outputs if any(isinstance(i, set) for i in self.outputs) else str(self.outputs),
             'distribution': self.distribution,
             'DRS': self.DRS
         }

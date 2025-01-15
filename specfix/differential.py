@@ -10,15 +10,14 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     # Test each generated program against the reference
     for program_str in generated_programs:
         result_list = execute_inputs(program_str, test_inputs, entry_point)
-        result_tuple = tuple(result_list)
 
         # Use class Cluster to add program to cluster
         for cluster in program_clusters.get_clusters():
-            if result_tuple == cluster.outputs:
+            if result_list == cluster.outputs:
                 cluster.add_program_str(program_str)
                 break
         else:
-            new_cluster = Cluster(result_tuple)
+            new_cluster = Cluster(result_list)
             new_cluster.add_program_str(program_str)
             program_clusters.add_cluster(new_cluster)
     program_clusters.calculate_distribution()
@@ -32,3 +31,13 @@ def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=
     if answer.startswith("Yes"):
         return True, explanation
     return False, explanation
+
+
+def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point):
+    canonical_outputs = execute_inputs(canonical_solution, test_inputs, entry_point)
+    clusters.set_canonical_outputs(canonical_outputs)
+    for cluster in clusters.get_clusters():
+        if canonical_outputs == cluster.outputs:
+            cluster.align()
+        else:
+            cluster.not_align()

@@ -6,6 +6,7 @@ class Clusters:
         self.clusters = []
         self.entropy = 0
         self.test_inputs = []
+        self.canonical_outputs = []
 
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
@@ -15,6 +16,9 @@ class Clusters:
 
     def set_test_inputs(self, test_inputs):
         self.test_inputs = test_inputs
+
+    def set_canonical_outputs(self, canonical_outputs):
+        self.canonical_outputs = canonical_outputs
 
     def calculate_distribution(self):
         total = sum([len(cluster.programs_str) for cluster in self.clusters])
@@ -39,6 +43,7 @@ class Cluster:
     def __init__(self, outputs):
         self.programs_str = []
         self.requirement = []
+        self.is_align_req = None
         self.outputs = outputs
         self.distribution = 0
         self.DRS = None
@@ -55,11 +60,21 @@ class Cluster:
     def set_distribution(self, distribution):
         self.distribution = distribution
 
+    def align(self):
+        self.is_align_req = True
+
+    def not_align(self):
+        self.is_align_req = False
+
+    def get_alignment(self):
+        return self.is_align_req
+
     def serialize(self):
         return {
             'programs_str': self.programs_str,
             'requirement': self.requirement,
             'outputs': str(self.outputs),
             'distribution': self.distribution,
+            'is_align_req': self.is_align_req,
             'DRS': self.DRS
         }

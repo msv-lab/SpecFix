@@ -16,8 +16,10 @@ def timeout(seconds):
                 try:
                     return future.result(timeout=seconds)
                 except concurrent.futures.TimeoutError:
-                    raise TimeoutError(f"Function '{func.__name__}' timed out after {seconds} seconds")
+                    return f"Function '{func.__name__}' timed out after {seconds} seconds"
+
         return wrapper
+
     return decorator
 
 
@@ -34,7 +36,7 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
-@timeout(10)
+@timeout(5)
 def execute(func_str, func_args, entry_point):
     try:
         local_env = {}

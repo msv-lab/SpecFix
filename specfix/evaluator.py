@@ -5,6 +5,7 @@ from specfix.prompting import *
 from specfix.model import Model
 from specfix.utils import construct_test_case, unwrap
 
+
 class SpecFixAccuracyEvaluator:
     def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
         self.differential_tester = differential_tester
@@ -59,6 +60,12 @@ class SpecFixAccuracyEvaluator:
         print("REPAIR REQUIREMENTS")
         response = self.model.get_response(instruction_repair_requirement,
                                            prompt_repair_requirement(requirements, answer))
+        return unwrap(response, "requirement")
+
+    def vanilla_repair_requirements(self, requirements):
+        print("VANILLA REPAIR REQUIREMENTS")
+        response = self.model.get_response(instruction_vanilla_repair,
+                                           prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
 
     def find_discrepancy_DRS(self, requirements, clusters):
@@ -202,9 +209,3 @@ class SpecFixAccuracyEvaluator:
         answer = unwrap(response, "answer")
         reason = unwrap(response, "reasoning")
         return answer, reason
-
-    def vanilla_repair(self, requirement):
-        print("VANILLA REPAIR")
-        response = self.model.get_response(instruction_vanilla_repair,
-                                           prompt_vanilla_repair(requirement))
-        return unwrap(response, "requirement")

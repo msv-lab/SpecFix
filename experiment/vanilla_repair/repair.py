@@ -1,5 +1,6 @@
 import argparse
 import random
+import concurrent.futures
 import jsonlines
 import configparser
 
@@ -14,7 +15,7 @@ def parse_problem(problem, dataset):
         requirement = construct_requirement(problem['question'], problem['starter_code'])
         canonical_solution = random.choice(problem['solutions'])
     else:
-        requirement = problem['prompt']
+        requirement = problem['requirement']
         canonical_solution = problem['canonical_solution']
     entry_point = problem['entry_point']
     return requirement, canonical_solution, entry_point
@@ -22,11 +23,15 @@ def parse_problem(problem, dataset):
 
 def generate_and_test(mus_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs):
     generated_programs = []
-    for _ in range(n_programs):
-        prog = mus_evaluator.generate_programs(requirement)
-        generated_programs.append(prog)
-        print(prog)
 
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(mus_evaluator.generate_programs, requirement)
+                   for _ in range(n_programs)]
+        for future in concurrent.futures.as_completed(futures):
+            prog = future.result()
+            generated_programs.append(prog)
+
+    print("Differential Testing")
     clusters = differential_tester(generated_programs, test_inputs, entry_point)
     ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
     return clusters
@@ -40,6 +45,7 @@ def main():
                         help="Path to dataset")
     parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
     parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
+    parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
 
     options = parser.parse_args()
 
@@ -60,17 +66,18 @@ def main():
     dataset_path = options.dataset_path
     n_programs = options.number
     threshold = options.threshold
+    wo_example = "_woe" if options.without_example else ""
     entropy_list = []
 
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}_{str(threshold)}_vanilla_repair.jsonl"
+    output_file = f"{dataset}_{str(threshold)}{wo_example}_vanilla_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
             print(f"Case {i}: {requirement}")
 
             test_inputs = mus_accuracy_evaluator.generate_tests(requirement)
-
+            print(f"Test inputs: {test_inputs}")
             clusters = generate_and_test(
                 mus_evaluator=mus_accuracy_evaluator,
                 requirement=requirement,
@@ -79,9 +86,9 @@ def main():
                 canonical_solution=canonical_solution,
                 n_programs=n_programs
             )
-
+            print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.entropy > threshold:
-                repaired_requirement = mus_accuracy_evaluator.repair_requirements(requirement, clusters)
+                repaired_requirement = mus_accuracy_evaluator.vanilla_repair_requirements(requirement)
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(
@@ -106,7 +113,7 @@ def main():
             entropy_list.append(clusters.entropy)
 
     with jsonlines.open(f"{dataset}_correlation.jsonl", mode='w', flush=True) as writer, \
-            jsonlines.open(f"../../experiment/ambiguity_classification/{dataset}_pilot.jsonl") as pilot:
+            jsonlines.open(f"../../experiment/ambiguity_classification/{dataset}{wo_example}_pilot.jsonl") as pilot:
         labels = [problem['label'] for problem in pilot]
         correlation = point_biserial_correlation(entropy_list, labels)
         result = {

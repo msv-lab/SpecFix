@@ -53,7 +53,7 @@ def main():
             for i, obj in enumerate(reader):
                 starter_code = obj['starter_code']
                 entry_point = obj['entry_point']
-                requirement = obj['question']
+                requirement = obj['requirement']
                 requirement = construct_requirement(requirement, starter_code)
                 canonical_solution = transform_code(random.choice(obj['solutions']))
                 task_id = i
@@ -69,7 +69,7 @@ def main():
         problems = get_human_eval_plus() if dataset.lower() == "humaneval" else get_mbpp_plus()
         for problem in problems:
             task_id = problem['task_id']
-            requirement = problem['prompt']
+            requirement = problem['requirement']
             canonical_solution = problem['canonical_solution']
             entry_point = problem['entry_point']
             if oracle == "code":

@@ -32,17 +32,17 @@ def main():
     if dataset == "taco_lite":
         with jsonlines.open(dataset_path) as reader:
             for problem in reader:
-                requirement = problem['question']
+                requirement = problem['requirement']
                 print(mus_accuracy_evaluator.generate_facts(requirement))
     elif dataset == "humaneval":
         humaneval_problem = get_human_eval_plus()
         for problem in humaneval_problem:
-            requirement = humaneval_problem[problem]["prompt"]
+            requirement = humaneval_problem[problem]["requirement"]
             print(mus_accuracy_evaluator.generate_facts(requirement))
     elif dataset == "mbpp":
         mbpp_problem = get_mbpp_plus()
         for problem in mbpp_problem:
-            requirement = mbpp_problem[problem]["prompt"]
+            requirement = mbpp_problem[problem]["requirement"]
             print(mus_accuracy_evaluator.generate_facts(requirement))
 
 

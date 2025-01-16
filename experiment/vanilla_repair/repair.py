@@ -12,7 +12,7 @@ from specfix.correlation import point_biserial_correlation
 
 def parse_problem(problem, dataset):
     if dataset == "taco_lite":
-        requirement = construct_requirement(problem['question'], problem['starter_code'])
+        requirement = construct_requirement(problem['requirement'], problem['starter_code'])
         canonical_solution = random.choice(problem['solutions'])
     else:
         requirement = problem['requirement']
@@ -70,9 +70,11 @@ def main():
     entropy_list = []
 
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}_{str(threshold)}{wo_example}_vanilla_repair.jsonl"
+    output_file = f"{dataset}_{str(threshold*100)}{wo_example}_vanilla_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
+            if i < 39:
+                continue
             requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
             print(f"Case {i}: {requirement}")
 
@@ -100,7 +102,6 @@ def main():
                     n_programs=n_programs
                 )
                 entropy_diff = clusters.entropy - repaired_clusters.entropy
-
                 result = {
                     'original_requirement': requirement,
                     'original_clusters': clusters.serialize(),
@@ -108,12 +109,16 @@ def main():
                     'repaired_clusters': repaired_clusters.serialize(),
                     'entropy_diff': entropy_diff
                 }
-                writer.write(result)
-
+            else:
+                result = {
+                    'original_requirement': requirement,
+                    'original_clusters': clusters.serialize(),
+                }
+            writer.write(result)
             entropy_list.append(clusters.entropy)
 
-    with jsonlines.open(f"{dataset}_correlation.jsonl", mode='w', flush=True) as writer, \
-            jsonlines.open(f"../../experiment/ambiguity_classification/{dataset}{wo_example}_pilot.jsonl") as pilot:
+    with jsonlines.open(f"{dataset}{wo_example}_pilot_correlation.jsonl", mode='w', flush=True) as writer, \
+            jsonlines.open(f"../ambiguity_classification/{dataset}_pilot_classification.jsonl") as pilot:
         labels = [problem['label'] for problem in pilot]
         correlation = point_biserial_correlation(entropy_list, labels)
         result = {

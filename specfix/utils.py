@@ -1,26 +1,10 @@
 import random
+import signal
 import types
 import re
-import functools
-import concurrent.futures
+from tqdm import trange
 from specfix.prompting import instruction_check_code_generation, prompt_check_code_generation
 from specfix.solution_transformer import remove_comments_and_asserts
-
-
-def timeout(seconds):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(func, *args, **kwargs)
-                try:
-                    return future.result(timeout=seconds)
-                except concurrent.futures.TimeoutError:
-                    return f"Function '{func.__name__}' timed out after {seconds} seconds"
-
-        return wrapper
-
-    return decorator
 
 
 def post_process(text: str) -> str:
@@ -36,19 +20,43 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
+def timeout(timeout):
+    def timeout_handler(signum, frame):
+        raise TimeoutError("Function call timed out")
+
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            original_handler = signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(timeout)
+            try:
+                result = func(*args, **kwargs)
+            except TimeoutError:
+                return f"Timeout {timeout}s"
+            finally:
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM, original_handler)
+            return result
+
+        return wrapper
+
+    return decorator
+
+
 @timeout(5)
 def execute(func_str, func_args, entry_point):
     try:
         local_env = {}
         exec(func_str, local_env)
+
         if entry_point in local_env:
             func = local_env[entry_point]
         else:
-            target_func = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
-            if len(target_func) == 1:
-                func = target_func[0]
+            target_funcs = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
+            if len(target_funcs) == 1:
+                func = target_funcs[0]
             else:
-                func = random.choice(target_func)
+                func = random.choice(target_funcs)
+
         return func(*func_args)
     except Exception as e:
         return repr(e)
@@ -56,8 +64,8 @@ def execute(func_str, func_args, entry_point):
 
 def execute_inputs(func_str, inputs_list, entry_point):
     results = []
-    for inputs in inputs_list:
-        results.append(execute(func_str, inputs, entry_point))
+    for i in trange(len(inputs_list)):
+        results.append(execute(func_str, inputs_list[i], entry_point))
     return results
 
 
@@ -95,7 +103,8 @@ def check_discrepancy(requirement, programs, inp, outputs, model):
 
 def unwrap(string, label):
     string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
-        0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(f"<{label}>") < string.index(
+        0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(
+        f"<{label}>") < string.index(
         f"</{label}>") else string
     if "```" in string:
         string = post_process(string)

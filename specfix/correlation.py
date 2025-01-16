@@ -5,7 +5,7 @@ def point_biserial_correlation(x, y):
     # Convert inputs to NumPy arrays
     x = np.asarray(x, dtype=float)
 
-    y = [int(label) for label in y]
+    y = [1 if i == "Yes" else 0 for i in y]
     y = np.asarray(y, dtype=float)
 
     # Basic checks

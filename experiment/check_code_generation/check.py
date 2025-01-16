@@ -29,11 +29,11 @@ def process_problems(
             if i >= max_count:
                 break
 
-            requirement = problem['question'] if 'question' in problem else problems[problem]['prompt']
+            requirement = problem['requirement'] if 'requirement' in problem else problems[problem]['prompt']
             entry_point = problem['entry_point'] if 'entry_point' in problem else problems[problem]['entry_point']
             # 若是 TACO 题目，也可能在 problem 里存了 starter_code，需要构造 requirement
-            if 'question' in problem and 'starter_code' in problem:
-                requirement = construct_requirement(problem['question'], problem['starter_code'])
+            if 'requirement' in problem and 'starter_code' in problem:
+                requirement = construct_requirement(problem['requirement'], problem['starter_code'])
 
             print(f"Case {i}: {requirement}")
 

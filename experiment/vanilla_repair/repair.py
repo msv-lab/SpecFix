@@ -119,7 +119,10 @@ def main():
     with jsonlines.open(f"{dataset}{wo_example}_pilot_correlation.jsonl", mode='w', flush=True) as writer, \
             jsonlines.open(f"../ambiguity_classification/{dataset}_pilot_classification.jsonl") as pilot:
         labels = [1 if problem['label'] == 'Yes' else 0 for problem in pilot]
+
+        # The point biserial correlation is used to measure the relationship between a binary variable, x, and a continuous variable, y. Like other correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. Correlations of -1 or +1 imply a determinative relationship.
         correlation, p_value = pointbiserialr(entropy_list, labels)
+
         result = {
             'entropy': entropy_list,
             'labels': labels,

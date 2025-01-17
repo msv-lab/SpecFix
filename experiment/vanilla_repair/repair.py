@@ -3,11 +3,10 @@ import random
 import concurrent.futures
 import jsonlines
 import configparser
-
+from scipy.stats import pointbiserialr
 from specfix.differential import differential_tester, ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_requirement
-from specfix.correlation import point_biserial_correlation
 
 
 def parse_problem(problem, dataset):
@@ -70,7 +69,7 @@ def main():
     entropy_list = []
 
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}_{str(threshold*100)}{wo_example}_vanilla_repair.jsonl"
+    output_file = f"{dataset}_{str(threshold * 100)}{wo_example}_vanilla_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             if i < 39:
@@ -119,12 +118,13 @@ def main():
 
     with jsonlines.open(f"{dataset}{wo_example}_pilot_correlation.jsonl", mode='w', flush=True) as writer, \
             jsonlines.open(f"../ambiguity_classification/{dataset}_pilot_classification.jsonl") as pilot:
-        labels = [problem['label'] for problem in pilot]
-        correlation = point_biserial_correlation(entropy_list, labels)
+        labels = [1 if problem['label'] == 'Yes' else 0 for problem in pilot]
+        correlation, p_value = pointbiserialr(entropy_list, labels)
         result = {
             'entropy': entropy_list,
             'labels': labels,
-            'correlation': correlation
+            'correlation': correlation,
+            'p_value': p_value
         }
         writer.write(result)
 

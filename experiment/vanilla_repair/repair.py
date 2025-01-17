@@ -20,11 +20,11 @@ def parse_problem(problem, dataset):
     return requirement, canonical_solution, entry_point
 
 
-def generate_and_test(mus_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs):
+def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs):
     generated_programs = []
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(mus_evaluator.generate_programs, requirement)
+        futures = [executor.submit(specfix_evaluator.generate_programs, requirement)
                    for _ in range(n_programs)]
         for future in concurrent.futures.as_completed(futures):
             prog = future.result()
@@ -54,7 +54,7 @@ def main():
     model_name = "qwen2.5-coder-14b-instruct"
     api_key = config['API_KEY']['qwen_key']
 
-    mus_accuracy_evaluator = SpecFixAccuracyEvaluator(
+    specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,
@@ -72,15 +72,13 @@ def main():
     output_file = f"{dataset}_{str(threshold * 100)}{wo_example}_vanilla_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            if i < 39:
-                continue
             requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
             print(f"Case {i}: {requirement}")
 
-            test_inputs = mus_accuracy_evaluator.generate_tests(requirement)
+            test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
             print(f"Test inputs: {test_inputs}")
             clusters = generate_and_test(
-                mus_evaluator=mus_accuracy_evaluator,
+                specfix_evaluator=specfix_accuracy_evaluator,
                 requirement=requirement,
                 test_inputs=test_inputs,
                 entry_point=entry_point,
@@ -89,11 +87,11 @@ def main():
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.entropy > threshold:
-                repaired_requirement = mus_accuracy_evaluator.vanilla_repair_requirements(requirement)
+                repaired_requirement = specfix_accuracy_evaluator.vanilla_repair_requirements(requirement)
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(
-                    mus_evaluator=mus_accuracy_evaluator,
+                    specfix_evaluator=specfix_accuracy_evaluator,
                     requirement=repaired_requirement,
                     test_inputs=test_inputs,
                     entry_point=entry_point,

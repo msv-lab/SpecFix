@@ -3,9 +3,9 @@ import random
 import configparser
 import argparse
 
-from mus.utils import construct_requirement
-from mus.evaluator import MUSAccuracyEvaluator
-from mus.differential import differential_tester, model_verifier
+from specfix.utils import construct_requirement
+from specfix.evaluator import SpecFixAccuracyEvaluator
+from specfix.differential import differential_tester, model_verifier
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 
@@ -13,7 +13,7 @@ def process_problems(
         problems,
         output_ambiguity_file_path,
         output_incorrect_file_path,
-        mus_accuracy_evaluator,
+        specfix_accuracy_evaluator,
         verifier_name,
         verifier_api_key,
         N=10,
@@ -29,19 +29,19 @@ def process_problems(
             if i >= max_count:
                 break
 
-            requirement = problem['question'] if 'question' in problem else problems[problem]['prompt']
+            requirement = problem['requirement'] if 'requirement' in problem else problems[problem]['prompt']
             entry_point = problem['entry_point'] if 'entry_point' in problem else problems[problem]['entry_point']
             # 若是 TACO 题目，也可能在 problem 里存了 starter_code，需要构造 requirement
-            if 'question' in problem and 'starter_code' in problem:
-                requirement = construct_requirement(problem['question'], problem['starter_code'])
+            if 'requirement' in problem and 'starter_code' in problem:
+                requirement = construct_requirement(problem['requirement'], problem['starter_code'])
 
             print(f"Case {i}: {requirement}")
 
-            test_inputs = mus_accuracy_evaluator.generate_tests(requirement)
+            test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
 
             generated_programs = []
             for n in range(N):
-                prog = mus_accuracy_evaluator.generate_programs(requirement)
+                prog = specfix_accuracy_evaluator.generate_programs(requirement)
                 generated_programs.append(prog)
                 print(prog)
 
@@ -124,7 +124,7 @@ def main():
     verifier_name = "o1-mini"
     verifier_api_key = config['API_KEY']['openai_key']
 
-    mus_accuracy_evaluator = MUSAccuracyEvaluator(
+    specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,
@@ -140,7 +140,7 @@ def main():
                 reader,
                 output_ambiguity_file_path="taco_ambiguity.jsonl",
                 output_incorrect_file_path="taco_incorrect_generation.jsonl",
-                mus_accuracy_evaluator=mus_accuracy_evaluator,
+                specfix_accuracy_evaluator=specfix_accuracy_evaluator,
                 verifier_name=verifier_name,
                 verifier_api_key=verifier_api_key,
                 N=10,
@@ -153,7 +153,7 @@ def main():
             problems,
             output_ambiguity_file_path="humaneval_ambiguity.jsonl",
             output_incorrect_file_path="humaneval_incorrect_generation.jsonl",
-            mus_accuracy_evaluator=mus_accuracy_evaluator,
+            specfix_accuracy_evaluator=specfix_accuracy_evaluator,
             verifier_name=verifier_name,
             verifier_api_key=verifier_api_key,
             N=10,
@@ -166,7 +166,7 @@ def main():
             problems,
             output_ambiguity_file_path="mbpp_ambiguity.jsonl",
             output_incorrect_file_path="mbpp_incorrect_generation.jsonl",
-            mus_accuracy_evaluator=mus_accuracy_evaluator,
+            specfix_accuracy_evaluator=specfix_accuracy_evaluator,
             verifier_name=verifier_name,
             verifier_api_key=verifier_api_key,
             N=10,

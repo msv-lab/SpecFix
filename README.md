@@ -1,6 +1,6 @@
-# MUS
+# SpecFix
 
-This repository provides a Python-based tool for **Minimal Unambiguous Requirements**(MUS) using language model APIs (
+This repository provides a Python-based tool for **Specification Fix**(SpecFix) using language model APIs (
 e.g., OpenAI or Qwen). It contains an end-to-end workflow for:
 
 1. Generating multiple candidate programs for a given requirement.
@@ -29,8 +29,8 @@ You can find TACO_lite in `dataset` folder.
 
 1. Clone the repository (or copy the script) to your local environment:
    ```bash
-   git clone https://github.com/msv-lab/mus.git
-   cd mus
+   git clone https://github.com/msv-lab/SpecFix.git
+   cd SpecFix
    ```
 
 2. Install required dependencies:

@@ -1,9 +1,11 @@
 import argparse
+import os
 import random
 import concurrent.futures
 import jsonlines
 import configparser
-from scipy.stats import pointbiserialr
+from os.path import abspath, dirname
+
 from specfix.differential import differential_tester, ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_requirement
@@ -49,7 +51,7 @@ def main():
     options = parser.parse_args()
 
     config = configparser.ConfigParser()
-    config.read('../../.config')
+    config.read('.config')
 
     model_name = "qwen2.5-coder-14b-instruct"
     api_key = config['API_KEY']['qwen_key']
@@ -68,8 +70,14 @@ def main():
     wo_example = "_woe" if options.without_example else ""
     entropy_list = []
 
+    cwd = dirname(abspath(__file__))
+    model_name = model_name.replace(".", "")
+
+    if not os.path.exists(f"{cwd}/{model_name}"):
+        os.mkdir(f"{cwd}/{model_name}")
+
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}_{str(threshold * 100)}{wo_example}_vanilla_repair.jsonl"
+    output_file = f"{cwd}/{model_name}/{dataset}_{str(threshold * 100)}{wo_example}_vanilla_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
@@ -113,21 +121,6 @@ def main():
                 }
             writer.write(result)
             entropy_list.append(clusters.entropy)
-
-    with jsonlines.open(f"{dataset}{wo_example}_pilot_correlation.jsonl", mode='w', flush=True) as writer, \
-            jsonlines.open(f"../ambiguity_classification/{dataset}_pilot_classification.jsonl") as pilot:
-        labels = [1 if problem['label'] == 'Yes' else 0 for problem in pilot]
-
-        # The point biserial correlation is used to measure the relationship between a binary variable, x, and a continuous variable, y. Like other correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. Correlations of -1 or +1 imply a determinative relationship.
-        correlation, p_value = pointbiserialr(entropy_list, labels)
-
-        result = {
-            'entropy': entropy_list,
-            'labels': labels,
-            'correlation': correlation,
-            'p_value': p_value
-        }
-        writer.write(result)
 
 
 if __name__ == "__main__":

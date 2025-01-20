@@ -20,7 +20,7 @@ class SpecFixAccuracyEvaluator:
     def generate_programs(self, requirements):
         print("GENERATE PROGRAMS")
         response = self.model.get_response(instruction_generate_code,
-                                           prompt_generate_code(requirements), 0.8)
+                                           prompt_generate_code(requirements), 1)
         code = unwrap(response, "code")
         if code == "":
             return self.generate_programs(requirements)

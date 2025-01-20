@@ -46,15 +46,19 @@ def main():
                         help="Path to dataset")
     parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
     parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
+    parser.add_argument("-m", "--model", dest="model")
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
 
     options = parser.parse_args()
 
     config = configparser.ConfigParser()
     config.read('.config')
+    model_name = options.model
+    if "qwen" in model_name:
 
-    model_name = "qwen2.5-coder-14b-instruct"
-    api_key = config['API_KEY']['qwen_key']
+        api_key = config['API_KEY']['qwen_key']
+    elif "gpt3" in model_name or "o1" in model_name:
+        api_key = config['API_KEY']['openai_key']
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,

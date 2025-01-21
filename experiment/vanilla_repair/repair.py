@@ -52,10 +52,10 @@ def main():
     options = parser.parse_args()
 
     config = configparser.ConfigParser()
-    config.read('.config')
+    config.read('../../.config')
     model_name = options.model
+    api_key = ""
     if "qwen" in model_name:
-
         api_key = config['API_KEY']['qwen_key']
     elif "gpt3" in model_name or "o1" in model_name:
         api_key = config['API_KEY']['openai_key']
@@ -81,9 +81,11 @@ def main():
         os.mkdir(f"{cwd}/{model_name}")
 
     # Open dataset and output JSONL in one place
-    output_file = f"{cwd}/{model_name}/{dataset}_{str(threshold * 100)}{wo_example}_vanilla_repair.jsonl"
+    output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_vanilla_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
+            if i < 35:
+                continue
             requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
             print(f"Case {i}: {requirement}")
 

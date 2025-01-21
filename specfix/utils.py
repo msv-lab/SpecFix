@@ -118,3 +118,11 @@ def unwrap(string, label):
 
 def construct_requirement(requirement, starter_code):
     return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""
+
+
+def extract_failed_test(test_inputs, outputs, canonical_outputs):
+    result = []
+    for i in range(len(test_inputs)):
+        if outputs[i] != canonical_outputs[i]:
+            result.append([test_inputs[i], outputs[i], canonical_outputs[i]])
+    return result

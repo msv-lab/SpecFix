@@ -459,89 +459,6 @@ Program 1 removes duplicates before sorting, while Program 2 sorts first and the
 """
 
 
-instruction_generate_fact = "You are an assistant that generates facts and assumptions based on the requirement."
-
-
-def prompt_generate_fact(requirement):
-    return f"""
-You are tasked with implementing a Python function based on a given requirement. Think step-by-step. Your response should include:
-
-1. Code: The Python function, wrapped in <code></code> tags.
-2. Facts and Assumptions: Facts are information can be derived explicitly from the requirement and are used in code implementation. Wrap facts in <facts></facts>` tags. Assumptions are information not explicitly stated but inferred from context or common practice and are used in code implementation. Wrap assumptions in `<assumptions></assumptions>` tags.
-
-# Example:
-
-## Requirement
-Write a function that sorts an array while removing consecutive duplicates.
-
-## Response:
-<code>
-def sort_remove_consecutive_duplicates(arr):
-    return sorted(set(arr), key=arr.index)
-</code>
-
-<facts>
-1. The function removes duplicates from the input array.
-2. The function sorts the array
-</facts>
-
-<assumptions>
-1. The function sorts the array in order of appearance.
-2. The function removes duplicates first and then sorts the array.
-</assumptions>
-
-# Your Task:
-
-## Requirement
-{requirement}
-
-## Code
-
-## Facts
-"""
-
-
-def supply_facts(requirement, code, facts, assumption):
-    return f"""
-Given a requirement, corresponding code, facts used in implementation, and assumptions used in implementation, supply additional facts that can be explicitly derived from the requirement and used in code implementation. Supply the additional assumptions that can be inferred from the requirement and used in code implementation. Wrap the additional facts in <facts></facts> tags and the additional assumptions in <assumptions></assumptions> tags. Here is an example:
-
-# Example
-
-## Requirement
-
-Write a function that sorts an array while removing consecutive duplicates.
-
-## Code
-
-def sort_remove_consecutive_duplicates(arr):
-    return sorted(set(arr), key=arr.index)
-
-## Facts
-
-1. The function removes duplicates from the input array.
-2. The function sorts the array.
-
-## Assumptions
-
-1. The function sorts the array in order of appearance.
-2. The function removes duplicates first and then sorts the array.
-
-## Additional Facts
-
-<facts>
-1. The function removes only consecutive duplicates.
-2. The function returns a list.
-</facts>
-
-## Additional Assumptions
-
-<assumptions>
-1. The input array is not empty.
-2. The input array contains integers.
-</assumptions>    
-"""
-
-
 instruction_classification = "You are an assistant that classifies the requirement whether it is ambiguous or not."
 
 
@@ -569,4 +486,44 @@ def prompt_vanilla_repair(requirement):
     return f"""
 Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap the repaired requirement in <requirement></requirement> tags.
 {requirement}
+"""
+
+
+instrcution_test_based_repair = "You are a programming assistant specialized in debugging and fixing Python code."
+
+
+def prompt_test_based_repair(requirement, code, inp, output, canonical_output):
+    return f"""
+You are a coding assistant specialized in repairing buggy Python programs.
+
+Below is a Python program along with:
+1. Task requirement that describes the program's intended functionality and input/output requirements.
+2. A test input.
+3. The output the buggy program currently produces for that test input.
+4. The correct (canonical) output expected for the same test input.
+
+Please:
+• Understand the task requirement and python program.
+• Compare the actual output with the canonical output to determine why the program is faulty. Identify logical errors, syntax issues, or edge-case handling flaws.
+• Provide a corrected version of the Python code that, when run on the given test input, will produce the correct (canonical) output.
+• Keep the structure and logic of the original code as much as possible unless changes are necessary for correctness.
+
+---
+Requirement:
+{requirement}
+
+Buggy Code:
+{code}
+
+Test Input:
+{inp}
+
+Erroneous Output (Current):
+{output}
+
+Correct (Canonical) Output (Expected):
+{canonical_output}
+---
+
+Please return the repaired Python code, wrapped in <code></code> tags.
 """

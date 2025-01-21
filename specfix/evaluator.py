@@ -82,11 +82,6 @@ class SpecFixAccuracyEvaluator:
                                            )
         return unwrap(response, "discrepancy")
 
-    def find_discrepancy_fact(self, requirements, code, facts, assumptions, inp, outputs):
-        print("FIND DISCREPANCY WITH FACT")
-        # response = self.model.get_response(instruction_find_discrepancy_fact,
-        # return unwrap(response, "discrepancy")
-
     def simulate_answer(self, requirement, program, inputs, question):
         tests = construct_test_case(program, inputs)
         print("SIMULATE ANSWER")
@@ -99,15 +94,6 @@ class SpecFixAccuracyEvaluator:
         response = self.model.get_response(instruction_minimize_requirement,
                                            prompt_minimize_requirement(ori_req, repaired_req))
         return unwrap(response, "requirement")
-
-    def generate_facts(self, requirement):
-        print("GENERATE FACTS")
-        response = self.model.get_response(instruction_generate_fact,
-                                           prompt_generate_fact(requirement))
-        code = unwrap(response, "code")
-        fact = unwrap(response, "facts")
-        assumption = unwrap(response, "assumptions")
-        return code, fact, assumption
 
     def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1

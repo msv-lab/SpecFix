@@ -47,4 +47,4 @@ def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
         else:
             result, ratio = check_failed_test(test_inputs, cluster.outputs, canonical_outputs)
             cluster.set_failed_tests(result)
-            cluster.set_semantic_ratio(ratio)
+            cluster.set_test_consistency(ratio)

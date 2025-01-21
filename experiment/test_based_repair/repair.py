@@ -98,34 +98,7 @@ def main():
                 n_programs=n_programs
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
-            if clusters.entropy > threshold:
-                repaired_requirement = specfix_accuracy_evaluator.vanilla_repair_requirements(requirement)
-                print(f"Case {i}: Repaired requirement: {repaired_requirement}")
-
-                repaired_clusters = generate_and_test(
-                    specfix_evaluator=specfix_accuracy_evaluator,
-                    requirement=repaired_requirement,
-                    test_inputs=test_inputs,
-                    entry_point=entry_point,
-                    canonical_solution=canonical_solution,
-                    n_programs=n_programs
-                )
-                entropy_diff = clusters.entropy - repaired_clusters.entropy
-                result = {
-                    'original_requirement': requirement,
-                    'original_clusters': clusters.serialize(),
-                    'repaired_requirement': repaired_requirement,
-                    'repaired_clusters': repaired_clusters.serialize(),
-                    'entropy_diff': entropy_diff
-                }
-            else:
-                result = {
-                    'original_requirement': requirement,
-                    'original_clusters': clusters.serialize(),
-                }
-            writer.write(result)
-            entropy_list.append(clusters.entropy)
-
+           # TODO: implement measure.
 
 if __name__ == "__main__":
     main()

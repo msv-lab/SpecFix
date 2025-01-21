@@ -106,7 +106,7 @@ class SpecFixAccuracyEvaluator:
         print("TEST BASED REPAIR")
         response = self.model.get_response(instruction_test_based_repair,
                                            prompt_test_based_repair(requirement, program, *test))
-        return unwrap(response, "requirement")
+        return unwrap(response, "code")
 
     def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1

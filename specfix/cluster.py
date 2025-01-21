@@ -62,7 +62,7 @@ class Cluster:
         self.is_align_ground_truth = False
         self.outputs = outputs
         self.failed_tests = []
-        self.semantic_ratio = 0
+        self.test_consistency = 0
         self.distribution = 0
         self.DRS = None
 
@@ -84,8 +84,8 @@ class Cluster:
     def set_failed_tests(self, failed_tests):
         self.failed_tests = failed_tests
 
-    def set_semantic_ratio(self, semantic_ratio):
-        self.semantic_ratio = semantic_ratio
+    def set_test_consistency(self, test_consistency):
+        self.test_consistency = test_consistency
 
     def serialize(self):
         return {

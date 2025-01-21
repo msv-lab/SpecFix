@@ -10,6 +10,7 @@ class Clusters:
         self.entropy = 0
         self.test_inputs = []
         self.canonical_outputs = []
+        self.canonical_solution = None
 
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
@@ -22,6 +23,9 @@ class Clusters:
 
     def set_canonical_outputs(self, canonical_outputs):
         self.canonical_outputs = canonical_outputs
+
+    def set_canonical_solution(self, canonical_solution):
+        self.canonical_solution = canonical_solution
 
     def calculate_distribution(self):
         total = sum([len(cluster.programs_str) for cluster in self.clusters])
@@ -38,7 +42,10 @@ class Clusters:
             'clusters': [cluster.serialize() for cluster in self.clusters],
             'entropy': self.entropy,
             'test_inputs': self.test_inputs if any(isinstance(i, set) for i in self.test_inputs) else str(
-                self.test_inputs)
+                self.test_inputs),
+            'canonical_outputs': self.canonical_outputs if any(
+                isinstance(i, set) for i in self.canonical_outputs) else str(
+                self.canonical_outputs)
         }
 
 

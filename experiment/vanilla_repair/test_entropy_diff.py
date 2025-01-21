@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 
 # Read HumanEval data
 with jsonlines.open("qwen25-coder-14b-instruct/humaneval_70_vanilla_repair.jsonl") as reader, \
-     jsonlines.open("qwen25-coder-14b-instruct/humaneval_70_woe_vanilla_repair.jsonl") as reader2:
-
+        jsonlines.open("qwen25-coder-14b-instruct/humaneval_70_woe_vanilla_repair.jsonl") as reader2:
     humaneval_original_entropy_diff = []
     humaneval_entropy = []
     humaneval_woe_entropy = []
@@ -18,8 +17,7 @@ with jsonlines.open("qwen25-coder-14b-instruct/humaneval_70_vanilla_repair.jsonl
 
 # Read MBPP data
 with jsonlines.open("qwen25-coder-14b-instruct/mbpp_70_vanilla_repair.jsonl") as reader, \
-     jsonlines.open("qwen25-coder-14b-instruct/mbpp_70_woe_vanilla_repair.jsonl") as reader2:
-
+        jsonlines.open("qwen25-coder-14b-instruct/mbpp_70_woe_vanilla_repair.jsonl") as reader2:
     mbpp_original_entropy_diff = []
     mbpp_entropy = []
     mbpp_woe_entropy = []
@@ -33,8 +31,7 @@ with jsonlines.open("qwen25-coder-14b-instruct/mbpp_70_vanilla_repair.jsonl") as
 
 # Read TACO Lite data
 with jsonlines.open("qwen25-coder-14b-instruct/taco_lite_70_vanilla_repair.jsonl") as reader, \
-     jsonlines.open("qwen25-coder-14b-instruct/taco_lite_70_woe_vanilla_repair.jsonl") as reader2:
-
+        jsonlines.open("qwen25-coder-14b-instruct/taco_lite_70_woe_vanilla_repair.jsonl") as reader2:
     taco_lite_original_entropy_diff = []
     taco_lite_entropy = []
     taco_lite_woe_entropy = []
@@ -46,35 +43,41 @@ with jsonlines.open("qwen25-coder-14b-instruct/taco_lite_70_vanilla_repair.jsonl
             obj["original_clusters"]["entropy"] - obj2["original_clusters"]["entropy"]
         )
 
+print(
+    f"HumanEval: {sum(humaneval_entropy) / len(humaneval_entropy)} {sum(humaneval_woe_entropy) / len(humaneval_woe_entropy)} {sum(humaneval_original_entropy_diff) / len(humaneval_original_entropy_diff)}")
+print(
+    f"MBPP: {sum(mbpp_entropy) / len(mbpp_entropy)} {sum(mbpp_woe_entropy) / len(mbpp_woe_entropy)} {sum(mbpp_original_entropy_diff) / len(mbpp_original_entropy_diff)}")
+print(
+    f"TACO Lite: {sum(taco_lite_entropy) / len(taco_lite_entropy)} {sum(taco_lite_woe_entropy) / len(taco_lite_woe_entropy)} {sum(taco_lite_original_entropy_diff) / len(taco_lite_original_entropy_diff)}")
 # Plotting
-fig, axes = plt.subplots(3, 2, figsize=(10, 10))
-
-# HumanEval
-axes[0][0].hist(humaneval_original_entropy_diff, bins=20, color='blue', alpha=0.7)
-axes[0][0].set_title('HumanEval: Original - WOE Entropy')
-axes[0][0].set_xlabel('Difference')
-axes[0][0].set_ylabel('Frequency')
-
-axes[0][1].boxplot([humaneval_entropy, humaneval_woe_entropy], labels=['Original', 'WOE'])
-axes[0][1].set_title('HumanEval Entropies')
-
-# MBPP
-axes[1][0].hist(mbpp_original_entropy_diff, bins=20, color='orange', alpha=0.7)
-axes[1][0].set_title('MBPP: Original - WOE Entropy')
-axes[1][0].set_xlabel('Difference')
-axes[1][0].set_ylabel('Frequency')
-
-axes[1][1].boxplot([mbpp_entropy, mbpp_woe_entropy], labels=['Original', 'WOE'])
-axes[1][1].set_title('MBPP Entropies')
-
-# TACO Lite
-axes[2][0].hist(taco_lite_original_entropy_diff, bins=20, color='green', alpha=0.7)
-axes[2][0].set_title('TACO Lite: Original - WOE Entropy')
-axes[2][0].set_xlabel('Difference')
-axes[2][0].set_ylabel('Frequency')
-
-axes[2][1].boxplot([taco_lite_entropy, taco_lite_woe_entropy], labels=['Original', 'WOE'])
-axes[2][1].set_title('TACO Lite Entropies')
-
-plt.tight_layout()
-plt.show()
+# fig, axes = plt.subplots(3, 2, figsize=(10, 10))
+#
+# # HumanEval
+# axes[0][0].hist(humaneval_original_entropy_diff, bins=20, color='blue', alpha=0.7)
+# axes[0][0].set_title('HumanEval: Original - WOE Entropy')
+# axes[0][0].set_xlabel('Difference')
+# axes[0][0].set_ylabel('Frequency')
+#
+# axes[0][1].boxplot([humaneval_entropy, humaneval_woe_entropy], labels=['Original', 'WOE'])
+# axes[0][1].set_title('HumanEval Entropies')
+#
+# # MBPP
+# axes[1][0].hist(mbpp_original_entropy_diff, bins=20, color='orange', alpha=0.7)
+# axes[1][0].set_title('MBPP: Original - WOE Entropy')
+# axes[1][0].set_xlabel('Difference')
+# axes[1][0].set_ylabel('Frequency')
+#
+# axes[1][1].boxplot([mbpp_entropy, mbpp_woe_entropy], labels=['Original', 'WOE'])
+# axes[1][1].set_title('MBPP Entropies')
+#
+# # TACO Lite
+# axes[2][0].hist(taco_lite_original_entropy_diff, bins=20, color='green', alpha=0.7)
+# axes[2][0].set_title('TACO Lite: Original - WOE Entropy')
+# axes[2][0].set_xlabel('Difference')
+# axes[2][0].set_ylabel('Frequency')
+#
+# axes[2][1].boxplot([taco_lite_entropy, taco_lite_woe_entropy], labels=['Original', 'WOE'])
+# axes[2][1].set_title('TACO Lite Entropies')
+#
+# plt.tight_layout()
+# plt.show()

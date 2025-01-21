@@ -106,7 +106,7 @@ def unwrap(string, label):
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(
         f"<{label}>") < string.index(
         f"</{label}>") else string
-    if "```" in string:
+    if "```" in string and (label == "code" or label == "test"):
         string = post_process(string)
     if label == "code":
         try:

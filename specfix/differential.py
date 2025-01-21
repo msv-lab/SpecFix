@@ -1,5 +1,5 @@
 from specfix.cluster import Cluster, Clusters
-from specfix.utils import execute_inputs, check_discrepancy
+from specfix.utils import execute_inputs, check_discrepancy, check_failed_test
 from specfix.model import Model
 
 
@@ -43,5 +43,8 @@ def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
     for cluster in clusters.get_clusters():
         if canonical_outputs == cluster.outputs:
             cluster.align()
+            clusters.set_at_least_one_align()
         else:
-            cluster.not_align()
+            result, ratio = check_failed_test(test_inputs, cluster.outputs, canonical_outputs)
+            cluster.set_failed_tests(result)
+            cluster.set_semantic_ratio(ratio)

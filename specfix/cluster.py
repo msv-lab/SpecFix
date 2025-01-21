@@ -11,6 +11,7 @@ class Clusters:
         self.test_inputs = []
         self.canonical_outputs = []
         self.canonical_solution = None
+        self.at_least_one_align = False
 
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
@@ -26,6 +27,9 @@ class Clusters:
 
     def set_canonical_solution(self, canonical_solution):
         self.canonical_solution = canonical_solution
+
+    def set_at_least_one_align(self):
+        self.at_least_one_align = True
 
     def calculate_distribution(self):
         total = sum([len(cluster.programs_str) for cluster in self.clusters])
@@ -45,7 +49,9 @@ class Clusters:
                 self.test_inputs),
             'canonical_outputs': self.canonical_outputs if any(
                 isinstance(i, set) for i in self.canonical_outputs) else str(
-                self.canonical_outputs)
+                self.canonical_outputs),
+            'canonical_solution': self.canonical_solution,
+            'at_least_one_align': self.at_least_one_align
         }
 
 
@@ -53,8 +59,10 @@ class Cluster:
     def __init__(self, outputs):
         self.programs_str = []
         self.requirement = []
-        self.is_align_req = None
+        self.is_align_ground_truth = False
         self.outputs = outputs
+        self.failed_tests = []
+        self.semantic_ratio = 0
         self.distribution = 0
         self.DRS = None
 
@@ -71,13 +79,13 @@ class Cluster:
         self.distribution = distribution
 
     def align(self):
-        self.is_align_req = True
+        self.is_align_ground_truth = True
 
-    def not_align(self):
-        self.is_align_req = False
+    def set_failed_tests(self, failed_tests):
+        self.failed_tests = failed_tests
 
-    def get_alignment(self):
-        return self.is_align_req
+    def set_semantic_ratio(self, semantic_ratio):
+        self.semantic_ratio = semantic_ratio
 
     def serialize(self):
         return {
@@ -85,6 +93,6 @@ class Cluster:
             'requirement': self.requirement,
             'outputs': str(self.outputs),
             'distribution': self.distribution,
-            'is_align_req': self.is_align_req,
+            'is_align_ground_truth': self.is_align_ground_truth,
             'DRS': self.DRS
         }

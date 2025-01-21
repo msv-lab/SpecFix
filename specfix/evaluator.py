@@ -95,6 +95,19 @@ class SpecFixAccuracyEvaluator:
                                            prompt_minimize_requirement(ori_req, repaired_req))
         return unwrap(response, "requirement")
 
+    def inverse_requirement(self, code):
+        print("INVERSE REQUIREMENT")
+        response = self.model.get_response(instruction_inverse_requirement,
+                                           prompt_inverse_requirement(code))
+        return unwrap(response, "requirement")
+
+    def test_based_repair(self, program, requirement, test_inputs):
+        test = random.choice(test_inputs)
+        print("TEST BASED REPAIR")
+        response = self.model.get_response(instruction_test_based_repair,
+                                           prompt_test_based_repair(requirement, program, *test))
+        return unwrap(response, "requirement")
+
     def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1
         requirement = initial_requirement

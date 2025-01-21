@@ -489,7 +489,7 @@ Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap
 """
 
 
-instrcution_test_based_repair = "You are a programming assistant specialized in debugging and fixing Python code."
+instruction_test_based_repair = "You are a programming assistant specialized in debugging and fixing Python code."
 
 
 def prompt_test_based_repair(requirement, code, inp, output, canonical_output):
@@ -526,4 +526,22 @@ Correct (Canonical) Output (Expected):
 ---
 
 Please return the repaired Python code, wrapped in <code></code> tags.
+"""
+
+
+instruction_inverse_requirement = "You are an assistant that generates a task description based on the Python program."
+
+
+def prompt_inverse_requirement(program):
+    return f"""
+You are given a Python program. Your task is to generate a detailed, clear, and concise description of the task the program is designed to perform. The description should include the following:
+
+Purpose: What is the overall goal of the program?
+Key Operations: What are the main operations or steps the program performs?
+Inputs: What inputs does the program require?
+Outputs: What outputs does the program produce?
+Expected Behavior: How does the program handle different inputs or conditions? (e.g., any special cases or error handling)
+Below is the Python code:
+{program}
+Please provide a task description of the program is designed to accomplish based on the above criteria, wrapped in <requirement></requirement> tags.
 """

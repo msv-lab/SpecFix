@@ -59,7 +59,7 @@ class Cluster:
     def __init__(self, outputs):
         self.programs_str = []
         self.requirement = []
-        self.is_align_ground_truth = False
+        self.is_align_req = False
         self.outputs = outputs
         self.failed_tests = []
         self.test_consistency = 0
@@ -79,7 +79,7 @@ class Cluster:
         self.distribution = distribution
 
     def align(self):
-        self.is_align_ground_truth = True
+        self.is_align_req = True
 
     def set_failed_tests(self, failed_tests):
         self.failed_tests = failed_tests
@@ -93,6 +93,6 @@ class Cluster:
             'requirement': self.requirement,
             'outputs': str(self.outputs),
             'distribution': self.distribution,
-            'is_align_ground_truth': self.is_align_ground_truth,
+            'is_align_req': self.is_align_req,
             'DRS': self.DRS
         }

@@ -25,8 +25,7 @@ with jsonlines.open("qwen25-coder-14b-instruct/taco_lite_70_vanilla_repair.jsonl
             print(obj["original_requirement"])
             print(obj["repaired_requirement"])
             print(obj["entropy_diff"])
-            instruction = "Please analyze the differences between the two requirements and provide reason why it fixes the ambiguity."
-            # prompt = f"Here is an ambiguous requirement: {obj["original_requirement"]}. And here is the corresponding repaired requirement: {obj["repaired_requirement"]}. Please analyze the differences between the two requirements and provide reason why it fixes the ambiguity."
-            # response = specfix_accuracy_evaluator.model.get_response(instruction, prompt)
-            # print(response)
-            a = 1
+            instruction = "You are AI-assistant to analyze the differences between the two requirements."
+            prompt = f"Here is an ambiguous requirement: {obj["original_requirement"]}. And here is the corresponding repaired requirement: {obj["repaired_requirement"]}, which removes ambiguity. Please analyze the differences between the two requirements and provide reason why the repaired requirement removes the ambiguity."
+            response = specfix_accuracy_evaluator.model.get_response(instruction, prompt)
+            print(response)

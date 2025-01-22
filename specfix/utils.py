@@ -106,7 +106,7 @@ def unwrap(string, label):
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(
         f"<{label}>") < string.index(
         f"</{label}>") else string
-    if "```" in string:
+    if "```" in string and (label == "code" or label == "test"):
         string = post_process(string)
     if label == "code":
         try:
@@ -118,3 +118,11 @@ def unwrap(string, label):
 
 def construct_requirement(requirement, starter_code):
     return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""
+
+
+def check_failed_test(test_inputs, outputs, canonical_outputs):
+    result = []
+    for i in range(len(test_inputs)):
+        if outputs[i] != canonical_outputs[i]:
+            result.append([test_inputs[i], outputs[i], canonical_outputs[i]])
+    return result, len(result) / len(test_inputs)

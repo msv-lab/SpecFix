@@ -1,5 +1,5 @@
 from specfix.cluster import Cluster, Clusters
-from specfix.utils import execute_inputs, check_discrepancy
+from specfix.utils import execute_inputs, check_discrepancy, check_failed_test
 from specfix.model import Model
 
 
@@ -13,9 +13,12 @@ def differential_tester(generated_programs, test_inputs, entry_point):
 
         # Use class Cluster to add program to cluster
         for cluster in program_clusters.get_clusters():
-            if result_list == cluster.outputs:
-                cluster.add_program_str(program_str)
-                break
+            try:
+                if result_list == cluster.outputs:
+                    cluster.add_program_str(program_str)
+                    break
+            except ValueError:
+                continue
         else:
             new_cluster = Cluster(result_list)
             new_cluster.add_program_str(program_str)
@@ -36,8 +39,12 @@ def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=
 def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point):
     canonical_outputs = execute_inputs(canonical_solution, test_inputs, entry_point)
     clusters.set_canonical_outputs(canonical_outputs)
+    clusters.set_canonical_solution(canonical_solution)
     for cluster in clusters.get_clusters():
         if canonical_outputs == cluster.outputs:
             cluster.align()
+            clusters.set_at_least_one_align()
         else:
-            cluster.not_align()
+            result, ratio = check_failed_test(test_inputs, cluster.outputs, canonical_outputs)
+            cluster.set_failed_tests(result)
+            cluster.set_test_consistency(ratio)

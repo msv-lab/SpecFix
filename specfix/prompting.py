@@ -570,3 +570,64 @@ def prompt_vanilla_repair(requirement):
 Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap the repaired requirement in <requirement></requirement> tags.
 {requirement}
 """
+
+
+### Clarify GPT clone prompting
+# Note: I have added the tags part of the prompt to the end of each clarify gpt prompt for parsing. 
+
+instruction_generate_test_clarify_gpt = "You will be given a user requirement containing a function signature and a docstring. Your task is to generate some complex, difficult, or corner-case test inputs for this requirement. Gather all test cases into a general list. Wrap the collection in <test></test> tags."
+
+
+def prompt_generate_test_clarify_gpt(requirement):
+    return f"""
+### User requirement
+{requirement}
+### Test Inputs:
+"""
+
+
+instruction_generate_code_clarify_gpt = "You will be given a user requirement containing a function signature and a docstring. Please read the docstring, understand the user's intention, and respond only with a correct, efficient Python function. Do not import libraries other than those provided in the function signature; do not write explanations or assertions; simply provide only the code. Wrap the generated code in <code></code> tags."
+
+
+def prompt_generate_code_clarify_gpt(requirement):
+    return f"""
+### User Requirement
+{requirement}
+### Code Solution:
+"""
+
+instruction_repair_requirement_clarify_gpt = "You will be given a user requirement and its test cases. Your task is to answer some clarifying questions using the information provided in the given requirement and tests. Reply only with the answers, do not repeat the code and questions. Wrap the repaired requirement in <requirement></requirement> tags."
+
+# Note that in our case, test cases are included in the user requirement (?)
+
+def prompt_repair_requirement_clarify_gpt(requirement, clarifying_questions):
+    print("REPAIR REPAIR REPAIR REPAIR")
+    print(f"""
+### User Requirement:
+{requirement}
+### Clarifying Questions:
+{clarifying_questions}
+### Code Solution:
+""")
+    return f"""
+### User Requirement:
+{requirement}
+### Clarifying Questions:
+{clarifying_questions}
+### Code Solution:
+"""
+
+instruction_generate_clarifying_question_clarify_gpt = "You will be given a user requirement and its candidate solutions. Your task is to clarify this requirement by asking clarifying questions. Specifically, you will first analyze the functionality of each solution. Then, by comparing their differences, you can determine which parts in the requirement are ambiguous and ask targeted clarification questions. Wrap the generated questions in <question></question> tags."
+
+
+def prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions):
+    prompt = f"""
+### User Requirement
+{requirement}
+### Inconsistent Solutions
+"""
+    for i, sol in enumerate(inconsistent_solutions):
+         prompt += f"Solution {i}:\n {sol}\n" 
+    
+    prompt +=("### Analysis and Clarifying Questions")
+    return prompt

@@ -89,16 +89,10 @@ def main():
             if clusters.entropy > threshold:
                 
                 # Generate clarifying questions using requirements and clusters
-                print("TESTING TESTING TESTING TESTING")
-                
                 inconsistent_solutions = [c.programs_str[0] for c in clusters.clusters]
-                print(inconsistent_solutions)
-                print("TESTING END TESTING END TESTING END")
                 clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions)
                 
                 # Repair requirement 
-                print("REQUIREMENT HAHAHAHA")
-                print(requirement)
                 repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, inconsistent_solutions, clarifying_questions)
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 

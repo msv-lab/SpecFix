@@ -97,6 +97,21 @@ def main():
                 n_shot=n_shot
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
+            # Note: in ClarifyGPT's case, our threshold is 0. They think a solution is ambiguous if there are ANY non identical solutions
+            # see quote:
+            
+            # First, we employ a two-step code consistency check
+            # to decide when to ask clarifying questions. We are motivated by the observation that feeding
+            # a clear requirement to LLMs usually results in generating diverse code snippets that behave
+            # consistently, i.e., given the same test inputs, those different code snippets will likely return the same
+            # outputs. While feeding an unclear requirement, LLMs are likely to generate diverse code snippets
+            # that behave differently. Specifically, in the first step, ClarifyGPT aims to generate numerous
+            # high-quality test inputs for a given requirement via type-aware mutation. In the second step,
+            # ClarifyGPT inputs the given requirement into an LLM to sample 𝑛 code solutions and checks
+            # whether they produce identical outputs when tested with the generated input. If the outputs are
+            # not identical, ClarifyGPT determines that the requirement requires further clarification; and vice
+            # versa
+            threshold = 0
             if clusters.entropy > threshold:
                 
                 # Generate clarifying questions using requirements and clusters

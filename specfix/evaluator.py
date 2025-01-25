@@ -26,10 +26,9 @@ class SpecFixAccuracyEvaluator:
             return self.generate_programs(requirements)
         return code
     
-    def generate_programs_clarify_gpt(self, requirements):
+    def generate_programs_clarify_gpt(self, requirements, n_shot):
         print("GENERATE PROGRAMS")
-        response = self.model.get_response(instruction_generate_code_clarify_gpt,
-                                           prompt_generate_code_clarify_gpt(requirements), 0.8)
+        response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
         code = unwrap(response, "code")
         if code == "":
             return self.generate_programs(requirements)
@@ -53,10 +52,9 @@ class SpecFixAccuracyEvaluator:
             response = self.generate_tests(requirements)
         return response
     
-    def generate_tests_clarify_gpt(self, requirements):
+    def generate_tests_clarify_gpt(self, requirements, n_shot):
         print("GENERATE TESTS INPUTS")
-        response = self.model.get_response(instruction_generate_test_clarify_gpt,
-                                           prompt_generate_test_clarify_gpt(requirements))
+        response = self.model.get_response_few_shot(prompt_generate_test_clarify_gpt(requirements, n_shot))
         try:
             response = eval(unwrap(response, "test"))
             if isinstance(response, list) and all(isinstance(t, list) for t in response):
@@ -95,10 +93,9 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
     
-    def repair_requirements_clarify_gpt(self, requirements, test_cases, clarifying_questions):
+    def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
         print("CLARIFY GPT REPAIR REQUIREMENTS")
-        response = self.model.get_response(instruction_repair_requirement_clarify_gpt,
-                                           prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions))
+        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
         return unwrap(response, "requirement")
 
     def find_discrepancy_DRS(self, requirements, clusters):
@@ -235,10 +232,9 @@ class SpecFixAccuracyEvaluator:
                                            prompt_generate_clarifying_question(requirement, information))
         return unwrap(response, "question")
     
-    def generate_clarifying_question_clarify_gpt(self, requirement, inconsistent_solutions):
+    def generate_clarifying_question_clarify_gpt(self, requirement, inconsistent_solutions, n_shot):
         print("GENERATE CLARIFYING QUESTION")
-        response = self.model.get_response(instruction_generate_clarifying_question_clarify_gpt,
-                                           prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions))
+        response = self.model.get_response_few_shot(prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot))
         return unwrap(response, "question")
 
     def classification(self, requirements):

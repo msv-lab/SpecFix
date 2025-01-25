@@ -20,11 +20,11 @@ def parse_problem(problem, dataset):
     return requirement, canonical_solution, entry_point
 
 
-def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs):
+def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs, n_shot):
     generated_programs = []
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(specfix_evaluator.generate_programs_clarify_gpt, requirement)
+        futures = [executor.submit(specfix_evaluator.generate_programs_clarify_gpt, requirement, n_shot)
                    for _ in range(n_programs)]
         for future in concurrent.futures.as_completed(futures):
             prog = future.result()
@@ -45,6 +45,8 @@ def main():
     parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
     parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
+    parser.add_argument("-ns", "--nshot", dest="n_shot",
+                        help="Number of shots (demonstrations) given to LLM before prompt: one_shot, two_shot, three_shot")
 
     options = parser.parse_args()
 
@@ -66,6 +68,7 @@ def main():
     n_programs = options.number
     threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
+    n_shot = options.n_shot
     entropy_list = []
 
     # Open dataset and output JSONL in one place
@@ -73,9 +76,10 @@ def main():
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
+            # ONLY TESTED FOR MBPP
             print(f"Case {i}: {requirement}")
 
-            test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement)
+            test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
             print(f"Test inputs: {test_inputs}")
             clusters = generate_and_test(
                 specfix_evaluator=specfix_accuracy_evaluator,
@@ -83,17 +87,18 @@ def main():
                 test_inputs=test_inputs,
                 entry_point=entry_point,
                 canonical_solution=canonical_solution,
-                n_programs=n_programs
+                n_programs=n_programs,
+                n_shot=n_shot
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.entropy > threshold:
                 
                 # Generate clarifying questions using requirements and clusters
                 inconsistent_solutions = [c.programs_str[0] for c in clusters.clusters]
-                clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions)
+                clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot)
                 
                 # Repair requirement 
-                repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, inconsistent_solutions, clarifying_questions)
+                repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, clarifying_questions, n_shot)
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(

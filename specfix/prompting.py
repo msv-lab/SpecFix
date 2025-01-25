@@ -607,7 +607,7 @@ def prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_so
         'role': 'user',
         'content': f'### User Requirement:{requirement}'
                     f'\n### Inconsistent Solutions:\n{sol_str}'
-                    f'\n\n### Analysis and Clarifying Questions:\n{{<question>insert here.</question>}}'
+                    f'\n\n### Analysis and Clarifying Questions:\n{{insert here.}}'
     })
     
     # print("ASK QUESTIONS PROMPT: \n", openai_messages)
@@ -622,16 +622,11 @@ def prompt_repair_requirement_clarify_gpt(requirement, tests, clarifying_questio
     
     openai_messages = copy.deepcopy(answercq_prompt[n_shot])
     
-    print("BASE: ", clarifying_questions)
-    questions = ""
-    for i, question in enumerate(clarifying_questions):
-         questions += f"{i}. \n {question}\n" 
-    print("MINE:", questions)
-    
     openai_messages.append({
         'role': 'user',
         'content': f'### User Requirement:{requirement}'
-                    f'\n\n### Clarifying Questions:{questions}'
+                    f'\n\n### Test Cases:{tests}'
+                    f'\n\n### Clarifying Questions:{clarifying_questions}'
                     f'\n\n### Answers:\n{{<requirement>insert here.</requirement>}}'
     })
     
@@ -703,7 +698,7 @@ askcq_prompt = {
                     'Specifically, you first analyze how each developer understands the requirement. '
                     'Then, by comparing their different understandings of the requirement, '
                     'you can determine which statements in the requirement are not clear, and ask clarification questions for those statements. '
-                    'Wrap the generated questions in <question></question> tags.', # I ADDED THIS, NOT CLARIFY GPT
+                    'Wrap only the generated questions (and not the analysis) in <question></question> tags.', # I ADDED THIS, NOT CLARIFY GPT
     }],
 
     'one_shot': [

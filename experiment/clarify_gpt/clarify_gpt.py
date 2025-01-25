@@ -13,11 +13,17 @@ def parse_problem(problem, dataset):
     if dataset == "taco_lite":
         requirement = construct_requirement(problem['requirement'], problem['starter_code'])
         canonical_solution = random.choice(problem['solutions'])
+        # TODO: add tests.
+    elif dataset == "clarify_mbpp" or "clarify_mbpp_pilot":
+        requirement = problem['prompt']
+        tests = problem['tests']
+        canonical_solution = problem['canonical_solution']
     else:
         requirement = problem['requirement']
         canonical_solution = problem['canonical_solution']
+        # TODO: add tests
     entry_point = problem['entry_point']
-    return requirement, canonical_solution, entry_point
+    return requirement, canonical_solution, entry_point, tests
 
 
 def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs, n_shot):
@@ -62,7 +68,7 @@ def main():
         model=model_name,
         temperature=0
     )
-
+    # ONLY TESTED FOR CLARIFY_MBPP
     dataset = options.dataset
     dataset_path = options.dataset_path
     n_programs = options.number
@@ -75,8 +81,8 @@ def main():
     output_file = f"{dataset}_{str(int(threshold * 100))}{wo_example}_clarify_gpt.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
-            # ONLY TESTED FOR MBPP
+            requirement, canonical_solution, entry_point, tests = parse_problem(problem, dataset)
+            
             print(f"Case {i}: {requirement}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
@@ -98,7 +104,7 @@ def main():
                 clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot)
                 
                 # Repair requirement 
-                repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, clarifying_questions, n_shot)
+                repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, tests, clarifying_questions, n_shot)
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(
@@ -107,7 +113,8 @@ def main():
                     test_inputs=test_inputs,
                     entry_point=entry_point,
                     canonical_solution=canonical_solution,
-                    n_programs=n_programs
+                    n_programs=n_programs,
+                    n_shot=n_shot
                 )
                 entropy_diff = clusters.entropy - repaired_clusters.entropy
                 result = {

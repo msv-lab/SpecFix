@@ -93,9 +93,9 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
     
-    def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
+    def repair_requirements_clarify_gpt(self, requirements, tests, clarifying_questions, n_shot):
         print("CLARIFY GPT REPAIR REQUIREMENTS")
-        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
+        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, tests, clarifying_questions, n_shot))
         return unwrap(response, "requirement")
 
     def find_discrepancy_DRS(self, requirements, clusters):

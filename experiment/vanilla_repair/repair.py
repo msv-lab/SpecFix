@@ -72,7 +72,6 @@ def main():
     n_programs = options.number
     threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
-    entropy_list = []
 
     cwd = dirname(abspath(__file__))
     model_name = model_name.replace(".", "")
@@ -124,7 +123,6 @@ def main():
                     'original_clusters': clusters.serialize(),
                 }
             writer.write(result)
-            entropy_list.append(clusters.entropy)
 
 
 if __name__ == "__main__":

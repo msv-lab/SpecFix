@@ -37,6 +37,12 @@ class Clusters:
         self.entropy = sum(
             [-cluster.probability / total * math.log(cluster.probability / total) for cluster in self.clusters])
 
+    def get_largest_cluster(self):
+        return max(self.clusters, key=lambda cluster: cluster.probability)
+
+    def get_largest_two_clusters(self):
+        return sorted(self.clusters, key=lambda cluster: cluster.probability, reverse=True)[:2]
+
     def serialize(self):
         return {
             'clusters': [cluster.serialize() for cluster in self.clusters],

@@ -128,3 +128,14 @@ def check_failed_semantic_input_output(result_list, inputs, outputs):
     return failed_semantic_input_output, 1 - (len(failed_semantic_input_output) / len(inputs))
 
 
+def construct_failed_tests(cluster1, cluster2, entropy_inputs, canonical_program, entry_point):
+    target_inputs = []
+    for i in range(len(entropy_inputs)):
+        if cluster1.entropy_outputs[i] != cluster2.entropy_outputs[i]:
+            target_inputs.append(entropy_inputs[i])
+    print("GET CANONICAL OUTPUT")
+    canonical_outputs = execute_inputs(canonical_program, target_inputs, entry_point)
+    fails_tests = []
+    for i in range(len(canonical_outputs)):
+        fails_tests.append([target_inputs[i], cluster1.entropy_outputs[i], canonical_outputs[i]])
+    return fails_tests

@@ -1,6 +1,7 @@
 import argparse
 import os
 import concurrent.futures
+import random
 
 import jsonlines
 import configparser
@@ -8,18 +9,20 @@ from os.path import abspath, dirname
 
 from specfix.differential import differential_tester, ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import construct_requirement
+from specfix.utils import construct_requirement, construct_failed_tests
 
 
 def parse_problem(problem, dataset):
     if dataset == "taco_lite":
         requirement = construct_requirement(problem['requirement'], problem['starter_code'])
         examples = problem['input_output_examples']
+        canonical_program = random.choice(problem['solutions'])
     else:
         requirement = problem['requirement']
         examples = problem['input_output_examples']
+        canonical_program = problem["canonical_solution"]
     entry_point = problem['entry_point']
-    return requirement, entry_point, examples
+    return requirement, entry_point, examples, canonical_program
 
 
 def generate_and_test(specfix_evaluator, requirement, test_inputs, examples, entry_point, n_programs):
@@ -83,7 +86,7 @@ def main():
     output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_test_based_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            requirement, entry_point, examples = parse_problem(problem, dataset)
+            requirement, entry_point, examples, canonical_program = parse_problem(problem, dataset)
             print(f"Case {i}: {requirement}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
@@ -98,8 +101,43 @@ def main():
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.calculate_ambiguity() > threshold:
-                # TODO: If the largest cluster t_consistency is not 1, then we use examples to repair. Otherwise, we use the largest two clusters to ask for user feedback.
-                pass
+                # If the largest cluster t_consistency is not 1, then we use examples to repair. Otherwise, we use the largest two clusters to ask for user feedback.
+                cluster = clusters.get_largest_cluster()
+                if cluster.test_consistency != 1:
+                    repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, requirement,
+                                                                                 cluster.failed_semantic_input_output)
+                    repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
+                else:
+                    cluster1, cluster2 = clusters.get_largest_two_clusters()
+                    failed_tests = construct_failed_tests(cluster1, cluster2,
+                                                          clusters.entropy_inputs, canonical_program, entry_point)
+                    repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, requirement,
+                                                                                 failed_tests)
+                    repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
+                print(f"Case {i}: Repaired requirement: {repaired_requirement}")
+
+                repaired_clusters = generate_and_test(
+                    specfix_evaluator=specfix_accuracy_evaluator,
+                    requirement=repaired_requirement,
+                    test_inputs=test_inputs,
+                    entry_point=entry_point,
+                    examples=examples,
+                    n_programs=n_programs
+                )
+                entropy_diff = clusters.entropy - repaired_clusters.entropy
+                result = {
+                    'original_requirement': requirement,
+                    'original_clusters': clusters.serialize(),
+                    'repaired_requirement': repaired_requirement,
+                    'repaired_clusters': repaired_clusters.serialize(),
+                    'entropy_diff': entropy_diff
+                }
+            else:
+                result = {
+                    'original_requirement': requirement,
+                    'original_clusters': clusters.serialize(),
+                }
+            writer.write(result)
 
 
 if __name__ == "__main__":

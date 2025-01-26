@@ -1,7 +1,7 @@
 import argparse
 import os
-import random
 import concurrent.futures
+
 import jsonlines
 import configparser
 from os.path import abspath, dirname
@@ -14,15 +14,15 @@ from specfix.utils import construct_requirement
 def parse_problem(problem, dataset):
     if dataset == "taco_lite":
         requirement = construct_requirement(problem['requirement'], problem['starter_code'])
-        canonical_solution = random.choice(problem['solutions'])
+        examples = problem['input_output_examples']
     else:
         requirement = problem['requirement']
-        canonical_solution = problem['canonical_solution']
+        examples = problem['input_output_examples']
     entry_point = problem['entry_point']
-    return requirement, canonical_solution, entry_point
+    return requirement, entry_point, examples
 
 
-def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs):
+def generate_and_test(specfix_evaluator, requirement, test_inputs, examples, entry_point, n_programs):
     generated_programs = []
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -34,7 +34,7 @@ def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, 
 
     print("Differential Testing")
     clusters = differential_tester(generated_programs, test_inputs, entry_point)
-    ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
+    ground_truth_testing(clusters, examples, entry_point)
     return clusters
 
 
@@ -57,7 +57,7 @@ def main():
     api_key = ""
     if "qwen" in model_name:
         api_key = config['API_KEY']['qwen_key']
-    elif "gpt3" in model_name or "o1" in model_name:
+    elif "gpt" in model_name or "o1" in model_name:
         api_key = config['API_KEY']['openai_key']
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
@@ -72,7 +72,6 @@ def main():
     n_programs = options.number
     threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
-    entropy_list = []
 
     cwd = dirname(abspath(__file__))
     model_name = model_name.replace(".", "")
@@ -81,10 +80,10 @@ def main():
         os.mkdir(f"{cwd}/{model_name}")
 
     # Open dataset and output JSONL in one place
-    output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_vanilla_repair.jsonl"
+    output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_test_based_repair.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
+            requirement, entry_point, examples = parse_problem(problem, dataset)
             print(f"Case {i}: {requirement}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
@@ -93,12 +92,15 @@ def main():
                 specfix_evaluator=specfix_accuracy_evaluator,
                 requirement=requirement,
                 test_inputs=test_inputs,
+                examples=examples,
                 entry_point=entry_point,
-                canonical_solution=canonical_solution,
                 n_programs=n_programs
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
-           # TODO: implement measure.
+            if clusters.calculate_ambiguity() > threshold:
+                # TODO: If the largest cluster t_consistency is not 1, then we use examples to repair. Otherwise, we use the largest two clusters to ask for user feedback.
+                pass
+
 
 if __name__ == "__main__":
     main()

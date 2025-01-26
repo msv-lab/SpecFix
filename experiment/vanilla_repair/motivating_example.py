@@ -10,7 +10,7 @@ model_name = "o1-mini"
 api_key = ""
 if "qwen" in model_name:
     api_key = config['API_KEY']['qwen_key']
-elif "gpt3" in model_name or "o1" in model_name:
+elif "gpt" in model_name or "o1" in model_name:
     api_key = config['API_KEY']['openai_key']
 
 specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(

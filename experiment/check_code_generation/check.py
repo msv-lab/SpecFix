@@ -54,12 +54,12 @@ def process_problems(
                 cluster1, cluster2 = random.sample(clusters, k=2)
 
                 for test_i, test_input in enumerate(test_inputs):
-                    if cluster1.outputs[test_i] != cluster2.outputs[test_i]:
+                    if cluster1.entropy_outputs[test_i] != cluster2.entropy_outputs[test_i]:
                         res, explanation = model_verifier(
                             requirement,
                             [random.choice(cluster1.programs_str), random.choice(cluster2.programs_str)],
                             test_input,
-                            [cluster1.outputs[test_i], cluster2.outputs[test_i]],
+                            [cluster1.entropy_outputs[test_i], cluster2.entropy_outputs[test_i]],
                             model=verifier_name,
                             api_key=verifier_api_key
                         )
@@ -70,8 +70,8 @@ def process_problems(
                                 'test_input': test_input,
                                 'program1': cluster1.programs_str,
                                 'program2': cluster2.programs_str,
-                                'output1': cluster1.outputs[test_i],
-                                'output2': cluster2.outputs[test_i],
+                                'output1': cluster1.entropy_outputs[test_i],
+                                'output2': cluster2.entropy_outputs[test_i],
                                 'explanation': explanation
                             }
                             incorrect_generation.append(problem_dict)
@@ -87,8 +87,8 @@ def process_problems(
                         'test_input': test_input,
                         'program1': cluster1.programs_str,
                         'program2': cluster2.programs_str,
-                        'output1': cluster1.outputs[test_i],
-                        'output2': cluster2.outputs[test_i],
+                        'output1': cluster1.entropy_outputs[test_i],
+                        'output2': cluster2.entropy_outputs[test_i],
                         'explanation': explanation
                     }
                     ambiguity.append(problem_dict)

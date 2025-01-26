@@ -120,9 +120,11 @@ def construct_requirement(requirement, starter_code):
     return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""
 
 
-def check_failed_test(test_inputs, outputs, canonical_outputs):
-    result = []
-    for i in range(len(test_inputs)):
-        if outputs[i] != canonical_outputs[i]:
-            result.append([test_inputs[i], outputs[i], canonical_outputs[i]])
-    return result, len(result) / len(test_inputs)
+def check_failed_semantic_input_output(result_list, inputs, outputs):
+    failed_semantic_input_output = []
+    for i in range(len(inputs)):
+        if result_list[i] != outputs[i]:
+            failed_semantic_input_output.append([inputs[i], result_list[i], outputs[i]])
+    return failed_semantic_input_output, 1 - (len(failed_semantic_input_output) / len(inputs))
+
+

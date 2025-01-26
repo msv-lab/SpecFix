@@ -1,5 +1,6 @@
 import math
 import sys
+from specfix.utils import wilson_lower
 
 sys.set_int_max_str_digits(0)
 
@@ -11,6 +12,7 @@ class Clusters:
         self.entropy_inputs = []  # LLM generated test inputs for entropy measure.
         self.semantic_inputs_outputs = []  # input output examples for semantic measure
         self.at_least_one_align = False  # whether at least one cluster is aligned with the examples.
+        self.ambiguity = 0  # ambiguity of the clusters.
 
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
@@ -55,8 +57,10 @@ class Clusters:
         }
 
     def calculate_ambiguity(self):
-        weighted_t_consistency = sum([cluster.test_consistency * cluster.probability for cluster in self.clusters])
-        return self.entropy * (1 - weighted_t_consistency)
+        weighted_t_consistency = sum(
+            [wilson_lower(cluster.test_consistency, len(self.semantic_inputs_outputs)) * cluster.probability for cluster
+             in self.clusters])
+        self.ambiguity = self.entropy * (1 - weighted_t_consistency)
 
 
 class Cluster:

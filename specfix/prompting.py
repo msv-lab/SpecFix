@@ -3,7 +3,7 @@ instruction_generate_code = "You are an assistant that generates Python code bas
 
 def prompt_generate_code(requirement):
     return f"""
-Implement a python function that adheres to the requirements. Wrap the generated code in <code></code> tags.  Here is an example:
+Implement a python function that adheres to the requirements. Include imports that are used in the implementation. Wrap the generated code in <code></code> tags. Here is an example:
 # Example
 
 ## Requirement

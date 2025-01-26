@@ -38,6 +38,7 @@ def generate_and_test(specfix_evaluator, requirement, test_inputs, examples, ent
     print("Differential Testing")
     clusters = differential_tester(generated_programs, test_inputs, entry_point)
     ground_truth_testing(clusters, examples, entry_point)
+    clusters.calculate_ambiguity()
     return clusters
 
 
@@ -100,7 +101,7 @@ def main():
                 n_programs=n_programs
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
-            if clusters.calculate_ambiguity() > threshold:
+            if clusters.ambiguity > threshold:
                 # If the largest cluster t_consistency is not 1, then we use examples to repair. Otherwise, we use the largest two clusters to ask for user feedback.
                 cluster = clusters.get_largest_cluster()
                 if cluster.test_consistency != 1:

@@ -1,4 +1,5 @@
 import random
+import math
 import signal
 import types
 import re
@@ -139,3 +140,23 @@ def construct_failed_tests(cluster1, cluster2, entropy_inputs, canonical_program
     for i in range(len(canonical_outputs)):
         fails_tests.append([target_inputs[i], cluster1.entropy_outputs[i], canonical_outputs[i]])
     return fails_tests
+
+
+def wilson_lower(p_obs, n, z=1.96):
+    if n == 0 or p_obs < 0 or p_obs > 1:
+        return 0.0
+
+    x = round(p_obs * n)
+    x = max(0, min(x, n))
+
+    denominator = 1 + (z ** 2) / n
+    centre_adjusted = x / n + (z ** 2) / (2 * n)
+    adjusted_variance = (x * (n - x) / n ** 3) + (z ** 2) / (4 * n ** 2)
+
+    if adjusted_variance <= 0:
+        return max(0.0, x / n - z / (2 * n))
+
+    adjust = z * math.sqrt(adjusted_variance)
+    lower_bound = (centre_adjusted - adjust) / denominator
+
+    return max(lower_bound, 0.0)

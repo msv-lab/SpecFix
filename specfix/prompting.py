@@ -683,9 +683,41 @@ generate_prompt = {
          }],
     
 
-    # 'one_shot': [
-        
-    # ]
+    'one_shot': [
+        {'role': 'system',
+         'content': 'You will be given a user requirement containing a function signature and a docstring. '
+                    'Your task is to generate some complex, difficult, or corner-case test inputs for this requirement. '
+                    'Gather all test cases into a general list. '
+                    'Wrap the collection in <test></test> tags.' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
+        },
+        {
+        'role': 'user',
+        'content': '### User Requirement:'
+                    '\nimport collections as ct'
+                    '\ndef merge_dictionaries_three(dict1,dict2,dict3):'
+                    '\n     \" Write a function to merge three dictionaries into a signle dictionary. \"'
+                    '\n\n### Test Inputs:\n{{<test>insert here.</test>}}'
+        },
+        {'role': 'assistant',
+         'content': '### Test Inputs:'
+                    '\n```<test>\n'
+                    '\n['
+                    '\n({"a": 1}, {"b": 2}, {"c": 3}),'
+                    '\n({"a": 1, "b": 2}, {"b": 3, "c": 4}, {"c": 5, "d": 6}),'
+                    '\n({"a": [1, 2]}, {"a": [3, 4], "b": [5]}, {"a": [6], "c": [7, 8]}),'
+                    '\n({"a": 1, "b": "hello"}, {"b": [2, 3], "c": {"key": "value"}}, {"d": 3.14, "a": None}),'
+                    '\n({}, {}, {}),'
+                    '\n({"a": 1}, {}, {"b": 2}),'
+                    '\n({"a": {"x": 1}}, {"b": {"y": 2}}, {"c": {"z": 3}, "a": {"w": 4}}),'
+                    '\n({f"key{i}": i for i in range(1000)},'
+                    '\n{f"key{i}": i * 2 for i in range(500, 1500)},'
+                    '\n{f"key{i}": i * 3 for i in range(1000, 2000)}),'
+                    '\n({1: "one", (2, 3): "tuple"}, {"1": "str_one", "key": "value"}, {None: "none", False: "false"}),'
+                    '\n({"a": True}, {"b": False}, {"c": True, "a": False}),'
+                    '\n]'
+                    '\n</test>```'
+         },
+    ],
 }
 
 askcq_prompt = {

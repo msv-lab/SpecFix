@@ -4,7 +4,7 @@ import concurrent.futures
 import jsonlines
 import configparser
 from scipy.stats import pointbiserialr
-from specfix.differential import differential_tester, ground_truth_testing
+from specfix.differential import differential_tester, calculate_accuracy_ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_requirement
 
@@ -38,7 +38,7 @@ def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, 
 
     print("Differential Testing")
     clusters = differential_tester(generated_programs, test_inputs, entry_point)
-    ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
+    calculate_accuracy_ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
     return clusters
 
 
@@ -51,7 +51,7 @@ def main():
     parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
     parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
-    parser.add_argument("-ns", "--nshot", dest="n_shot",
+    parser.add_argument("-ns", "--nshot", dest="n_shot", default="zero_shot",
                         help="Number of shots (demonstrations) given to LLM before prompt: one_shot, two_shot, three_shot")
 
     options = parser.parse_args()
@@ -78,7 +78,7 @@ def main():
     entropy_list = []
 
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}_{str(int(threshold * 100))}{wo_example}_clarify_gpt.jsonl"
+    output_file = f"{dataset}_{str(int(threshold * 100))}{wo_example}_clarify_gpt_{n_shot}.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             requirement, canonical_solution, entry_point, tests = parse_problem(problem, dataset)
@@ -86,11 +86,13 @@ def main():
             print(f"Case {i}: {requirement}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
+            mutated_test_inputs = specfix_accuracy_evaluator.type_aware_mutation(test_inputs)
             print(f"Test inputs: {test_inputs}")
+            print(f"Mutated test inputs: {mutated_test_inputs}")
             clusters = generate_and_test(
                 specfix_evaluator=specfix_accuracy_evaluator,
                 requirement=requirement,
-                test_inputs=test_inputs,
+                test_inputs=mutated_test_inputs,
                 entry_point=entry_point,
                 canonical_solution=canonical_solution,
                 n_programs=n_programs,
@@ -125,7 +127,7 @@ def main():
                 repaired_clusters = generate_and_test(
                     specfix_evaluator=specfix_accuracy_evaluator,
                     requirement=repaired_requirement,
-                    test_inputs=test_inputs,
+                    test_inputs=mutated_test_inputs,
                     entry_point=entry_point,
                     canonical_solution=canonical_solution,
                     n_programs=n_programs,

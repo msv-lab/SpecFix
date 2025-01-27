@@ -1,6 +1,6 @@
 import random
 import pandas as pd
-
+from copy import deepcopy
 from specfix.prompting import *
 from specfix.model import Model
 from specfix.utils import construct_test_case, unwrap
@@ -74,6 +74,85 @@ class SpecFixAccuracyEvaluator:
         except Exception as e:
             response = self.generate_tests(requirements)
         return response
+
+    def type_aware_mutation(self, tests):
+
+        def mutate_single(x):
+            if x is None:
+                return None
+                
+            if isinstance(x, (int, float)):
+                return x + random.choice([-1, 1])
+                
+            elif isinstance(x, bool):
+                return random.choice([True, False])
+                
+            elif isinstance(x, str):
+                if not x:  # Handle empty string
+                    return x
+                    
+                mutation_type = random.choice(['remove', 'repeat', 'replace'])
+                if mutation_type == 'remove':
+                    pos = random.randint(0, len(x) - 1)
+                    return x[:pos] + x[pos + 1:]
+                elif mutation_type == 'repeat':
+                    pos = random.randint(0, len(x) - 1)
+                    return x[:pos] + x[pos] + x[pos:]
+                else:  # replace
+                    pos = random.randint(0, len(x) - 1)
+                    return x[:pos] + mutate_single(x[pos]) + x[pos + 1:]
+                    
+            elif isinstance(x, list):
+                if not x:  # Handle empty list
+                    return x
+                    
+                mutation_type = random.choice(['remove', 'repeat', 'insert'])
+                mutated = x.copy()
+                
+                if mutation_type == 'remove' and mutated:
+                    del mutated[random.randint(0, len(mutated) - 1)]
+                elif mutation_type == 'repeat' and mutated:
+                    idx = random.randint(0, len(mutated) - 1)
+                    mutated.insert(idx, mutated[idx])
+                else:  # insert/replace
+                    idx = random.randint(0, len(mutated) - 1)
+                    mutated[idx] = mutate_single(mutated[idx])
+                return mutated
+                
+            elif isinstance(x, tuple):
+                return tuple(mutate_single(list(x)))
+                
+            elif isinstance(x, set):
+                return set(mutate_single(list(x)))
+                
+            elif isinstance(x, dict):
+                if not x:  # Handle empty dict
+                    return x
+                    
+                mutation_type = random.choice(['remove', 'update', 'insert'])
+                mutated = x.copy()
+                
+                if mutation_type == 'remove' and mutated:
+                    key = random.choice(list(mutated.keys()))
+                    del mutated[key]
+                elif mutation_type == 'update' and mutated:
+                    key = random.choice(list(mutated.keys()))
+                    mutated[key] = mutate_single(mutated[key])
+                else:  # insert
+                    new_key = mutate_single(random.choice(list(mutated.keys())))
+                    new_value = mutate_single(random.choice(list(mutated.values())))
+                    mutated[new_key] = new_value
+                return mutated
+            
+            # Unchanged if not supported type
+            return x 
+        
+        # Create mutations for each test input
+        mutated_tests = []
+        for test in tests:
+            mutated_tests.append(mutate_single(deepcopy(test)))
+        
+        return mutated_tests
 
     def generate_requirement(self, program):
         print("REQUIREMENTS GENERATION")

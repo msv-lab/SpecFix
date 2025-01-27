@@ -41,3 +41,33 @@ def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
             cluster.align()
         else:
             cluster.not_align()
+            
+            
+def calculate_accuracy_ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point):
+    canonical_outputs = execute_inputs(canonical_solution, test_inputs, entry_point)
+    clusters.set_canonical_outputs(canonical_outputs)
+    for cluster in clusters.get_clusters():
+        canonical_len = len(canonical_outputs)
+        cluster_len = len(cluster.outputs)
+        min_length = min(canonical_len, cluster_len)
+        
+        # Compare outputs up to the shorter length
+        matches = sum(1 for i in range(min_length) if canonical_outputs[i] == cluster.outputs[i])
+        
+        # for i in range(min_length):
+        #     if canonical_outputs[i] != cluster.outputs[i]:
+        #         print("MISMATCH: ground truth output: ", canonical_outputs[i], " vs cluster output: ", cluster.outputs[i])
+        
+        total_outputs = max(canonical_len, cluster_len)
+        accuracy = (matches / total_outputs)
+        
+        print(f"Accuracy: {accuracy:.2f}")
+        
+        cluster.set_accuracy(accuracy)
+        
+        if accuracy == 1.0:
+            cluster.align()
+        else:
+            cluster.not_align()
+    
+    clusters.calculate_max_cluster_accuracy()

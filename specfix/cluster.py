@@ -8,6 +8,7 @@ class Clusters:
     def __init__(self):
         self.clusters = []
         self.entropy = 0
+        self.max_cluster_accuracy = 0
         self.test_inputs = []
         self.canonical_outputs = []
 
@@ -33,10 +34,14 @@ class Clusters:
         self.entropy = sum(
             [-cluster.distribution / total * math.log(cluster.distribution / total) for cluster in self.clusters])
 
+    def calculate_max_cluster_accuracy(self):
+        self.max_cluster_accuracy = max(cluster.accuracy for cluster in self.clusters)
+
     def serialize(self):
         return {
             'clusters': [cluster.serialize() for cluster in self.clusters],
             'entropy': self.entropy,
+            'max_cluster_accuracy': self.max_cluster_accuracy,
             'test_inputs': self.test_inputs if any(isinstance(i, set) for i in self.test_inputs) else str(
                 self.test_inputs)
         }
@@ -49,6 +54,7 @@ class Cluster:
         self.is_align_req = None
         self.outputs = outputs
         self.distribution = 0
+        self.accuracy = 0
         self.DRS = None
 
     def add_program_str(self, program_str):
@@ -62,6 +68,9 @@ class Cluster:
 
     def set_distribution(self, distribution):
         self.distribution = distribution
+        
+    def set_accuracy(self, accuracy):
+        self.accuracy = accuracy
 
     def align(self):
         self.is_align_req = True
@@ -78,6 +87,7 @@ class Cluster:
             'requirement': self.requirement,
             'outputs': str(self.outputs),
             'distribution': self.distribution,
+            'accuracy': self.accuracy,
             'is_align_req': self.is_align_req,
             'DRS': self.DRS
         }

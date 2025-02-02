@@ -1,4 +1,5 @@
 Requirement,Total Examples,Passed Examples,Failed Examples,Percentage Passed,Status
+sumfourdivisors,N/A,N/A,N/A,N/A,Fallback Failed
 not_visible_cubes,1,1,0,100.00%,Fully Passed
 main,0,0,0,0.00%,Fully Passed
 no_ofstring,2,2,0,100.00%,Fully Passed
@@ -29,6 +30,7 @@ findspecificpattern,1,0,1,0.00%,Failed
 round_to_five,1,0,1,0.00%,Failed
 calculate_grade,2,2,0,100.00%,Fully Passed
 is_power_of_eight,0,0,0,0.00%,Fully Passed
+cantransform,N/A,N/A,N/A,N/A,Fallback Failed
 minfallingpathsum,1,1,0,100.00%,Fully Passed
 findxy,0,0,0,0.00%,Fully Passed
 minflipsmonoincr,3,3,0,100.00%,Fully Passed
@@ -47,6 +49,7 @@ get_middle,4,4,0,100.00%,Fully Passed
 sea_sick,0,0,0,0.00%,Fully Passed
 englishwords,0,0,0,0.00%,Fully Passed
 findtwoelement,2,0,2,0.00%,Failed
+_init_,N/A,N/A,N/A,N/A,Fallback Failed
 human_years_cat_years_dog_years,3,3,0,100.00%,Fully Passed
 move_zeros,1,1,0,100.00%,Fully Passed
 countpairs,2,0,2,0.00%,Failed
@@ -78,6 +81,7 @@ get_exponent,0,0,0,0.00%,Fully Passed
 my_crib,0,0,0,0.00%,Fully Passed
 evalrpn,3,3,0,100.00%,Fully Passed
 common_divisor,2,2,0,100.00%,Fully Passed
+smallestrangeii,N/A,N/A,N/A,N/A,Fallback Failed
 paircubecount,2,1,1,50.00%,Partially Passed
 hammingdistance,1,1,0,100.00%,Fully Passed
 maxprofit,1,1,0,100.00%,Fully Passed
@@ -119,6 +123,7 @@ longestpalin,0,0,0,0.00%,Fully Passed
 printfibb,0,0,0,0.00%,Fully Passed
 pronicnumbers,0,0,0,0.00%,Fully Passed
 eval_object,0,0,0,0.00%,Fully Passed
+largestperimeter,N/A,N/A,N/A,N/A,Fallback Failed
 solve,0,0,0,0.00%,Fully Passed
 ispossible,2,2,0,100.00%,Fully Passed
 nthevenfibonacci,2,2,0,100.00%,Fully Passed
@@ -126,6 +131,7 @@ sum,2,1,1,50.00%,Partially Passed
 count,2,0,2,0.00%,Failed
 find_missing_letter,2,2,0,100.00%,Fully Passed
 find_median,2,0,2,0.00%,Failed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 solve,3,3,0,100.00%,Fully Passed
 reverser,2,2,0,100.00%,Fully Passed
 get_order,1,1,0,100.00%,Fully Passed
@@ -158,6 +164,7 @@ find_nth_occurrence,8,8,0,100.00%,Fully Passed
 rob,2,2,0,100.00%,Fully Passed
 replacewords,1,1,0,100.00%,Fully Passed
 solution,1,1,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 phisum,2,2,0,100.00%,Fully Passed
 sumbetweentwokth,2,0,2,0.00%,Failed
 evaluatepostfix,2,2,0,100.00%,Fully Passed
@@ -185,6 +192,7 @@ evenfibsum,2,2,0,100.00%,Fully Passed
 numbertowords,4,4,0,100.00%,Fully Passed
 sorter,2,2,0,100.00%,Fully Passed
 sort_array,1,1,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 lcsk,2,2,0,100.00%,Fully Passed
 parse_mana_cost,0,0,0,0.00%,Fully Passed
 sort_array,1,1,0,100.00%,Fully Passed
@@ -196,6 +204,9 @@ totaldigits,2,0,2,0.00%,Failed
 maxdigit,2,2,0,100.00%,Fully Passed
 only_one,4,4,0,100.00%,Fully Passed
 check_vowel,0,0,0,0.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 combine,1,1,0,100.00%,Fully Passed
 travel,1,1,0,100.00%,Fully Passed
 div_con,3,3,0,100.00%,Fully Passed
@@ -210,6 +221,7 @@ solvenqueens,1,1,0,100.00%,Fully Passed
 longestsubarray,5,5,0,100.00%,Fully Passed
 numsteps,3,3,0,100.00%,Fully Passed
 isrotated,0,0,0,0.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 title_to_number,3,3,0,100.00%,Fully Passed
 shifted_diff,6,6,0,100.00%,Fully Passed
 majorityelement,2,0,2,0.00%,Failed
@@ -218,6 +230,7 @@ palindromicpartition,2,2,0,100.00%,Fully Passed
 am_i_afraid,0,0,0,0.00%,Fully Passed
 klargest,2,0,2,0.00%,Failed
 fun,2,2,0,100.00%,Fully Passed
+init,N/A,N/A,N/A,N/A,Fallback Failed
 sharkovsky,0,0,0,0.00%,Fully Passed
 date_correct,4,4,0,100.00%,Fully Passed
 thelastdigit,2,2,0,100.00%,Fully Passed
@@ -247,6 +260,7 @@ pretoinfix,0,0,0,0.00%,Fully Passed
 counttriplets,0,0,0,0.00%,Fully Passed
 is_hollow,0,0,0,0.00%,Fully Passed
 count,2,2,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 longestsubstrdistinctchars,2,2,0,100.00%,Fully Passed
 fingercount,2,2,0,100.00%,Fully Passed
 valid_parentheses,0,0,0,0.00%,Fully Passed
@@ -286,15 +300,18 @@ matrixdiagonally,0,0,0,0.00%,Fully Passed
 is_int_array,6,6,0,100.00%,Fully Passed
 generate_diagonal,3,3,0,100.00%,Fully Passed
 group_cities,3,3,0,100.00%,Fully Passed
+removecoveredintervals,N/A,N/A,N/A,N/A,Fallback Failed
 rearrangearray,0,0,0,0.00%,Fully Passed
 sum_them,4,1,3,25.00%,Partially Passed
 transform,1,1,0,100.00%,Fully Passed
 gematria,1,1,0,100.00%,Fully Passed
 orderlyqueue,2,2,0,100.00%,Fully Passed
 solve,1,1,0,100.00%,Fully Passed
+average,N/A,N/A,N/A,N/A,Fallback Failed
 findinputtype,2,2,0,100.00%,Fully Passed
 sumsubseqwidths,1,1,0,100.00%,Fully Passed
 areanagram,2,0,2,0.00%,Failed
+numpoints,N/A,N/A,N/A,N/A,Fallback Failed
 my_add,2,1,1,50.00%,Partially Passed
 nthmysterious,2,2,0,100.00%,Fully Passed
 sophie_primes,0,0,0,0.00%,Fully Passed
@@ -332,6 +349,7 @@ nthposition,2,2,0,100.00%,Fully Passed
 majorityelement,2,2,0,100.00%,Fully Passed
 validmountainarray,0,0,0,0.00%,Fully Passed
 countchars,1,1,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 subarrayswithkdistinct,2,2,0,100.00%,Fully Passed
 reindeer,3,3,0,100.00%,Fully Passed
 indices,1,1,0,100.00%,Fully Passed
@@ -346,6 +364,7 @@ customsort,2,0,2,0.00%,Failed
 interleave,4,4,0,100.00%,Fully Passed
 getpairscount,2,0,2,0.00%,Failed
 checkrecord,2,2,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 removeconsonants,0,0,0,0.00%,Fully Passed
 findthelongestsubstring,3,3,0,100.00%,Fully Passed
 nthdigit,2,1,1,50.00%,Partially Passed
@@ -370,17 +389,20 @@ swap,5,5,0,100.00%,Fully Passed
 isdivisible,2,2,0,100.00%,Fully Passed
 setalloddbits,2,2,0,100.00%,Fully Passed
 samefreq,0,0,0,0.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 solve,2,2,0,100.00%,Fully Passed
 graycode,2,2,0,100.00%,Fully Passed
 leftrotate,2,0,2,0.00%,Failed
 sort,0,0,0,0.00%,Fully Passed
 count_rect_triang,2,2,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 encode,0,0,0,0.00%,Fully Passed
 findkrotation,2,0,2,0.00%,Failed
 graceful_tipping,4,2,2,50.00%,Partially Passed
 countofnumbers,2,2,0,100.00%,Fully Passed
 climb,1,1,0,100.00%,Fully Passed
 motif_locator,3,3,0,100.00%,Fully Passed
+checkifexist,N/A,N/A,N/A,N/A,Fallback Failed
 twos_difference,4,4,0,100.00%,Fully Passed
 __init__,0,0,0,0.00%,Fully Passed
 fishex,1,1,0,100.00%,Fully Passed
@@ -418,12 +440,14 @@ oddnumberofdivisor,2,0,2,0.00%,Failed
 equalpartition,0,0,0,0.00%,Fully Passed
 code,4,1,3,25.00%,Partially Passed
 divide,2,2,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 is_madhav_array,0,0,0,0.00%,Fully Passed
 possible_positions,1,1,0,100.00%,Fully Passed
 tax_calculator,2,1,1,50.00%,Partially Passed
 reverse_fun,1,1,0,100.00%,Fully Passed
 green,1,1,0,100.00%,Fully Passed
 minsteptodeletestring,2,2,0,100.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 interweave,2,2,0,100.00%,Fully Passed
 remove_duplicate_words,1,1,0,100.00%,Fully Passed
 numsquares,2,2,0,100.00%,Fully Passed
@@ -438,6 +462,7 @@ countways,2,2,0,100.00%,Fully Passed
 isvalidserialization,0,0,0,0.00%,Fully Passed
 findelement,2,0,2,0.00%,Failed
 longest_palindrome,2,2,0,100.00%,Fully Passed
+bagoftokensscore,N/A,N/A,N/A,N/A,Fallback Failed
 subsetswithdup,0,0,0,0.00%,Fully Passed
 oppositefaceofdice,2,2,0,100.00%,Fully Passed
 reduce_pyramid,3,3,0,100.00%,Fully Passed
@@ -453,6 +478,8 @@ transform,2,2,0,100.00%,Fully Passed
 any_odd,3,0,3,0.00%,Failed
 series_sum,3,3,0,100.00%,Fully Passed
 levelorder,0,0,0,0.00%,Fully Passed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
+__init__,N/A,N/A,N/A,N/A,Fallback Failed
 is_very_even_number,0,0,0,0.00%,Fully Passed
 is_bleak,2,2,0,100.00%,Fully Passed
 crosspattern,2,0,2,0.00%,Failed

@@ -1,0 +1,474 @@
+Requirement,Total Examples,Passed Examples,Failed Examples,Percentage Passed,Status
+not_visible_cubes,1,1,0,100.00%,Fully Passed
+main,0,0,0,0.00%,Fully Passed
+no_ofstring,2,2,0,100.00%,Fully Passed
+generate_integers,1,1,0,100.00%,Fully Passed
+penaltyscore,2,2,0,100.00%,Fully Passed
+is_palindrome,0,0,0,0.00%,Fully Passed
+faro_cycles,2,1,1,50.00%,Partially Passed
+tribonacci,2,2,0,100.00%,Fully Passed
+canjump,2,2,0,100.00%,Fully Passed
+trailingzeroes,2,2,0,100.00%,Fully Passed
+count,2,2,0,100.00%,Fully Passed
+is_anagram,0,0,0,0.00%,Fully Passed
+ncr,2,2,0,100.00%,Fully Passed
+numofprisoners,2,2,0,100.00%,Fully Passed
+maxodd,2,2,0,100.00%,Fully Passed
+minthirdpiles,2,2,0,100.00%,Fully Passed
+removeduplicates,0,0,0,0.00%,Fully Passed
+calculate_1rm,3,2,1,66.67%,Partially Passed
+printuniquesubset,1,1,0,100.00%,Fully Passed
+minimum_number,2,2,0,100.00%,Fully Passed
+ispossible,2,2,0,100.00%,Fully Passed
+lostsheep,2,0,2,0.00%,Failed
+longestsubstring,2,2,0,100.00%,Fully Passed
+maxdiffindex,1,0,1,0.00%,Failed
+kontti,0,0,0,0.00%,Fully Passed
+firstdigit,2,0,2,0.00%,Failed
+findspecificpattern,1,0,1,0.00%,Failed
+round_to_five,1,0,1,0.00%,Failed
+calculate_grade,2,2,0,100.00%,Fully Passed
+is_power_of_eight,0,0,0,0.00%,Fully Passed
+minfallingpathsum,1,1,0,100.00%,Fully Passed
+findxy,0,0,0,0.00%,Fully Passed
+minflipsmonoincr,3,3,0,100.00%,Fully Passed
+palindrome,0,0,0,0.00%,Fully Passed
+findsubstring,3,3,0,100.00%,Fully Passed
+bumps,0,0,0,0.00%,Fully Passed
+xor,0,0,0,0.00%,Fully Passed
+maxproductsubarrayofsizek,2,0,2,0.00%,Failed
+smallestkdigitnum,2,2,0,100.00%,Fully Passed
+shortestunsub,2,2,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+modulo,2,2,0,100.00%,Fully Passed
+word_search,1,1,0,100.00%,Fully Passed
+string_parse,2,2,0,100.00%,Fully Passed
+get_middle,4,4,0,100.00%,Fully Passed
+sea_sick,0,0,0,0.00%,Fully Passed
+englishwords,0,0,0,0.00%,Fully Passed
+findtwoelement,2,0,2,0.00%,Failed
+human_years_cat_years_dog_years,3,3,0,100.00%,Fully Passed
+move_zeros,1,1,0,100.00%,Fully Passed
+countpairs,2,0,2,0.00%,Failed
+beasts,3,0,3,0.00%,Failed
+countpairs,2,0,2,0.00%,Failed
+distinctadjacentelement,0,0,0,0.00%,Fully Passed
+iscircular,2,2,0,100.00%,Fully Passed
+make_acronym,0,0,0,0.00%,Fully Passed
+count,2,2,0,100.00%,Fully Passed
+kooka_counter,0,0,0,0.00%,Fully Passed
+solve_for_x,4,4,0,100.00%,Fully Passed
+roots,3,2,1,66.67%,Partially Passed
+binary_cleaner,1,1,0,100.00%,Fully Passed
+insert,0,0,0,0.00%,Fully Passed
+largestsubsquare,2,2,0,100.00%,Fully Passed
+maxequalrowsafterflips,3,3,0,100.00%,Fully Passed
+missing_angle,3,0,3,0.00%,Failed
+maximalsquare,1,0,1,0.00%,Failed
+numberofsubarrays,3,3,0,100.00%,Fully Passed
+london_city_hacker,0,0,0,0.00%,Fully Passed
+get_grade,0,0,0,0.00%,Fully Passed
+bintreesortedlevels,2,0,2,0.00%,Failed
+numberofpath,2,1,1,50.00%,Partially Passed
+valid_mersenne,0,0,0,0.00%,Fully Passed
+printsubsets,0,0,0,0.00%,Fully Passed
+repeatedstringmatch,1,1,0,100.00%,Fully Passed
+findsum,2,0,2,0.00%,Failed
+get_exponent,0,0,0,0.00%,Fully Passed
+my_crib,0,0,0,0.00%,Fully Passed
+evalrpn,3,3,0,100.00%,Fully Passed
+common_divisor,2,2,0,100.00%,Fully Passed
+paircubecount,2,1,1,50.00%,Partially Passed
+hammingdistance,1,1,0,100.00%,Fully Passed
+maxprofit,1,1,0,100.00%,Fully Passed
+sum_dig_pow,3,3,0,100.00%,Fully Passed
+how_many_bees,2,1,1,50.00%,Partially Passed
+nearestpalindromic,1,1,0,100.00%,Fully Passed
+minimumenergy,1,0,1,0.00%,Failed
+convert_recipe,4,3,1,75.00%,Partially Passed
+numofperfectsquares,2,2,0,100.00%,Fully Passed
+unlucky_number,2,2,0,100.00%,Fully Passed
+separate_liquids,1,1,0,100.00%,Fully Passed
+isdisarium,2,2,0,100.00%,Fully Passed
+printnumber,0,0,0,0.00%,Fully Passed
+convert,1,1,0,100.00%,Fully Passed
+roundtonearest,2,2,0,100.00%,Fully Passed
+beeramid,2,2,0,100.00%,Fully Passed
+reverse,1,1,0,100.00%,Fully Passed
+countways,2,0,2,0.00%,Failed
+checktree,0,0,0,0.00%,Fully Passed
+min_and_max,2,2,0,100.00%,Fully Passed
+total,3,3,0,100.00%,Fully Passed
+maximumprofit,1,0,1,0.00%,Failed
+chess_board,2,2,0,100.00%,Fully Passed
+pivotindex,2,2,0,100.00%,Fully Passed
+numtilepossibilities,3,3,0,100.00%,Fully Passed
+maximumsumsubarray,2,0,2,0.00%,Failed
+makesquare,0,0,0,0.00%,Fully Passed
+maxsubstr,2,2,0,100.00%,Fully Passed
+fibexpression,2,1,1,50.00%,Partially Passed
+divisiblebym,2,0,2,0.00%,Failed
+insert_missing_letters,1,1,0,100.00%,Fully Passed
+fourpointsquare,2,0,2,0.00%,Failed
+countdigits,2,2,0,100.00%,Fully Passed
+countsubarray,2,0,2,0.00%,Failed
+okkookoo,3,3,0,100.00%,Fully Passed
+mean_vs_median,0,0,0,0.00%,Fully Passed
+same_encryption,0,0,0,0.00%,Fully Passed
+longestpalin,0,0,0,0.00%,Fully Passed
+printfibb,0,0,0,0.00%,Fully Passed
+pronicnumbers,0,0,0,0.00%,Fully Passed
+eval_object,0,0,0,0.00%,Fully Passed
+solve,0,0,0,0.00%,Fully Passed
+ispossible,2,2,0,100.00%,Fully Passed
+nthevenfibonacci,2,2,0,100.00%,Fully Passed
+sum,2,1,1,50.00%,Partially Passed
+count,2,0,2,0.00%,Failed
+find_missing_letter,2,2,0,100.00%,Fully Passed
+find_median,2,0,2,0.00%,Failed
+solve,3,3,0,100.00%,Fully Passed
+reverser,2,2,0,100.00%,Fully Passed
+get_order,1,1,0,100.00%,Fully Passed
+maxsumafterpartitioning,3,3,0,100.00%,Fully Passed
+rectanglearea,2,2,0,100.00%,Fully Passed
+problem,0,0,0,0.00%,Fully Passed
+area_of_polygon_inside_circle,3,3,0,100.00%,Fully Passed
+increasingtriplet,0,0,0,0.00%,Fully Passed
+samechar,0,0,0,0.00%,Fully Passed
+rotatematrix,0,0,0,0.00%,Fully Passed
+equalize,1,1,0,100.00%,Fully Passed
+findduplicate,2,2,0,100.00%,Fully Passed
+find_initial_numbers,0,0,0,0.00%,Fully Passed
+primeproduct,2,2,0,100.00%,Fully Passed
+countsubarray,2,0,2,0.00%,Failed
+constrainedsubsetsum,3,3,0,100.00%,Fully Passed
+findcoverage,0,0,0,0.00%,Fully Passed
+next_letter,0,0,0,0.00%,Fully Passed
+compress,2,2,0,100.00%,Fully Passed
+hex_hash,3,3,0,100.00%,Fully Passed
+likes,0,0,0,0.00%,Fully Passed
+two_decimal_places,2,2,0,100.00%,Fully Passed
+cost_of_carpet,0,0,0,0.00%,Fully Passed
+perfectsum,2,0,2,0.00%,Failed
+snakepattern,0,0,0,0.00%,Fully Passed
+easyproblem,2,2,0,100.00%,Fully Passed
+latticepoints,2,2,0,100.00%,Fully Passed
+solve,1,0,1,0.00%,Failed
+find_nth_occurrence,8,8,0,100.00%,Fully Passed
+rob,2,2,0,100.00%,Fully Passed
+replacewords,1,1,0,100.00%,Fully Passed
+solution,1,1,0,100.00%,Fully Passed
+phisum,2,2,0,100.00%,Fully Passed
+sumbetweentwokth,2,0,2,0.00%,Failed
+evaluatepostfix,2,2,0,100.00%,Fully Passed
+sort_string,6,6,0,100.00%,Fully Passed
+xorcal,2,2,0,100.00%,Fully Passed
+countpackets,2,2,0,100.00%,Fully Passed
+uniq_c,1,1,0,100.00%,Fully Passed
+rremove,2,2,0,100.00%,Fully Passed
+countodds,2,2,0,100.00%,Fully Passed
+countperfectsquares,2,0,2,0.00%,Failed
+days_represented,1,1,0,100.00%,Fully Passed
+findmin,2,0,2,0.00%,Failed
+has_two_cube_sums,0,0,0,0.00%,Fully Passed
+minsquares,2,2,0,100.00%,Fully Passed
+primesum,2,2,0,100.00%,Fully Passed
+getfirstsetbit,2,2,0,100.00%,Fully Passed
+possible_paths,0,0,0,0.00%,Fully Passed
+diff,0,0,0,0.00%,Fully Passed
+only_duplicates,1,1,0,100.00%,Fully Passed
+minsteps,2,2,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+findmaxsubarraysum,2,0,2,0.00%,Failed
+alphabetic,2,2,0,100.00%,Fully Passed
+evenfibsum,2,2,0,100.00%,Fully Passed
+numbertowords,4,4,0,100.00%,Fully Passed
+sorter,2,2,0,100.00%,Fully Passed
+sort_array,1,1,0,100.00%,Fully Passed
+lcsk,2,2,0,100.00%,Fully Passed
+parse_mana_cost,0,0,0,0.00%,Fully Passed
+sort_array,1,1,0,100.00%,Fully Passed
+lowercase_count,3,3,0,100.00%,Fully Passed
+tilingrectangle,3,3,0,100.00%,Fully Passed
+countsquares,2,2,0,100.00%,Fully Passed
+func_or,0,0,0,0.00%,Fully Passed
+totaldigits,2,0,2,0.00%,Failed
+maxdigit,2,2,0,100.00%,Fully Passed
+only_one,4,4,0,100.00%,Fully Passed
+check_vowel,0,0,0,0.00%,Fully Passed
+combine,1,1,0,100.00%,Fully Passed
+travel,1,1,0,100.00%,Fully Passed
+div_con,3,3,0,100.00%,Fully Passed
+countdivisiblesubseq,2,2,0,100.00%,Fully Passed
+simplifiedfractions,4,3,1,75.00%,Partially Passed
+maxindexdiff,2,0,2,0.00%,Failed
+is_onion_array,0,0,0,0.00%,Fully Passed
+add,4,4,0,100.00%,Fully Passed
+cycle,8,8,0,100.00%,Fully Passed
+maxval,2,0,2,0.00%,Failed
+solvenqueens,1,1,0,100.00%,Fully Passed
+longestsubarray,5,5,0,100.00%,Fully Passed
+numsteps,3,3,0,100.00%,Fully Passed
+isrotated,0,0,0,0.00%,Fully Passed
+title_to_number,3,3,0,100.00%,Fully Passed
+shifted_diff,6,6,0,100.00%,Fully Passed
+majorityelement,2,0,2,0.00%,Failed
+values,1,1,0,100.00%,Fully Passed
+palindromicpartition,2,2,0,100.00%,Fully Passed
+am_i_afraid,0,0,0,0.00%,Fully Passed
+klargest,2,0,2,0.00%,Failed
+fun,2,2,0,100.00%,Fully Passed
+sharkovsky,0,0,0,0.00%,Fully Passed
+date_correct,4,4,0,100.00%,Fully Passed
+thelastdigit,2,2,0,100.00%,Fully Passed
+locate,0,0,0,0.00%,Fully Passed
+numofways,2,2,0,100.00%,Fully Passed
+swap,4,4,0,100.00%,Fully Passed
+killinspree,2,2,0,100.00%,Fully Passed
+sum_circles,0,0,0,0.00%,Fully Passed
+totaldivisors,2,2,0,100.00%,Fully Passed
+numofsubarrays,5,5,0,100.00%,Fully Passed
+largestsumofaverages,1,0,1,0.00%,Failed
+secfrequent,0,0,0,0.00%,Fully Passed
+recamansequence,0,0,0,0.00%,Fully Passed
+setbits,2,2,0,100.00%,Fully Passed
+countfactors,2,2,0,100.00%,Fully Passed
+say_hello,1,1,0,100.00%,Fully Passed
+fibonaccidigits,2,2,0,100.00%,Fully Passed
+issparse,2,2,0,100.00%,Fully Passed
+histogram,3,3,0,100.00%,Fully Passed
+arr2bin,2,2,0,100.00%,Fully Passed
+trailingzeroes,2,2,0,100.00%,Fully Passed
+longestsubsequence,2,2,0,100.00%,Fully Passed
+x1series,2,2,0,100.00%,Fully Passed
+minpathsum,1,1,0,100.00%,Fully Passed
+squaresdiff,2,2,0,100.00%,Fully Passed
+pretoinfix,0,0,0,0.00%,Fully Passed
+counttriplets,0,0,0,0.00%,Fully Passed
+is_hollow,0,0,0,0.00%,Fully Passed
+count,2,2,0,100.00%,Fully Passed
+longestsubstrdistinctchars,2,2,0,100.00%,Fully Passed
+fingercount,2,2,0,100.00%,Fully Passed
+valid_parentheses,0,0,0,0.00%,Fully Passed
+minimumsquares,2,2,0,100.00%,Fully Passed
+get_section_id,2,2,0,100.00%,Fully Passed
+sum_digits,3,3,0,100.00%,Fully Passed
+getnthpell,2,2,0,100.00%,Fully Passed
+meters,0,0,0,0.00%,Fully Passed
+sumsubstrings,2,2,0,100.00%,Fully Passed
+countprimes,1,1,0,100.00%,Fully Passed
+maximum_cuts,2,2,0,100.00%,Fully Passed
+consecutive_sum,4,4,0,100.00%,Fully Passed
+replace_letters,0,0,0,0.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+findvalue,2,2,0,100.00%,Fully Passed
+search,2,2,0,100.00%,Fully Passed
+ipsubnet2list,2,1,1,50.00%,Partially Passed
+canjump,0,0,0,0.00%,Fully Passed
+stringy,3,3,0,100.00%,Fully Passed
+find_2nd_largest,0,0,0,0.00%,Fully Passed
+maxpower,5,5,0,100.00%,Fully Passed
+reversewords,1,1,0,100.00%,Fully Passed
+longestperfectpiece,2,0,2,0.00%,Failed
+next_numb,0,0,0,0.00%,Fully Passed
+accum,3,3,0,100.00%,Fully Passed
+numrescueboats,3,3,0,100.00%,Fully Passed
+distinctcount,2,0,2,0.00%,Failed
+countsubarrays,2,2,0,100.00%,Fully Passed
+meeting,3,3,0,100.00%,Fully Passed
+numprimearrangements,2,2,0,100.00%,Fully Passed
+endless_string,4,4,0,100.00%,Fully Passed
+count_deaf_rats,2,0,2,0.00%,Failed
+subarraysdivbyk,1,1,0,100.00%,Fully Passed
+sort_nested_list,1,1,0,100.00%,Fully Passed
+findelement,2,0,2,0.00%,Failed
+matrixdiagonally,0,0,0,0.00%,Fully Passed
+is_int_array,6,6,0,100.00%,Fully Passed
+generate_diagonal,3,3,0,100.00%,Fully Passed
+group_cities,3,3,0,100.00%,Fully Passed
+rearrangearray,0,0,0,0.00%,Fully Passed
+sum_them,4,1,3,25.00%,Partially Passed
+transform,1,1,0,100.00%,Fully Passed
+gematria,1,1,0,100.00%,Fully Passed
+orderlyqueue,2,2,0,100.00%,Fully Passed
+solve,1,1,0,100.00%,Fully Passed
+findinputtype,2,2,0,100.00%,Fully Passed
+sumsubseqwidths,1,1,0,100.00%,Fully Passed
+areanagram,2,0,2,0.00%,Failed
+my_add,2,1,1,50.00%,Partially Passed
+nthmysterious,2,2,0,100.00%,Fully Passed
+sophie_primes,0,0,0,0.00%,Fully Passed
+sum_nested_numbers,1,0,1,0.00%,Failed
+nthterm,2,2,0,100.00%,Fully Passed
+to_roman,2,1,1,50.00%,Partially Passed
+pattern,0,0,0,0.00%,Fully Passed
+common_element,1,0,1,0.00%,Failed
+cup_volume,5,5,0,100.00%,Fully Passed
+last_digit,5,5,0,100.00%,Fully Passed
+womens_age,2,2,0,100.00%,Fully Passed
+factorsoffactorial,2,2,0,100.00%,Fully Passed
+house_of_cards,1,0,1,0.00%,Failed
+graytobinary,3,3,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+min_operations,2,0,2,0.00%,Failed
+hasalternatingbits,4,4,0,100.00%,Fully Passed
+istwistedprime,2,2,0,100.00%,Fully Passed
+firstrepchar,0,0,0,0.00%,Fully Passed
+lengthoflastword,1,1,0,100.00%,Fully Passed
+remove_exclamation_marks,0,0,0,0.00%,Fully Passed
+solve,1,1,0,100.00%,Fully Passed
+querystring,0,0,0,0.00%,Fully Passed
+countofsubstringwithkones,2,2,0,100.00%,Fully Passed
+check,2,2,0,100.00%,Fully Passed
+sort_string,3,3,0,100.00%,Fully Passed
+find,1,0,1,0.00%,Failed
+findsum,2,2,0,100.00%,Fully Passed
+zeros,2,2,0,100.00%,Fully Passed
+switcher,2,0,2,0.00%,Failed
+find_min_num,2,2,0,100.00%,Fully Passed
+the_biggest_search_keys,1,0,1,0.00%,Failed
+__init__,0,0,0,0.00%,Fully Passed
+nthposition,2,2,0,100.00%,Fully Passed
+majorityelement,2,2,0,100.00%,Fully Passed
+validmountainarray,0,0,0,0.00%,Fully Passed
+countchars,1,1,0,100.00%,Fully Passed
+subarrayswithkdistinct,2,2,0,100.00%,Fully Passed
+reindeer,3,3,0,100.00%,Fully Passed
+indices,1,1,0,100.00%,Fully Passed
+ackermann,2,2,0,100.00%,Fully Passed
+threesumclosest,2,0,2,0.00%,Failed
+__init__,0,0,0,0.00%,Fully Passed
+coinchange,5,5,0,100.00%,Fully Passed
+solve,1,0,1,0.00%,Failed
+compute_value,2,2,0,100.00%,Fully Passed
+countps,2,2,0,100.00%,Fully Passed
+customsort,2,0,2,0.00%,Failed
+interleave,4,4,0,100.00%,Fully Passed
+getpairscount,2,0,2,0.00%,Failed
+checkrecord,2,2,0,100.00%,Fully Passed
+removeconsonants,0,0,0,0.00%,Fully Passed
+findthelongestsubstring,3,3,0,100.00%,Fully Passed
+nthdigit,2,1,1,50.00%,Partially Passed
+formcoils,0,0,0,0.00%,Fully Passed
+divisibleby4,2,2,0,100.00%,Fully Passed
+inside_out,2,2,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+computeparity,0,0,0,0.00%,Fully Passed
+pattern,0,0,0,0.00%,Fully Passed
+what_century,6,6,0,100.00%,Fully Passed
+combine,3,3,0,100.00%,Fully Passed
+decrypt,2,1,1,50.00%,Partially Passed
+getrow,1,1,0,100.00%,Fully Passed
+solve,0,0,0,0.00%,Fully Passed
+dup,2,2,0,100.00%,Fully Passed
+reverse_bits,1,1,0,100.00%,Fully Passed
+allpalindromicperms,2,0,2,0.00%,Failed
+nthdaypage,2,2,0,100.00%,Fully Passed
+total_kilometers,0,0,0,0.00%,Fully Passed
+multiplication_table,1,1,0,100.00%,Fully Passed
+swap,5,5,0,100.00%,Fully Passed
+isdivisible,2,2,0,100.00%,Fully Passed
+setalloddbits,2,2,0,100.00%,Fully Passed
+samefreq,0,0,0,0.00%,Fully Passed
+solve,2,2,0,100.00%,Fully Passed
+graycode,2,2,0,100.00%,Fully Passed
+leftrotate,2,0,2,0.00%,Failed
+sort,0,0,0,0.00%,Fully Passed
+count_rect_triang,2,2,0,100.00%,Fully Passed
+encode,0,0,0,0.00%,Fully Passed
+findkrotation,2,0,2,0.00%,Failed
+graceful_tipping,4,2,2,50.00%,Partially Passed
+countofnumbers,2,2,0,100.00%,Fully Passed
+climb,1,1,0,100.00%,Fully Passed
+motif_locator,3,3,0,100.00%,Fully Passed
+twos_difference,4,4,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+fishex,1,1,0,100.00%,Fully Passed
+count,2,2,0,100.00%,Fully Passed
+factorial,0,0,0,0.00%,Fully Passed
+count_nges,1,0,1,0.00%,Failed
+without_last,2,2,0,100.00%,Fully Passed
+next_num,3,0,3,0.00%,Failed
+all_permuted,1,0,1,0.00%,Failed
+nthpersongetsnthseat,2,2,0,100.00%,Fully Passed
+added_char,3,3,0,100.00%,Fully Passed
+minpartition,0,0,0,0.00%,Fully Passed
+shortestbridge,3,3,0,100.00%,Fully Passed
+longestawesome,4,4,0,100.00%,Fully Passed
+debug,2,2,0,100.00%,Fully Passed
+countcharacters,2,2,0,100.00%,Fully Passed
+anagrams,3,3,0,100.00%,Fully Passed
+rowwithmax1s,2,0,2,0.00%,Failed
+convert,2,2,0,100.00%,Fully Passed
+reverseingroups,2,0,2,0.00%,Failed
+printequalmodnumbers,2,0,2,0.00%,Failed
+bubble,3,1,2,33.33%,Partially Passed
+calculate,4,4,0,100.00%,Fully Passed
+no_repeat,3,3,0,100.00%,Fully Passed
+two_sum,3,0,3,0.00%,Failed
+solve,3,3,0,100.00%,Fully Passed
+abundant_number,0,0,0,0.00%,Fully Passed
+binarypalin,2,2,0,100.00%,Fully Passed
+sequence_sum,4,4,0,100.00%,Fully Passed
+union,0,0,0,0.00%,Fully Passed
+people_with_age_drink,0,0,0,0.00%,Fully Passed
+is_triangle,0,0,0,0.00%,Fully Passed
+frame,0,0,0,0.00%,Fully Passed
+oddnumberofdivisor,2,0,2,0.00%,Failed
+equalpartition,0,0,0,0.00%,Fully Passed
+code,4,1,3,25.00%,Partially Passed
+divide,2,2,0,100.00%,Fully Passed
+is_madhav_array,0,0,0,0.00%,Fully Passed
+possible_positions,1,1,0,100.00%,Fully Passed
+tax_calculator,2,1,1,50.00%,Partially Passed
+reverse_fun,1,1,0,100.00%,Fully Passed
+green,1,1,0,100.00%,Fully Passed
+minsteptodeletestring,2,2,0,100.00%,Fully Passed
+interweave,2,2,0,100.00%,Fully Passed
+remove_duplicate_words,1,1,0,100.00%,Fully Passed
+numsquares,2,2,0,100.00%,Fully Passed
+cog_rpm,1,0,1,0.00%,Failed
+avoid_obstacles,1,1,0,100.00%,Fully Passed
+root,2,0,2,0.00%,Failed
+get_note,0,0,0,0.00%,Fully Passed
+binary_to_decimal,2,2,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+subarrayexists,0,0,0,0.00%,Fully Passed
+countways,2,2,0,100.00%,Fully Passed
+isvalidserialization,0,0,0,0.00%,Fully Passed
+findelement,2,0,2,0.00%,Failed
+longest_palindrome,2,2,0,100.00%,Fully Passed
+subsetswithdup,0,0,0,0.00%,Fully Passed
+oppositefaceofdice,2,2,0,100.00%,Fully Passed
+reduce_pyramid,3,3,0,100.00%,Fully Passed
+subarraysum,1,1,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+countincreasing,2,0,2,0.00%,Failed
+segregateevenodd,0,0,0,0.00%,Fully Passed
+minchar,2,2,0,100.00%,Fully Passed
+is_valid_coordinates,0,0,0,0.00%,Fully Passed
+greet,2,2,0,100.00%,Fully Passed
+removecharacters,2,2,0,100.00%,Fully Passed
+transform,2,2,0,100.00%,Fully Passed
+any_odd,3,0,3,0.00%,Failed
+series_sum,3,3,0,100.00%,Fully Passed
+levelorder,0,0,0,0.00%,Fully Passed
+is_very_even_number,0,0,0,0.00%,Fully Passed
+is_bleak,2,2,0,100.00%,Fully Passed
+crosspattern,2,0,2,0.00%,Failed
+moves,2,2,0,100.00%,Fully Passed
+nth_smallest,3,1,2,33.33%,Partially Passed
+maxvalueafterreverse,2,2,0,100.00%,Fully Passed
+opposite,3,3,0,100.00%,Fully Passed
+minamount,2,0,2,0.00%,Failed
+determinantofmatrix,0,0,0,0.00%,Fully Passed
+finding_k,3,3,0,100.00%,Fully Passed
+__init__,0,0,0,0.00%,Fully Passed
+digitize,1,1,0,100.00%,Fully Passed
+vowel_back,2,0,2,0.00%,Failed
+uniq,1,1,0,100.00%,Fully Passed
+find_all,1,1,0,100.00%,Fully Passed
+findprob,2,1,1,50.00%,Partially Passed
+is_prime,0,0,0,0.00%,Fully Passed
+to_bytes,5,5,0,100.00%,Fully Passed
+segments,2,2,0,100.00%,Fully Passed

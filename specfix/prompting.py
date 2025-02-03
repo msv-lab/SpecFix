@@ -3,7 +3,7 @@ instruction_generate_code = "You are an assistant that generates Python code bas
 
 def prompt_generate_code(requirement):
     return f"""
-Implement a python function that adheres to the requirements. Wrap the generated code in <code></code> tags.  Here is an example:
+Implement a python function that adheres to the requirements. Include imports that are used in the implementation. Wrap the generated code in <code></code> tags. Here is an example:
 # Example
 
 ## Requirement
@@ -492,15 +492,20 @@ Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap
 instruction_test_based_repair = "You are a programming assistant specialized in debugging and fixing Python code."
 
 
-def prompt_test_based_repair(requirement, code, inp, output, canonical_output):
+def prompt_test_based_repair(requirement, code, failed_semantic_input_output):
+    tests = ""
+    for i, (inp, output, canonical_output) in enumerate(failed_semantic_input_output):
+        tests += f"### Test {i + 1}\nInput: {inp}\nOutput: {output}\nExpected: {canonical_output}\n"
     return f"""
 You are a coding assistant specialized in repairing buggy Python programs.
 
 Below is a Python program along with:
 1. Task requirement that describes the program's intended functionality and input/output requirements.
-2. A test input.
-3. The output the buggy program currently produces for that test input.
-4. The correct (canonical) output expected for the same test input.
+2. The buggy Python code.
+3. Failed test cases, including 
+    - Input values that produce incorrect output.
+    - Actual output produced by the program.
+    - Expected (canonical) output.
 
 Please:
 • Understand the task requirement and python program.
@@ -515,14 +520,8 @@ Requirement:
 Buggy Code:
 {code}
 
-Test Input:
-{inp}
-
-Erroneous Output (Current):
-{output}
-
-Correct (Canonical) Output (Expected):
-{canonical_output}
+Failed Test Cases:
+{tests}
 ---
 
 Please return the repaired Python code, wrapped in <code></code> tags.

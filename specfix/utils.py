@@ -1,4 +1,5 @@
 import random
+import math
 import signal
 import types
 import re
@@ -120,9 +121,42 @@ def construct_requirement(requirement, starter_code):
     return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""
 
 
-def check_failed_test(test_inputs, outputs, canonical_outputs):
-    result = []
-    for i in range(len(test_inputs)):
-        if outputs[i] != canonical_outputs[i]:
-            result.append([test_inputs[i], outputs[i], canonical_outputs[i]])
-    return result, len(result) / len(test_inputs)
+def check_failed_semantic_input_output(result_list, inputs, outputs):
+    failed_semantic_input_output = []
+    for i in range(len(inputs)):
+        if result_list[i] != outputs[i]:
+            failed_semantic_input_output.append([inputs[i], result_list[i], outputs[i]])
+    return failed_semantic_input_output, 1 - (len(failed_semantic_input_output) / len(inputs))
+
+
+def construct_failed_tests(cluster1, cluster2, entropy_inputs, canonical_program, entry_point):
+    target_inputs = []
+    for i in range(len(entropy_inputs)):
+        if cluster1.entropy_outputs[i] != cluster2.entropy_outputs[i]:
+            target_inputs.append(entropy_inputs[i])
+    print("GET CANONICAL OUTPUT")
+    canonical_outputs = execute_inputs(canonical_program, target_inputs, entry_point)
+    fails_tests = []
+    for i in range(len(canonical_outputs)):
+        fails_tests.append([target_inputs[i], cluster1.entropy_outputs[i], canonical_outputs[i]])
+    return fails_tests
+
+
+def wilson_lower(p_obs, n, z=1.96):
+    if n == 0 or p_obs < 0 or p_obs > 1:
+        return 0.0
+
+    x = round(p_obs * n)
+    x = max(0, min(x, n))
+
+    denominator = 1 + (z ** 2) / n
+    centre_adjusted = x / n + (z ** 2) / (2 * n)
+    adjusted_variance = (x * (n - x) / n ** 3) + (z ** 2) / (4 * n ** 2)
+
+    if adjusted_variance <= 0:
+        return max(0.0, x / n - z / (2 * n))
+
+    adjust = z * math.sqrt(adjusted_variance)
+    lower_bound = (centre_adjusted - adjust) / denominator
+
+    return max(lower_bound, 0.0)

@@ -11,6 +11,8 @@ class Clusters:
         self.max_cluster_accuracy = 0
         self.test_inputs = []
         self.canonical_outputs = []
+        self.canonical_solution = None
+        self.at_least_one_align = False
 
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
@@ -23,6 +25,12 @@ class Clusters:
 
     def set_canonical_outputs(self, canonical_outputs):
         self.canonical_outputs = canonical_outputs
+
+    def set_canonical_solution(self, canonical_solution):
+        self.canonical_solution = canonical_solution
+
+    def set_at_least_one_align(self):
+        self.at_least_one_align = True
 
     def calculate_distribution(self):
         total = sum([len(cluster.programs_str) for cluster in self.clusters])
@@ -43,7 +51,12 @@ class Clusters:
             'entropy': self.entropy,
             'max_cluster_accuracy': self.max_cluster_accuracy,
             'test_inputs': self.test_inputs if any(isinstance(i, set) for i in self.test_inputs) else str(
-                self.test_inputs)
+                self.test_inputs),
+            'canonical_outputs': self.canonical_outputs if any(
+                isinstance(i, set) for i in self.canonical_outputs) else str(
+                self.canonical_outputs),
+            'canonical_solution': self.canonical_solution,
+            'at_least_one_align': self.at_least_one_align
         }
 
 
@@ -51,8 +64,10 @@ class Cluster:
     def __init__(self, outputs):
         self.programs_str = []
         self.requirement = []
-        self.is_align_req = None
+        self.is_align_req = False
         self.outputs = outputs
+        self.failed_tests = []
+        self.test_consistency = 0
         self.distribution = 0
         self.accuracy = 0
         self.DRS = None
@@ -75,11 +90,11 @@ class Cluster:
     def align(self):
         self.is_align_req = True
 
-    def not_align(self):
-        self.is_align_req = False
+    def set_failed_tests(self, failed_tests):
+        self.failed_tests = failed_tests
 
-    def get_alignment(self):
-        return self.is_align_req
+    def set_test_consistency(self, test_consistency):
+        self.test_consistency = test_consistency
 
     def serialize(self):
         return {

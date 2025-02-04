@@ -20,7 +20,7 @@ class SpecFixAccuracyEvaluator:
     def generate_programs(self, requirements):
         print("GENERATE PROGRAMS")
         response = self.model.get_response(instruction_generate_code,
-                                           prompt_generate_code(requirements), 0.8)
+                                           prompt_generate_code(requirements), 1)
         code = unwrap(response, "code")
         if code == "":
             return self.generate_programs(requirements)
@@ -197,11 +197,6 @@ class SpecFixAccuracyEvaluator:
                                            )
         return unwrap(response, "discrepancy")
 
-    def find_discrepancy_fact(self, requirements, code, facts, assumptions, inp, outputs):
-        print("FIND DISCREPANCY WITH FACT")
-        # response = self.model.get_response(instruction_find_discrepancy_fact,
-        # return unwrap(response, "discrepancy")
-
     def simulate_answer(self, requirement, program, inputs, question):
         tests = construct_test_case(program, inputs)
         print("SIMULATE ANSWER")
@@ -215,14 +210,18 @@ class SpecFixAccuracyEvaluator:
                                            prompt_minimize_requirement(ori_req, repaired_req))
         return unwrap(response, "requirement")
 
-    def generate_facts(self, requirement):
-        print("GENERATE FACTS")
-        response = self.model.get_response(instruction_generate_fact,
-                                           prompt_generate_fact(requirement))
-        code = unwrap(response, "code")
-        fact = unwrap(response, "facts")
-        assumption = unwrap(response, "assumptions")
-        return code, fact, assumption
+    def inverse_requirement(self, code):
+        print("INVERSE REQUIREMENT")
+        response = self.model.get_response(instruction_inverse_requirement,
+                                           prompt_inverse_requirement(code))
+        return unwrap(response, "requirement")
+
+    def test_based_repair(self, program, requirement, test_inputs):
+        test = random.choice(test_inputs)
+        print("TEST BASED REPAIR")
+        response = self.model.get_response(instruction_test_based_repair,
+                                           prompt_test_based_repair(requirement, program, *test))
+        return unwrap(response, "code")
 
     def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
         self.total_runs += 1

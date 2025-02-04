@@ -3,27 +3,63 @@ import random
 import concurrent.futures
 import jsonlines
 import configparser
+import re
 from scipy.stats import pointbiserialr
 from specfix.differential import differential_tester, calculate_accuracy_ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_requirement
 
+def extract_taco_tests(requirement_text):
+
+    # find blocks that begin with Example
+    pattern1 = r"(Example\s*\d*:\s*.*?)(?=(?:Example\s*\d*:|Your Task:|$))"
+    examples = re.findall(pattern1, requirement_text, re.DOTALL)
+    if examples and any(example.strip() for example in examples):
+        return "\n\n".join(example.strip() for example in examples)
+    
+    # try to find a markdown ## Examples section
+    if "## Examples" in requirement_text:
+        # This pattern captures from "## Examples" until the next markdown header ("## ") or end-of-text.
+        pattern2 = r"(## Examples\s*.*?)(?=\n##\s|$)"
+        md_examples = re.findall(pattern2, requirement_text, re.DOTALL)
+        if md_examples and any(section.strip() for section in md_examples):
+            return "\n\n".join(section.strip() for section in md_examples)
+    
+    # capture any lines containing "Input:" or "Output:"
+    lines = requirement_text.splitlines()
+    test_lines = [line for line in lines if re.search(r'Input:|Output:', line)]
+    return "\n".join(test_lines)
+
+def extract_humaneval_tests(requirement):
+
+    pattern = re.compile(r'^( {4}>>>.*(?:\n(?! {4}>>>).*)*)', re.MULTILINE)
+    matches = pattern.findall(requirement)
+    
+    # Join each block with a blank line between them
+    return "\n\n".join(match.strip() for match in matches)
+
+def extract_mbpp_tests(requirement):
+    # We don't want to use private tests like ClarifyGPT did: only public
+    match = re.search(r'assert.*', requirement)
+    return match.group(0) if match else None
 
 def parse_problem(problem, dataset):
+    # ORIGINAL clarifyGPT, with private tests exposed
+    # if dataset == "clarify_mbpp":
+    #     # Exact dataset clarifyGPT used, for exact replica. Tests are PRIVATE
+    #     requirement = problem['prompt']
+    #     tests = problem['tests']
+    #     canonical_solution = problem['canonical_solution']
+    
     if dataset == "taco_lite":
         requirement = construct_requirement(problem['requirement'], problem['starter_code'])
-        canonical_solution = random.choice(problem['solutions'])
-        # TODO: add tests.
-    elif dataset == "clarify_mbpp" or "clarify_mbpp_pilot":
-        requirement = problem['prompt']
-        tests = problem['tests']
-        canonical_solution = problem['canonical_solution']
+        canonical_solution = random.choice(problem['solutions'])   
     else:
         requirement = problem['requirement']
         canonical_solution = problem['canonical_solution']
-        # TODO: add tests
+        
     entry_point = problem['entry_point']
-    return requirement, canonical_solution, entry_point, tests
+    return requirement, canonical_solution, entry_point
 
 
 def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs, n_shot):
@@ -49,7 +85,6 @@ def main():
     parser.add_argument("-p", "--dataset_path", dest="dataset_path",
                         help="Path to dataset")
     parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
-    parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
     parser.add_argument("-ns", "--nshot", dest="n_shot", default="zero_shot",
                         help="Number of shots (demonstrations) given to LLM before prompt: one_shot, two_shot, three_shot")
@@ -62,28 +97,37 @@ def main():
     model_name = "qwen2.5-coder-14b-instruct"
     api_key = config['API_KEY']['qwen_key']
 
+    # For all LLMs, we set the top p to 0.95, the frequency_penalty to 0. The max_tokens represents the maximum
+    # number of tokens to be generated, which is set to 800 for the prompt of asking clarifying questions
+    # and 300 for other prompts. In particular, we set the temperature to 0, except when sampling code
+    # solutions, for which the temperature is set to 0.8.
+    
+    # Frequency penalty defaults to 0
+    # max tokens varies depending on prompt, is a parameter of get_response in our model API
+    
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,
-        temperature=0
+        temperature=0,
+        top_p=0.95
     )
     # ONLY TESTED FOR CLARIFY_MBPP
     dataset = options.dataset
     dataset_path = options.dataset_path
     n_programs = options.number
-    threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
     n_shot = options.n_shot
     entropy_list = []
 
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}_{str(int(threshold * 100))}{wo_example}_clarify_gpt_{n_shot}.jsonl"
+    output_file = f"{dataset}{wo_example}_clarify_gpt_{n_shot}.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             requirement, canonical_solution, entry_point, tests = parse_problem(problem, dataset)
-            
+
             print(f"Case {i}: {requirement}")
+            print(f"Tests: {tests}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
             mutated_test_inputs = specfix_accuracy_evaluator.type_aware_mutation(test_inputs)

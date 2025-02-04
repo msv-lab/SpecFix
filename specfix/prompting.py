@@ -617,7 +617,7 @@ def prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_so
 # instruction_repair_requirement_clarify_gpt = "You will be given a user requirement and its test cases. Your task is to answer some clarifying questions using the information provided in the given requirement and tests. Reply only with the answers, do not repeat the code and questions. Wrap the repaired requirement in <requirement></requirement> tags."
 
 # C: Answer questions and repair requirement. Note tests are appended to the requirement in our case. Prompt will be nearly the exact same.
-def prompt_repair_requirement_clarify_gpt(requirement, tests, clarifying_questions, n_shot):
+def prompt_repair_requirement_clarify_gpt(requirement, clarifying_questions, n_shot):
     print(f"CLARIFY [{n_shot}]:")
     
     openai_messages = copy.deepcopy(answercq_prompt[n_shot])
@@ -625,7 +625,7 @@ def prompt_repair_requirement_clarify_gpt(requirement, tests, clarifying_questio
     openai_messages.append({
         'role': 'user',
         'content': f'### User Requirement:{requirement}'
-                    f'\n\n### Test Cases:{tests}'
+                    # f'\n\n### Test Cases:{tests}' # No need for this becasue our tests are public in our requirements
                     f'\n\n### Clarifying Questions:{clarifying_questions}'
                     f'\n\n### Answers:\n{{<requirement>insert here.</requirement>}}'
     })

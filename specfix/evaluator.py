@@ -7,9 +7,9 @@ from specfix.utils import construct_test_case, unwrap
 
 
 class SpecFixAccuracyEvaluator:
-    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
+    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0, top_p=1.0):
         self.differential_tester = differential_tester
-        self.model = Model(model, api_key, temperature)
+        self.model = Model(model, api_key, temperature, top_p)
         self.temperature = temperature
 
         # Initialize result tracking
@@ -26,6 +26,21 @@ class SpecFixAccuracyEvaluator:
             return self.generate_programs(requirements)
         return code
     
+    # ClarifyGPT has two prompts for generating programs: one for the first programs generated, and one for after requirements have been repaired
+    def generate_initial_programs_clarify_gpt(self, requirements, n_shot):
+        print("GENERATE PROGRAMS")
+        
+        # parse requirements imports
+        first_def = requirements.find('def ')
+        imports = requirements[:first_def] if first_def != -1 else ""
+        
+        response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
+        code = unwrap(response, "code")
+        if code == "":
+            return self.generate_programs_clarify_gpt(requirements, n_shot)
+        
+        return imports + code
+    
     def generate_programs_clarify_gpt(self, requirements, n_shot):
         print("GENERATE PROGRAMS")
         
@@ -39,6 +54,7 @@ class SpecFixAccuracyEvaluator:
             return self.generate_programs_clarify_gpt(requirements, n_shot)
         
         return imports + code
+
 
     def generate_tests(self, requirements):
         print("GENERATE TESTS INPUTS")
@@ -178,9 +194,9 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
     
-    def repair_requirements_clarify_gpt(self, requirements, tests, clarifying_questions, n_shot):
+    def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
         print("CLARIFY GPT REPAIR REQUIREMENTS")
-        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, tests, clarifying_questions, n_shot))
+        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
         return unwrap(response, "requirement")
 
     def find_discrepancy_DRS(self, requirements, clusters):
@@ -318,7 +334,7 @@ class SpecFixAccuracyEvaluator:
     
     def generate_clarifying_question_clarify_gpt(self, requirement, inconsistent_solutions, n_shot):
         print("GENERATE CLARIFYING QUESTION")
-        response = self.model.get_response_few_shot(prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot))
+        response = self.model.get_response_few_shot(messages=prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot), max_tokens=800)
         return unwrap(response, "question")
 
     def classification(self, requirements):

@@ -59,7 +59,7 @@ class Model:
                 time.sleep(1)
 
 
-    def get_response_few_shot(self, messages, temperature=None):
+    def get_response_few_shot(self, messages, temperature=None, max_tokens=300):
         for _ in range(5):
             try:
                 chat_completion = self.client.chat.completions.create(
@@ -68,6 +68,7 @@ class Model:
                     temperature=self.temperature if temperature is None else temperature,
                     top_p=self.top_p,
                     frequency_penalty=self.frequency_penalty,
+                    max_tokens=max_tokens
                 )
                 response = chat_completion.choices[0].message.content
                 if response:

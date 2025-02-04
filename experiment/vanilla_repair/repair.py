@@ -15,6 +15,10 @@ def parse_problem(problem, dataset):
     if dataset == "taco_lite":
         requirement = construct_requirement(problem['requirement'], problem['starter_code'])
         canonical_solution = random.choice(problem['solutions'])
+        # TODO: add tests.
+    elif dataset == "clarify_mbpp" or "clarify_mbpp_pilot":
+        requirement = problem['prompt']
+        canonical_solution = problem['canonical_solution']
     else:
         requirement = problem['requirement']
         canonical_solution = problem['canonical_solution']

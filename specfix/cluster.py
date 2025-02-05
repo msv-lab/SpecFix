@@ -7,6 +7,9 @@ sys.set_int_max_str_digits(0)
 
 class Clusters:
     def __init__(self):
+        self.max_cluster_accuracy = 0
+        self.canonical_outputs = []
+        self.canonical_solution = None
         self.clusters = []  # list of clusters.
         self.entropy = 0  # entropy of the clusters.
         self.entropy_inputs = []  # LLM generated test inputs for entropy measure.
@@ -45,10 +48,18 @@ class Clusters:
     def get_largest_two_clusters(self):
         return sorted(self.clusters, key=lambda cluster: cluster.probability, reverse=True)[:2]
 
+    def calculate_max_cluster_accuracy(self):
+        self.max_cluster_accuracy = max(cluster.accuracy for cluster in self.clusters)
+
     def serialize(self):
         return {
             'clusters': [cluster.serialize() for cluster in self.clusters],
             'entropy': self.entropy,
+            'max_cluster_accuracy': self.max_cluster_accuracy,
+            'canonical_outputs': self.canonical_outputs if any(
+                isinstance(i, set) for i in self.canonical_outputs) else str(
+                self.canonical_outputs),
+            'canonical_solution': self.canonical_solution,
             'LLM_generated_inputs': self.entropy_inputs if any(
                 isinstance(i, set) for i in self.entropy_inputs) else str(
                 self.entropy_inputs),
@@ -71,7 +82,10 @@ class Cluster:
         self.entropy_outputs = entropy_outputs  # the corresponding outputs for LLM generated test inputs in entropy measure.
         self.failed_semantic_input_output = []  # failed input output examples in semantic measure. (input, output, expected)
         self.test_consistency = 0  # test consistency for semantic measure.
+        self.distribution = 0
         self.probability = 0  # probability of the cluster.
+        self.failed_tests = []
+        self.accuracy = 0
         self.DRS = None
 
     def add_program_str(self, program_str):
@@ -83,6 +97,12 @@ class Cluster:
     def set_DRS(self, DRS):
         self.DRS = DRS
 
+    def set_distribution(self, distribution):
+        self.distribution = distribution
+        
+    def set_accuracy(self, accuracy):
+        self.accuracy = accuracy
+
     def align(self):
         self.is_align_req = True
 
@@ -90,6 +110,8 @@ class Cluster:
         return {
             'programs_str': self.programs_str,
             'requirement': self.requirement,
+            'distribution': self.distribution,
+            'accuracy': self.accuracy,
             'outputs': str(self.entropy_outputs),
             'probability': self.probability,
             'is_align_req': self.is_align_req,

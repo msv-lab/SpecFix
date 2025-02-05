@@ -1,15 +1,15 @@
 import random
 import pandas as pd
-
+from copy import deepcopy
 from specfix.prompting import *
 from specfix.model import Model
 from specfix.utils import construct_test_case, unwrap
 
 
 class SpecFixAccuracyEvaluator:
-    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
+    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0, top_p=1.0):
         self.differential_tester = differential_tester
-        self.model = Model(model, api_key, temperature)
+        self.model = Model(model, api_key, temperature, top_p)
         self.temperature = temperature
 
         # Initialize result tracking
@@ -25,6 +25,36 @@ class SpecFixAccuracyEvaluator:
         if code == "":
             return self.generate_programs(requirements)
         return code
+    
+    # ClarifyGPT has two prompts for generating programs: one for the first programs generated, and one for after requirements have been repaired
+    def generate_initial_programs_clarify_gpt(self, requirements, n_shot):
+        print("GENERATE INITIAL PROGRAMS")
+        
+        # parse requirements imports
+        first_def = requirements.find('def ')
+        imports = requirements[:first_def] if first_def != -1 else ""
+        
+        response = self.model.get_response_few_shot(prompt_generate_initial_code_clarify_gpt(requirements), 0.8)
+        code = unwrap(response, "code")
+        if code == "":
+            return self.generate_initial_programs_clarify_gpt(requirements, n_shot)
+        
+        return imports + code
+    
+    def generate_programs_clarify_gpt(self, requirements, n_shot):
+        print("GENERATE PROGRAMS")
+        
+        # parse requirements imports
+        first_def = requirements.find('def ')
+        imports = requirements[:first_def] if first_def != -1 else ""
+        
+        response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
+        code = unwrap(response, "code")
+        if code == "":
+            return self.generate_programs_clarify_gpt(requirements, n_shot)
+        
+        return imports + code
+
 
     def generate_tests(self, requirements):
         print("GENERATE TESTS INPUTS")
@@ -43,6 +73,102 @@ class SpecFixAccuracyEvaluator:
         except Exception as e:
             response = self.generate_tests(requirements)
         return response
+    
+    def generate_tests_clarify_gpt(self, requirements, n_shot):
+        print("GENERATE TESTS INPUTS")
+        response = self.model.get_response_few_shot(prompt_generate_test_clarify_gpt(requirements, n_shot))
+        try:
+            response = eval(unwrap(response, "test"))
+            if isinstance(response, list) and all(isinstance(t, list) for t in response):
+                response = [t for t in response if t != []]
+                if len(response) > 0:
+                    return response
+                else:
+                    raise Exception
+            else:
+                raise Exception
+        except Exception as e:
+            response = self.generate_tests(requirements)
+        return response
+
+    def type_aware_mutation(self, tests):
+
+        def mutate_single(x):
+            if x is None:
+                return None
+                
+            if isinstance(x, (int, float)):
+                return x + random.choice([-1, 1])
+                
+            elif isinstance(x, bool):
+                return random.choice([True, False])
+                
+            elif isinstance(x, str):
+                if not x:  # Handle empty string
+                    return x
+                    
+                mutation_type = random.choice(['remove', 'repeat', 'replace'])
+                if mutation_type == 'remove':
+                    pos = random.randint(0, len(x) - 1)
+                    return x[:pos] + x[pos + 1:]
+                elif mutation_type == 'repeat':
+                    pos = random.randint(0, len(x) - 1)
+                    return x[:pos] + x[pos] + x[pos:]
+                else:  # replace
+                    pos = random.randint(0, len(x) - 1)
+                    return x[:pos] + mutate_single(x[pos]) + x[pos + 1:]
+                    
+            elif isinstance(x, list):
+                if not x:  # Handle empty list
+                    return x
+                    
+                mutation_type = random.choice(['remove', 'repeat', 'insert'])
+                mutated = x.copy()
+                
+                if mutation_type == 'remove' and mutated:
+                    del mutated[random.randint(0, len(mutated) - 1)]
+                elif mutation_type == 'repeat' and mutated:
+                    idx = random.randint(0, len(mutated) - 1)
+                    mutated.insert(idx, mutated[idx])
+                else:  # insert/replace
+                    idx = random.randint(0, len(mutated) - 1)
+                    mutated[idx] = mutate_single(mutated[idx])
+                return mutated
+                
+            elif isinstance(x, tuple):
+                return tuple(mutate_single(list(x)))
+                
+            elif isinstance(x, set):
+                return set(mutate_single(list(x)))
+                
+            elif isinstance(x, dict):
+                if not x:  # Handle empty dict
+                    return x
+                    
+                mutation_type = random.choice(['remove', 'update', 'insert'])
+                mutated = x.copy()
+                
+                if mutation_type == 'remove' and mutated:
+                    key = random.choice(list(mutated.keys()))
+                    del mutated[key]
+                elif mutation_type == 'update' and mutated:
+                    key = random.choice(list(mutated.keys()))
+                    mutated[key] = mutate_single(mutated[key])
+                else:  # insert
+                    new_key = mutate_single(random.choice(list(mutated.keys())))
+                    new_value = mutate_single(random.choice(list(mutated.values())))
+                    mutated[new_key] = new_value
+                return mutated
+            
+            # Unchanged if not supported type
+            return x 
+        
+        # Create mutations for each test input
+        mutated_tests = []
+        for test in tests:
+            mutated_tests.append(mutate_single(deepcopy(test)))
+        
+        return mutated_tests
 
     def generate_requirement(self, program):
         print("REQUIREMENTS GENERATION")
@@ -66,6 +192,11 @@ class SpecFixAccuracyEvaluator:
         print("VANILLA REPAIR REQUIREMENTS")
         response = self.model.get_response(instruction_vanilla_repair,
                                            prompt_vanilla_repair(requirements))
+        return unwrap(response, "requirement")
+    
+    def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
+        print("CLARIFY GPT REPAIR REQUIREMENTS")
+        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
         return unwrap(response, "requirement")
 
     def find_discrepancy_DRS(self, requirements, clusters):
@@ -199,6 +330,11 @@ class SpecFixAccuracyEvaluator:
         print("GENERATE CLARIFYING QUESTION")
         response = self.model.get_response(instruction_generate_clarifying_question,
                                            prompt_generate_clarifying_question(requirement, information))
+        return unwrap(response, "question")
+    
+    def generate_clarifying_question_clarify_gpt(self, requirement, inconsistent_solutions, n_shot):
+        print("GENERATE CLARIFYING QUESTION")
+        response = self.model.get_response_few_shot(messages=prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot), max_tokens=800)
         return unwrap(response, "question")
 
     def classification(self, requirements):

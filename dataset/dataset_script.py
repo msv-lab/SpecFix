@@ -1,7 +1,7 @@
 import json
 
 original = "mbpp.jsonl"
-clarify_gpt_dataset = "/Users/robbiemorris/Documents/repos/SpecFix/dataset/clarifygpt_mbpp/mbpp_tests_final.jsonl"
+clarify_gpt_dataset = "clarifygpt_mbpp/mbpp_tests_final.jsonl"
 output_file = "clarify_mbpp.jsonl"
 
 def create_clarify_dataset(original, clarify_gpt_dataset, output_file):

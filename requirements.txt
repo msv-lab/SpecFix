@@ -4,3 +4,5 @@ jsonlines==4.0.0
 pandas~=2.2.3
 numpy~=2.2.1
 scipy~=1.15.1
+tqdm~=4.67.1
+matplotlib~=3.10.0

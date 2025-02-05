@@ -1,12 +1,14 @@
+import random
+
 from specfix.cluster import Cluster, Clusters
-from specfix.utils import execute_inputs, check_discrepancy, check_failed_test
+from specfix.utils import execute_inputs, check_discrepancy, check_failed_semantic_input_output
 from specfix.model import Model
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):
     # Store test results
     program_clusters = Clusters()
-    program_clusters.set_test_inputs(test_inputs)
+    program_clusters.set_entropy_inputs(test_inputs)
     # Test each generated program against the reference
     for program_str in generated_programs:
         result_list = execute_inputs(program_str, test_inputs, entry_point)
@@ -14,7 +16,7 @@ def differential_tester(generated_programs, test_inputs, entry_point):
         # Use class Cluster to add program to cluster
         for cluster in program_clusters.get_clusters():
             try:
-                if result_list == cluster.outputs:
+                if result_list == cluster.entropy_outputs:
                     cluster.add_program_str(program_str)
                     break
             except ValueError:
@@ -36,19 +38,22 @@ def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=
     return False, explanation
 
 
-def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point):
-    canonical_outputs = execute_inputs(canonical_solution, test_inputs, entry_point)
-    clusters.set_canonical_outputs(canonical_outputs)
-    clusters.set_canonical_solution(canonical_solution)
+def ground_truth_testing(clusters, semantic_input_output, entry_point):
+    clusters.set_semantic_inputs_outputs(semantic_input_output)
     for cluster in clusters.get_clusters():
-        if canonical_outputs == cluster.outputs:
+        program_str = random.choice(cluster.programs_str)
+        inputs, outputs = semantic_input_output
+        result_list = execute_inputs(program_str, inputs, entry_point)
+        failed_semantic_input_output, t_consistency = check_failed_semantic_input_output(result_list,
+                                                                                         inputs, outputs)
+        cluster.failed_semantic_input_output = failed_semantic_input_output
+        cluster.test_consistency = t_consistency
+        if t_consistency == 1:
             cluster.align()
-            clusters.set_at_least_one_align()
-        else:
-            result, ratio = check_failed_test(test_inputs, cluster.outputs, canonical_outputs)
-            cluster.set_failed_tests(result)
-            cluster.set_test_consistency(ratio)
+    clusters.set_at_least_one_align()
+    return clusters
 
+  
 def calculate_accuracy_ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point):
     canonical_outputs = execute_inputs(canonical_solution, test_inputs, entry_point)
     clusters.set_canonical_outputs(canonical_outputs)

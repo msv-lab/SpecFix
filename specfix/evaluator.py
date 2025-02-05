@@ -232,11 +232,11 @@ class SpecFixAccuracyEvaluator:
                                            prompt_inverse_requirement(code))
         return unwrap(response, "requirement")
 
-    def test_based_repair(self, program, requirement, test_inputs):
-        test = random.choice(test_inputs)
+    def test_based_repair(self, program, requirement, failed_semantic_input_output):
+
         print("TEST BASED REPAIR")
         response = self.model.get_response(instruction_test_based_repair,
-                                           prompt_test_based_repair(requirement, program, *test))
+                                           prompt_test_based_repair(requirement, program, failed_semantic_input_output))
         return unwrap(response, "code")
 
     def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):

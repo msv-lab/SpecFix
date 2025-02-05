@@ -28,16 +28,16 @@ class SpecFixAccuracyEvaluator:
     
     # ClarifyGPT has two prompts for generating programs: one for the first programs generated, and one for after requirements have been repaired
     def generate_initial_programs_clarify_gpt(self, requirements, n_shot):
-        print("GENERATE PROGRAMS")
+        print("GENERATE INITIAL PROGRAMS")
         
         # parse requirements imports
         first_def = requirements.find('def ')
         imports = requirements[:first_def] if first_def != -1 else ""
         
-        response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
+        response = self.model.get_response_few_shot(prompt_generate_initial_code_clarify_gpt(requirements), 0.8)
         code = unwrap(response, "code")
         if code == "":
-            return self.generate_programs_clarify_gpt(requirements, n_shot)
+            return self.generate_initial_programs_clarify_gpt(requirements, n_shot)
         
         return imports + code
     

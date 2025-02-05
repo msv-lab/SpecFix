@@ -62,11 +62,12 @@ def parse_problem(problem, dataset):
     return requirement, canonical_solution, entry_point
 
 
-def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs, n_shot):
+def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs, n_shot, initial=False):
     generated_programs = []
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(specfix_evaluator.generate_programs_clarify_gpt, requirement, n_shot)
+        evaluator = specfix_evaluator.generate_initial_programs_clarify_gpt if initial else specfix_evaluator.generate_programs_clarify_gpt 
+        futures = [executor.submit(evaluator, requirement, n_shot)
                    for _ in range(n_programs)]
         for future in concurrent.futures.as_completed(futures):
             prog = future.result()
@@ -124,10 +125,9 @@ def main():
     output_file = f"{dataset}{wo_example}_clarify_gpt_{n_shot}.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            requirement, canonical_solution, entry_point, tests = parse_problem(problem, dataset)
+            requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
 
             print(f"Case {i}: {requirement}")
-            print(f"Tests: {tests}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
             mutated_test_inputs = specfix_accuracy_evaluator.type_aware_mutation(test_inputs)
@@ -140,7 +140,8 @@ def main():
                 entry_point=entry_point,
                 canonical_solution=canonical_solution,
                 n_programs=n_programs,
-                n_shot=n_shot
+                n_shot=n_shot,
+                initial=True
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             # Note: in ClarifyGPT's case, our threshold is 0. They think a solution is ambiguous if there are ANY non identical solutions
@@ -165,7 +166,7 @@ def main():
                 clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot)
                 
                 # Repair requirement 
-                repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, tests, clarifying_questions, n_shot)
+                repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, clarifying_questions, n_shot)
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(

@@ -496,6 +496,21 @@ Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap
 
 # instruction_generate_test_clarify_gpt = "You will be given a user requirement containing a function signature and a docstring. Your task is to generate some complex, difficult, or corner-case test inputs for this requirement. Gather all test cases into a general list. Wrap the collection in <test></test> tags."
 
+# _: generate initial code from requirement
+def prompt_generate_initial_code_clarify_gpt(requirement):
+    print(f"INITIAL CODE GENERATION:")
+    
+    openai_messages = copy.deepcopy(initial_code_generation_prompt)
+    openai_messages.append({
+        'role': 'user',
+        'content': f'### User Requirement:{requirement}'
+                    f'\n\n### Code Solution:\n{{<code>insert answers here.</code>}}'
+    })
+    
+    # print("GENERATE CODE PROMPT\n", openai_messages)
+    return openai_messages
+
+
 # A: generate tests
 def prompt_generate_test_clarify_gpt(requirement, n_shot):
     print(f"TEST GENERATION [{n_shot}]:")
@@ -567,7 +582,6 @@ def prompt_generate_code_clarify_gpt(requirement, n_shot):
     # print("GENERATE CODE PROMPT\n", openai_messages)
     return openai_messages
 
-
 # def prompt_repair_requirement_clarify_gpt(requirement, clarifying_questions):
 
 
@@ -587,6 +601,15 @@ def prompt_generate_code_clarify_gpt(requirement, n_shot):
 # """
 
 
+
+initial_code_generation_prompt = [{
+    'role': 'system',
+    'content': 'You will be given a user requirement.'
+                'Strictly follow the function signature provided in the requirement, '
+                'Respond only with a correct, efficient Python function. '
+                'Do not write explanations or assertions; simply provide only the code. '
+                'Wrap the generated code in <code></code> tags.' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
+}]
 
 # NOTE: This is missing from ClarifyGPT's code base, although mentioned in the paper. Do they actually do any test input generation??
 

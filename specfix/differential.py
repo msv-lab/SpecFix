@@ -45,7 +45,6 @@ def ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
             cluster.align()
             clusters.set_at_least_one_align()
         else:
-            cluster.not_align()
             result, ratio = check_failed_test(test_inputs, cluster.outputs, canonical_outputs)
             cluster.set_failed_tests(result)
             cluster.set_test_consistency(ratio)
@@ -74,7 +73,5 @@ def calculate_accuracy_ground_truth_testing(canonical_solution, clusters, test_i
         
         if accuracy == 1.0:
             cluster.align()
-        else:
-            cluster.not_align()
     
     clusters.calculate_max_cluster_accuracy()

@@ -197,7 +197,7 @@ def main():
                     print(f"Error processing problem: {e}")
 
         # Sort results based on task_id (or other key as needed)
-        results.sort(key=lambda x: x.get("task_id", ""))
+        results.sort(key=lambda x: int(x.get("task_id", "").split("/")[-1]))
 
         # Write each processed problem to the output file.
         for item in results:

@@ -208,3 +208,10 @@ class SpecFixAccuracyEvaluator:
         answer = unwrap(response, "answer")
         reason = unwrap(response, "reasoning")
         return answer, reason
+
+    def repair_largest_cluster_requirement(self, requirement, programs, specified_programs):
+        print("REPAIR LARGEST CLUSTER REQUIREMENT")
+        response = self.model.get_response(instruction_repair_largest_cluster_requirement,
+                                           prompt_repair_largest_cluster_requirement(requirement, programs,
+                                                                                     specified_programs))
+        return unwrap(response, "requirement")

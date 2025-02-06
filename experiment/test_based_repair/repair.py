@@ -13,14 +13,9 @@ from specfix.utils import construct_requirement
 
 
 def parse_problem(problem, dataset):
-    if dataset == "taco_lite":
-        requirement = construct_requirement(problem['requirement'], problem['starter_code'])
-        examples = problem['input_output_examples']
-        canonical_program = random.choice(problem['solutions'])
-    else:
-        requirement = problem['requirement']
-        examples = problem['input_output_examples']
-        canonical_program = problem["canonical_solution"]
+    requirement = problem['requirement']
+    examples = problem['examples']
+    canonical_program = problem["canonical_solution"]
     entry_point = problem['entry_point']
     return requirement, entry_point, examples, canonical_program
 
@@ -109,7 +104,11 @@ def main():
                                                                                  cluster.failed_semantic_input_output)
                     repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
                 else:
-                    
+                    other_programs = [c.program_str[0] for c in clusters.clusters if c != cluster]
+                    repaired_requirement = specfix_accuracy_evaluator.repair_largest_cluster_requirement(requirement,
+                                                                                                         other_programs,
+                                                                                                         cluster.programs_str[
+                                                                                                             0])
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(
@@ -121,12 +120,14 @@ def main():
                     n_programs=n_programs
                 )
                 entropy_diff = clusters.entropy - repaired_clusters.entropy
+                ambiguity_diff = clusters.ambiguity - repaired_clusters.ambiguity
                 result = {
                     'original_requirement': requirement,
                     'original_clusters': clusters.serialize(),
                     'repaired_requirement': repaired_requirement,
                     'repaired_clusters': repaired_clusters.serialize(),
-                    'entropy_diff': entropy_diff
+                    'entropy_diff': entropy_diff,
+                    'ambiguity_diff': ambiguity_diff,
                 }
             else:
                 result = {

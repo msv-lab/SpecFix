@@ -164,7 +164,7 @@ def extract(problem: dict, requirement: str) -> dict:
                 outputs_list.clear()
                 break
 
-    problem["example"] = [inputs_list, outputs_list]
+    problem["examples"] = [inputs_list, outputs_list]
     return problem
 
 

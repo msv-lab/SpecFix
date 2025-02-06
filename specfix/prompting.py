@@ -544,3 +544,45 @@ Below is the Python code:
 {program}
 Please provide a task description of the program is designed to accomplish based on the above criteria, wrapped in <requirement></requirement> tags.
 """
+
+
+instruction_repair_largest_cluster_requirement = "You are an assistant that repairs the requirement based on the different programs."
+
+
+def prompt_repair_largest_cluster_requirement(requirement, programs, specified_programs):
+    programs_str = ""
+    for i, p in enumerate(programs):
+        programs_str += f"### Program {i}\n{p}\n"
+
+    return f"""
+You are tasked with repairing a programming problem description to ensure it unambiguously leads to a specific code implementation. Below is the original problem description, multiple code versions generated for it, and the target code version I want the LLM to generate. Follow these steps:
+
+1. **Identify Ambiguities:** Analyze the original problem description for ambiguities, missing constraints, or underspecified requirements that allowed for multiple interpretations (leading to different code versions).
+
+2. **Compare Code Differences:** Examine the differences between the target code (SPECIFIED_CODE) and other versions (OTHER_VERSIONS). Highlight divergences in:
+   - Input/output handling (e.g., format, data types)
+   - Edge cases or error handling (e.g., missing constraints)
+   - Assumptions made (e.g., constraints not explicitly stated)
+
+3. **Revise Requirements:** Repair the original problem description by:
+   - Adding precise constraints to eliminate alternative approaches seen in OTHER_VERSIONS.
+   - Specifying edge cases or input/output formats to match SPECIFIED_CODE.
+
+4. **Output Format:**
+   - Repaired Problem Description: A revised problem statement that enforces the target implementation, wrapped in <requirement></requirement> tags.
+   - Do not return the code itself—focus solely on repairing the problem description. Prioritize clarity and specificity while preserving the original intent.
+---
+
+**Original Problem Description:**
+{requirement}
+
+**SPECIFIED_CODE:**
+{specified_programs}
+
+**OTHER_VERSIONS:**
+[Insert other code versions here]
+
+
+
+---
+"""

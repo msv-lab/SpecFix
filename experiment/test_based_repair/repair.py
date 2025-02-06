@@ -9,7 +9,7 @@ from os.path import abspath, dirname
 
 from specfix.differential import differential_tester, ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import construct_requirement, construct_failed_tests
+from specfix.utils import construct_requirement
 
 
 def parse_problem(problem, dataset):
@@ -109,12 +109,7 @@ def main():
                                                                                  cluster.failed_semantic_input_output)
                     repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
                 else:
-                    cluster1, cluster2 = clusters.get_largest_two_clusters()
-                    failed_tests = construct_failed_tests(cluster1, cluster2,
-                                                          clusters.entropy_inputs, canonical_program, entry_point)
-                    repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, requirement,
-                                                                                 failed_tests)
-                    repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
+                    
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
                 repaired_clusters = generate_and_test(

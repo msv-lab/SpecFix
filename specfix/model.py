@@ -56,4 +56,4 @@ class Model:
                     return ""
             except Exception as e:
                 print('[ERROR]', e)
-                time.sleep(1)
+                time.sleep(5)

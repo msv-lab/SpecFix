@@ -1,8 +1,9 @@
 import random
+
 import math
-import signal
 import types
 import re
+from func_timeout import func_set_timeout
 from tqdm import trange
 from specfix.prompting import instruction_check_code_generation, prompt_check_code_generation
 from specfix.solution_transformer import remove_comments_and_asserts
@@ -21,29 +22,7 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
-def timeout(timeout):
-    def timeout_handler(signum, frame):
-        raise TimeoutError("Function call timed out")
-
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            original_handler = signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(timeout)
-            try:
-                result = func(*args, **kwargs)
-            except TimeoutError:
-                return f"Timeout {timeout}s"
-            finally:
-                signal.alarm(0)
-                signal.signal(signal.SIGALRM, original_handler)
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-@timeout(5)
+@func_set_timeout(1)
 def execute(func_str, func_args, entry_point):
     try:
         local_env = {}
@@ -65,8 +44,12 @@ def execute(func_str, func_args, entry_point):
 
 def execute_inputs(func_str, inputs_list, entry_point):
     results = []
-    for i in trange(len(inputs_list)):
-        results.append(execute(func_str, inputs_list[i], entry_point))
+    # for i in trange(len(inputs_list)):
+    for i in range(len(inputs_list)):
+        try:
+            results.append([execute(func_str, inputs_list[i], entry_point)])
+        except:
+            results.append("Timeout")
     return results
 
 
@@ -129,17 +112,22 @@ def check_failed_semantic_input_output(result_list, inputs, outputs):
     return failed_semantic_input_output, 1 - (len(failed_semantic_input_output) / len(inputs))
 
 
-def construct_failed_tests(cluster1, cluster2, entropy_inputs, canonical_program, entry_point):
-    target_inputs = []
-    for i in range(len(entropy_inputs)):
-        if cluster1.entropy_outputs[i] != cluster2.entropy_outputs[i]:
-            target_inputs.append(entropy_inputs[i])
-    print("GET CANONICAL OUTPUT")
-    canonical_outputs = execute_inputs(canonical_program, target_inputs, entry_point)
-    fails_tests = []
-    for i in range(len(canonical_outputs)):
-        fails_tests.append([target_inputs[i], cluster1.entropy_outputs[i], canonical_outputs[i]])
-    return fails_tests
+def compare(results, outputs):
+    if len(results) != len(outputs):
+        return False
+    for result, output in zip(results, outputs):
+        if len(result) != len(output):
+            return False
+        for res, out in zip(result, output):
+            try:
+                if (isinstance(res, (int, float, complex)) and isinstance(out, (int, float, complex))
+                        and math.isclose(res, out, rel_tol=0.001)):
+                    continue
+                if res != out:
+                    return False
+            except:
+                return False
+    return True
 
 
 def wilson_lower(p_obs, n, z=1.96):

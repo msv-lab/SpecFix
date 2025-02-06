@@ -5,7 +5,7 @@ def transform_code(original_code):
     """
     Transforms the original Python code by:
     1. Removing the "if __name__ == '__main__':" block if it exists.
-    2. Converting methods inside classes to standalone functions.
+    2. Converting methods inside classes to standalone functions, removing 'self' parameters and 'self.xxx' references.
     3. Removing all decorators (e.g., @staticmethod) throughout the code.
     4. Keeping the code unchanged if it's already standalone (no classes).
 
@@ -16,54 +16,53 @@ def transform_code(original_code):
         str: The transformed Python code.
     """
 
+    class SelfReferenceTransformer(ast.NodeTransformer):
+        """
+        Transforms all 'self.xxx' references into 'xxx' within the AST.
+        """
+        def visit_Attribute(self, node):
+            if isinstance(node.value, ast.Name) and node.value.id == 'self':
+                return ast.Name(id=node.attr, ctx=node.ctx)
+            return node
+
     class ClassMethodExtractor(ast.NodeTransformer):
         def __init__(self):
             self.standalone_functions = []
 
         def visit_ClassDef(self, node):
             """
-            Visits each class definition, extracts its methods,
-            removes 'self' from their arguments, and collects them
-            as standalone functions. Removes the class definition from the AST.
+            Extracts methods, removes 'self' parameters and transforms 'self.xxx' references.
+            Removes the class definition from the AST.
             """
-            # Extract all function definitions from the class
-            new_body = []
             for item in node.body:
                 if isinstance(item, ast.FunctionDef):
-                    # Remove 'self' from arguments if present
+                    # Remove 'self' from arguments
                     if item.args.args and item.args.args[0].arg == 'self':
                         item.args.args = item.args.args[1:]
-                    # Collect the function for later addition to the module
-                    self.standalone_functions.append(item)
-                else:
-                    new_body.append(item)
-
-            # Return None to remove the entire class definition from the AST
-            return None
+                    # Transform 'self.xxx' to 'xxx' in the method body
+                    transformer = SelfReferenceTransformer()
+                    transformed_item = transformer.visit(item)
+                    self.standalone_functions.append(transformed_item)
+            return None  # Removes the class definition
 
     class MainBlockRemover(ast.NodeTransformer):
         def visit_Module(self, node):
             """
-            Visits the module body to remove the main block (if __name__ == '__main__':).
+            Removes the main block (if __name__ == '__main__':) from the module.
             """
             new_body = []
             for stmt in node.body:
-                # Check if the statement is the main block
                 if isinstance(stmt, ast.If):
                     test = stmt.test
-                    if (
-                            isinstance(test, ast.Compare)
-                            and isinstance(test.left, ast.Name)
-                            and test.left.id == '__name__'
-                            and len(test.ops) == 1
-                            and isinstance(test.ops[0], ast.Eq)
-                            and len(test.comparators) == 1
-                            and isinstance(test.comparators[0], ast.Constant)
-                            and test.comparators[0].value == '__main__'
-                    ):
-                        # Skip this if block to remove it
+                    if (isinstance(test, ast.Compare) and
+                        isinstance(test.left, ast.Name) and
+                        test.left.id == '__name__' and
+                        len(test.ops) == 1 and
+                        isinstance(test.ops[0], ast.Eq) and
+                        len(test.comparators) == 1 and
+                        isinstance(test.comparators[0], ast.Constant) and
+                        test.comparators[0].value == '__main__'):
                         continue
-                # Otherwise, keep the statement
                 new_body.append(stmt)
             node.body = new_body
             return node
@@ -72,46 +71,39 @@ def transform_code(original_code):
         """
         Removes all decorators from functions, async functions, and classes.
         """
-
         def visit_FunctionDef(self, node):
             node.decorator_list = []
-            self.generic_visit(node)
-            return node
+            return self.generic_visit(node)
 
         def visit_AsyncFunctionDef(self, node):
             node.decorator_list = []
-            self.generic_visit(node)
-            return node
+            return self.generic_visit(node)
 
         def visit_ClassDef(self, node):
             node.decorator_list = []
-            self.generic_visit(node)
-            return node
+            return self.generic_visit(node)
 
-    # Parse the original code into an AST
+    # Parse and transform the AST
     tree = ast.parse(original_code)
 
-    # First, remove all decorators in the entire code (including those on classes and methods)
+    # Remove decorators first
     tree = DecoratorRemover().visit(tree)
 
-    # Extract class methods and remove class definitions
+    # Extract class methods and transform self references
     extractor = ClassMethodExtractor()
     tree = extractor.visit(tree)
 
     # Remove the main block
-    remover = MainBlockRemover()
-    tree = remover.visit(tree)
+    tree = MainBlockRemover().visit(tree)
 
-    # Append the extracted standalone functions to the module body
+    # Append transformed methods to the module body
     tree.body.extend(extractor.standalone_functions)
 
-    # Fix any missing locations in the AST
+    # Ensure the AST is valid
     ast.fix_missing_locations(tree)
 
-    # Generate the transformed code from the modified AST
-    transformed_code = ast.unparse(tree)
-
-    return transformed_code
+    # Generate the transformed code
+    return ast.unparse(tree)
 
 
 def transform_starter_code(original_starter_code):

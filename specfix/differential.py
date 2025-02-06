@@ -1,7 +1,7 @@
 import random
 
 from specfix.cluster import Cluster, Clusters
-from specfix.utils import execute_inputs, check_discrepancy, check_failed_semantic_input_output
+from specfix.utils import execute_inputs, check_discrepancy, check_failed_semantic_input_output, compare
 from specfix.model import Model
 
 
@@ -16,7 +16,7 @@ def differential_tester(generated_programs, test_inputs, entry_point):
         # Use class Cluster to add program to cluster
         for cluster in program_clusters.get_clusters():
             try:
-                if result_list == cluster.entropy_outputs:
+                if compare(result_list, cluster.entropy_outputs):
                     cluster.add_program_str(program_str)
                     break
             except ValueError:

@@ -30,8 +30,8 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     return program_clusters
 
 
-def model_verifier(requirement, program, inp, outputs, model="o1-mini", api_key=None, temperature=1):
-    model = Model(model, api_key, temperature)
+def model_verifier(requirement, program, inp, outputs, model="o1-mini", temperature=1):
+    model = Model(model, temperature)
     answer, explanation = check_discrepancy(requirement, program, inp, outputs, model)
     if answer.startswith("Yes"):
         return True, explanation

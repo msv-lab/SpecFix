@@ -54,14 +54,8 @@ def main():
     config = configparser.ConfigParser()
     config.read('../../.config')
     model_name = options.model
-    api_key = ""
-    if "qwen" in model_name:
-        api_key = config['API_KEY']['qwen_key']
-    elif "gpt" in model_name or "o1" in model_name:
-        api_key = config['API_KEY']['openai_key']
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
-        api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,
         temperature=0

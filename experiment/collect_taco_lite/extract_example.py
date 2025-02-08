@@ -14,16 +14,8 @@ sys.set_int_max_str_digits(0)
 
 # --- Configuration and Model Initialization ---
 def load_config_and_model():
-    config = configparser.ConfigParser()
-    config.read('../../.config')
     model_name = "qwen-plus"
-    if "qwen" in model_name:
-        api_key = config['API_KEY']['qwen_key']
-    elif "gpt" in model_name or "o1" in model_name:
-        api_key = config['API_KEY']['openai_key']
-    else:
-        api_key = ""
-    return Model(model_name, api_key, 0)
+    return Model(model_name)
 
 
 model = load_config_and_model()

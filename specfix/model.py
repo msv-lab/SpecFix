@@ -1,9 +1,21 @@
+import configparser
+
 from openai import OpenAI
 import time
 
 
 class Model:
-    def __init__(self, model, api_key, temperature=1, top_p=1, frequency_penalty=0):
+    def __init__(self, model, temperature=1, top_p=1, frequency_penalty=0):
+        config = configparser.ConfigParser()
+        config.read('../../.config')
+        api_key = ""
+        if "qwen" in model:
+            api_key = config['API_KEY']['qwen_key']
+        elif "gpt" in model or "o1" in model:
+            api_key = config['API_KEY']['openai_key']
+        elif "deepseek" in model:
+            api_key = config['API_KEY']['deepseek_key']
+
         self.model = model
         self.api_key = api_key
         self.client = self.model_setup()
@@ -20,7 +32,8 @@ class Model:
         elif "deepseek" in self.model:
             client = OpenAI(
                 api_key=self.api_key,
-                base_url="https://api.deepseek.com"
+                # base_url="https://api.deepseek.com"
+                base_url="https://api.lkeap.cloud.tencent.com/v1"
             )
         elif "gpt" in self.model or "o1" in self.model:  # based on the transit of the model
             client = OpenAI(
@@ -42,7 +55,7 @@ class Model:
                 chat_completion = self.client.chat.completions.create(
                     messages=[
                         {"role": "assistant", "content": instruction},
-                        {"role": "user", "content": prompt, }
+                        {"role": "user", "content": prompt}
                     ],
                     model=self.model,
                     temperature=self.temperature if temperature is None else temperature,

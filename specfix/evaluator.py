@@ -7,9 +7,9 @@ from specfix.utils import construct_test_case, unwrap
 
 
 class SpecFixAccuracyEvaluator:
-    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
+    def __init__(self, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
         self.differential_tester = differential_tester
-        self.model = Model(model, api_key, temperature)
+        self.model = Model(model, temperature)
         self.temperature = temperature
 
         # Initialize result tracking

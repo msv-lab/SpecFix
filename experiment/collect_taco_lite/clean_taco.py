@@ -19,15 +19,8 @@ from specfix.solution_transformer import transform_code
 sys.set_int_max_str_digits(0)
 
 # --- Model Configuration ---
-config = configparser.ConfigParser()
-config.read('../../.config')
 model_name = "qwen-plus"
-api_key = ""
-if "qwen" in model_name:
-    api_key = config['API_KEY']['qwen_key']
-elif "gpt" in model_name or "o1" in model_name:
-    api_key = config['API_KEY']['openai_key']
-model = Model(model_name, api_key, 0)
+model = Model(model_name)
 
 # --- Revision Instruction and Prompt ---
 instruction_revise = "You are an assistant that revises inputs and outputs format for a programming problem."

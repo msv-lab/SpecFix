@@ -14,14 +14,9 @@ def main():
 
     options = parser.parse_args()
 
-    config = configparser.ConfigParser()
-    config.read('../../.config')
-
     model_name = "gpt-4o"
-    api_key = config['API_KEY']['openai_key']
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
-        api_key=api_key,
         model=model_name,
         temperature=0
     )

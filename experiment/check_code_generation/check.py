@@ -15,7 +15,6 @@ def process_problems(
         output_incorrect_file_path,
         specfix_accuracy_evaluator,
         verifier_name,
-        verifier_api_key,
         N=10,
         max_count=100
 ):
@@ -61,7 +60,6 @@ def process_problems(
                             test_input,
                             [cluster1.entropy_outputs[test_i], cluster2.entropy_outputs[test_i]],
                             model=verifier_name,
-                            api_key=verifier_api_key
                         )
                         if not res:
                             print("*********Incorrect generation found!*********")
@@ -114,18 +112,11 @@ def main():
                         help="Path to dataset")
 
     options = parser.parse_args()
-
-    config = configparser.ConfigParser()
-    config.read('../../.config')
-
     model_name = "qwen2.5-coder-14b-instruct"
-    api_key = config['API_KEY']['qwen_key']
 
     verifier_name = "o1-mini"
-    verifier_api_key = config['API_KEY']['openai_key']
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
-        api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,
         temperature=0
@@ -142,7 +133,6 @@ def main():
                 output_incorrect_file_path="taco_incorrect_generation.jsonl",
                 specfix_accuracy_evaluator=specfix_accuracy_evaluator,
                 verifier_name=verifier_name,
-                verifier_api_key=verifier_api_key,
                 N=10,
                 max_count=100
             )
@@ -155,7 +145,6 @@ def main():
             output_incorrect_file_path="humaneval_incorrect_generation.jsonl",
             specfix_accuracy_evaluator=specfix_accuracy_evaluator,
             verifier_name=verifier_name,
-            verifier_api_key=verifier_api_key,
             N=10,
             max_count=100
         )
@@ -168,7 +157,6 @@ def main():
             output_incorrect_file_path="mbpp_incorrect_generation.jsonl",
             specfix_accuracy_evaluator=specfix_accuracy_evaluator,
             verifier_name=verifier_name,
-            verifier_api_key=verifier_api_key,
             N=10,
             max_count=100
         )

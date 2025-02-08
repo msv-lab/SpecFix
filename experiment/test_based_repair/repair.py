@@ -1,7 +1,6 @@
 import argparse
 import os
 import concurrent.futures
-import random
 
 import jsonlines
 import configparser
@@ -9,10 +8,9 @@ from os.path import abspath, dirname
 
 from specfix.differential import differential_tester, ground_truth_testing
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import construct_requirement
 
 
-def parse_problem(problem, dataset):
+def parse_problem(problem):
     requirement = problem['requirement']
     examples = problem['examples']
     canonical_program = problem["canonical_solution"]
@@ -50,17 +48,9 @@ def main():
 
     options = parser.parse_args()
 
-    config = configparser.ConfigParser()
-    config.read('../../.config')
     model_name = options.model
-    api_key = ""
-    if "qwen" in model_name:
-        api_key = config['API_KEY']['qwen_key']
-    elif "gpt" in model_name or "o1" in model_name:
-        api_key = config['API_KEY']['openai_key']
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
-        api_key=api_key,
         differential_tester=differential_tester,
         model=model_name,
         temperature=0
@@ -97,7 +87,6 @@ def main():
             )
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.ambiguity > threshold:
-                # If the largest cluster t_consistency is not 1, then we use examples to repair. Otherwise, we use the largest two clusters to ask for user feedback.
                 cluster = clusters.get_largest_cluster()
                 if cluster.test_consistency != 1:
                     repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, requirement,

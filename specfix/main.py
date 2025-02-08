@@ -26,15 +26,6 @@ def main():
     dataset = options.dataset
     dataset_path = options.dataset_path
     model = options.model
-    if options.api_key is not None:
-        api_key = options.api_key
-    else:
-        config = configparser.ConfigParser()
-        config.read('.config')
-        if "qwen" in model:
-            api_key = config['API_KEY']['qwen_key']
-        else:
-            api_key = config['API_KEY']['openai_key']
 
     temperature = float(options.temperature)
     num_programs = int(options.num_programs)
@@ -42,7 +33,6 @@ def main():
     oracle = options.oracle
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
-        api_key=api_key,
         differential_tester=differential_tester,
         model=model,
         temperature=temperature
@@ -59,9 +49,9 @@ def main():
                 task_id = i
                 if oracle == "code":
                     unambiguous_requirement = specfix_accuracy_evaluator.specfix_code(canonical_solution, requirement,
-                                                                                  entry_point, task_id,
-                                                                                  num_programs,
-                                                                                  max_iterations)
+                                                                                      entry_point, task_id,
+                                                                                      num_programs,
+                                                                                      max_iterations)
                 print("***************Case", i, "***************")
                 print("The original requirement:\n", requirement)
                 print("The unambiguous requirement:\n", unambiguous_requirement)
@@ -73,10 +63,11 @@ def main():
             canonical_solution = problem['canonical_solution']
             entry_point = problem['entry_point']
             if oracle == "code":
-                unambiguous_requirement = specfix_accuracy_evaluator.specfix_code(canonical_solution, requirement, entry_point,
-                                                                              task_id,
-                                                                              num_programs,
-                                                                              max_iterations)
+                unambiguous_requirement = specfix_accuracy_evaluator.specfix_code(canonical_solution, requirement,
+                                                                                  entry_point,
+                                                                                  task_id,
+                                                                                  num_programs,
+                                                                                  max_iterations)
 
     specfix_accuracy_evaluator.calculate_accuracy()
 

@@ -1,11 +1,10 @@
+import os
 import random
 
 import math
 import types
 import re
 from func_timeout import func_set_timeout
-from tqdm import trange
-from specfix.prompting import instruction_check_code_generation, prompt_check_code_generation
 from specfix.solution_transformer import remove_comments_and_asserts
 
 
@@ -67,24 +66,6 @@ def construct_test_case(program, inputs):
     return assertions
 
 
-def check_discrepancy(requirement, programs, inp, outputs, model):
-    """
-    Check discrepancy between the program and the requirement. Return true if the requirement is ambiguous. Return false if the program is incorrectly implemented.
-    """
-    print("CHECK DISCREPANCY")
-    program = ""
-    for i, p in enumerate(programs):
-        program += "### Program " + str(i) + "\n" + p + "\n"
-    output = ""
-    for i, o in enumerate(outputs):
-        output += "### Output " + str(i) + "\n" + repr(o) + "\n"
-    response = model.get_response(instruction_check_code_generation,
-                                  prompt_check_code_generation(requirement, program, inp, output))
-    answer = unwrap(response, "answer")
-    explanation = unwrap(response, "explanation")
-    return answer, explanation
-
-
 def unwrap(string, label):
     string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
         0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(
@@ -98,10 +79,6 @@ def unwrap(string, label):
         except:
             return ""
     return string
-
-
-def construct_requirement(requirement, starter_code):
-    return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""
 
 
 def check_failed_semantic_input_output(result_list, inputs, outputs):
@@ -148,3 +125,25 @@ def wilson_lower(p_obs, n, z=1.96):
     lower_bound = (centre_adjusted - adjust) / denominator
 
     return max(lower_bound, 0.0)
+
+
+def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
+    model_name = model_name.replace(".", "")
+
+    if not os.path.exists(f"{cwd}/{model_name}"):
+        os.mkdir(f"{cwd}/{model_name}")
+
+    # Open dataset and output JSONL in one place
+    if threshold is None:
+        output_file = f"{cwd}/{model_name}/{dataset}{wo_example}_{task}.jsonl"
+    else:
+        output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_{task}.jsonl"
+    return output_file
+
+
+def calculate_f1_score(results, ground_truths):
+    precision = len(set(results).intersection(set(ground_truths))) / len(set(results))
+    recall = len(set(results).intersection(set(ground_truths))) / len(set(ground_truths))
+    if precision + recall == 0:
+        return 0
+    return 2 * precision * recall / (precision + recall)

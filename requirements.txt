@@ -6,3 +6,6 @@ numpy~=2.2.1
 scipy~=1.15.1
 tqdm~=4.67.1
 matplotlib~=3.10.0
+func_timeout~=4.3.5
+datasets~=3.2.0
+pyarrow~=19.0.0

@@ -1,38 +1,17 @@
 import argparse
-import os
-import concurrent.futures
 
 import jsonlines
-import configparser
-from os.path import abspath, dirname
 
-from specfix.differential import differential_tester, ground_truth_testing
+from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
+from specfix.utils import construct_output_file
 
 
 def parse_problem(problem):
     requirement = problem['requirement']
     examples = problem['examples']
-    canonical_program = problem["canonical_solution"]
     entry_point = problem['entry_point']
-    return requirement, entry_point, examples, canonical_program
-
-
-def generate_and_test(specfix_evaluator, requirement, test_inputs, examples, entry_point, n_programs):
-    generated_programs = []
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(specfix_evaluator.generate_programs, requirement)
-                   for _ in range(n_programs)]
-        for future in concurrent.futures.as_completed(futures):
-            prog = future.result()
-            generated_programs.append(prog)
-
-    print("Differential Testing")
-    clusters = differential_tester(generated_programs, test_inputs, entry_point)
-    ground_truth_testing(clusters, examples, entry_point)
-    clusters.calculate_ambiguity()
-    return clusters
+    return requirement, entry_point, examples
 
 
 def main():
@@ -52,6 +31,7 @@ def main():
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(
         differential_tester=differential_tester,
+        ground_truth_tester=ground_truth_tester,
         model=model_name,
         temperature=0
     )
@@ -62,29 +42,17 @@ def main():
     threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
 
-    cwd = dirname(abspath(__file__))
-    model_name = model_name.replace(".", "")
-
-    if not os.path.exists(f"{cwd}/{model_name}"):
-        os.mkdir(f"{cwd}/{model_name}")
-
-    # Open dataset and output JSONL in one place
-    output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_test_based_repair.jsonl"
+    output_file = construct_output_file(model_name, dataset, threshold, wo_example, "test_based_repair")
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            requirement, entry_point, examples, canonical_program = parse_problem(problem, dataset)
+            requirement, entry_point, examples = parse_problem(problem)
             print(f"Case {i}: {requirement}")
 
             test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
             print(f"Test inputs: {test_inputs}")
-            clusters = generate_and_test(
-                specfix_evaluator=specfix_accuracy_evaluator,
-                requirement=requirement,
-                test_inputs=test_inputs,
-                examples=examples,
-                entry_point=entry_point,
-                n_programs=n_programs
-            )
+            programs = specfix_accuracy_evaluator.parallel_generate_programs(requirement, n_programs)
+            clusters = specfix_accuracy_evaluator.get_clusters(programs, test_inputs, examples, entry_point)
+            specfix_accuracy_evaluator.calculate_ambiguity(clusters, examples, entry_point)
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.ambiguity > threshold:
                 cluster = clusters.get_largest_cluster()
@@ -100,14 +68,11 @@ def main():
                                                                                                              0])
                 print(f"Case {i}: Repaired requirement: {repaired_requirement}")
 
-                repaired_clusters = generate_and_test(
-                    specfix_evaluator=specfix_accuracy_evaluator,
-                    requirement=repaired_requirement,
-                    test_inputs=test_inputs,
-                    entry_point=entry_point,
-                    examples=examples,
-                    n_programs=n_programs
-                )
+                repaired_programs = specfix_accuracy_evaluator.parallel_generate_programs(repaired_requirement,
+                                                                                          n_programs)
+                repaired_clusters = specfix_accuracy_evaluator.get_clusters(repaired_programs, test_inputs, examples,
+                                                                            entry_point)
+                specfix_accuracy_evaluator.calculate_ambiguity(repaired_clusters, examples, entry_point)
                 entropy_diff = clusters.entropy - repaired_clusters.entropy
                 ambiguity_diff = clusters.ambiguity - repaired_clusters.ambiguity
                 result = {

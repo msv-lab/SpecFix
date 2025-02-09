@@ -1,6 +1,5 @@
 import argparse
 import jsonlines
-import configparser
 from specfix.evaluator import SpecFixAccuracyEvaluator
 
 

@@ -1,6 +1,5 @@
 import jsonlines
 import random
-import configparser
 import argparse
 
 from specfix.utils import construct_requirement

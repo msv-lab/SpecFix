@@ -3,10 +3,9 @@ import os
 import random
 import concurrent.futures
 import jsonlines
-import configparser
 from os.path import abspath, dirname
 
-from specfix.differential import differential_tester, ground_truth_testing
+from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_requirement
 
@@ -34,7 +33,7 @@ def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, 
 
     print("Differential Testing")
     clusters = differential_tester(generated_programs, test_inputs, entry_point)
-    ground_truth_testing(clusters, examples, entry_point)
+    ground_truth_tester(clusters, examples, entry_point)
     return clusters
 
 
@@ -50,9 +49,6 @@ def main():
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
 
     options = parser.parse_args()
-
-    config = configparser.ConfigParser()
-    config.read('../../.config')
     model_name = options.model
 
     specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(

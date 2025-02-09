@@ -6,7 +6,6 @@ It offers a “hardcoded” removal for texts containing certain phrases as well
 LLM‑assisted removal. It also includes a function to process an ambiguous taco file.
 """
 
-import configparser
 import sys
 from specfix.utils import unwrap
 from specfix.model import Model

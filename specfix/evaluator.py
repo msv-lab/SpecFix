@@ -1,3 +1,4 @@
+import concurrent.futures
 import random
 import pandas as pd
 
@@ -7,8 +8,10 @@ from specfix.utils import construct_test_case, unwrap
 
 
 class SpecFixAccuracyEvaluator:
-    def __init__(self, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0):
+    def __init__(self, differential_tester=None, ground_truth_tester=None, model="qwen2.5-coder-7b-instruct",
+                 temperature=1.0):
         self.differential_tester = differential_tester
+        self.ground_truth_tester = ground_truth_tester
         self.model = Model(model, temperature)
         self.temperature = temperature
 
@@ -16,6 +19,25 @@ class SpecFixAccuracyEvaluator:
         self.total_runs = 0
         self.successful_runs = 0
         self.run_details = []
+
+    def get_clusters(self, programs, test_inputs, entry_point):
+        clusters = self.differential_tester(programs, test_inputs, entry_point)
+        return clusters
+
+    def calculate_ambiguity(self, clusters, examples, entry_point):
+        self.ground_truth_tester(clusters, examples, entry_point)
+        clusters.calculate_ambiguity()
+
+    def parallel_generate_programs(self, requirement, n_programs):
+        generated_programs = []
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(self.generate_programs, requirement)
+                       for _ in range(n_programs)]
+            for future in concurrent.futures.as_completed(futures):
+                prog = future.result()
+                generated_programs.append(prog)
+        return generated_programs
 
     def generate_programs(self, requirements):
         print("GENERATE PROGRAMS")
@@ -75,26 +97,6 @@ class SpecFixAccuracyEvaluator:
                                            prompt_find_discrepancy_DRS(requirements, DRS_list))
         return unwrap(response, "discrepancy")
 
-    def find_discrepancy(self, requirements):
-        print("FIND DISCREPANCY")
-        response = self.model.get_response(instruction_find_discrepancy,
-                                           prompt_find_discrepancy(requirements),
-                                           )
-        return unwrap(response, "discrepancy")
-
-    def simulate_answer(self, requirement, program, inputs, question):
-        tests = construct_test_case(program, inputs)
-        print("SIMULATE ANSWER")
-        response = self.model.get_response(instruction_simulated_answer,
-                                           prompt_simulated_answer(requirement, program, tests, question))
-        return unwrap(response, "answer")
-
-    def minimize_requirement(self, ori_req, repaired_req):
-        print("MINIMIZE REQUIREMENT")
-        response = self.model.get_response(instruction_minimize_requirement,
-                                           prompt_minimize_requirement(ori_req, repaired_req))
-        return unwrap(response, "requirement")
-
     def inverse_requirement(self, code):
         print("INVERSE REQUIREMENT")
         response = self.model.get_response(instruction_inverse_requirement,
@@ -134,7 +136,7 @@ class SpecFixAccuracyEvaluator:
                         'success': True
                     })
                     return requirement
-                for cluster in clusters.get_clusters():
+                for cluster in clusters.get_cluster_list():
                     cluster.set_requirement(self.generate_requirement(random.choice(cluster.programs_str)))
                 requirements = ""
                 for i, cluster in enumerate(clusters):
@@ -194,12 +196,6 @@ class SpecFixAccuracyEvaluator:
 
     def get_probability(self):
         return self.successful_runs / self.total_runs if self.total_runs > 0 else 0
-
-    def generate_clarifying_question(self, requirement, information):
-        print("GENERATE CLARIFYING QUESTION")
-        response = self.model.get_response(instruction_generate_clarifying_question,
-                                           prompt_generate_clarifying_question(requirement, information))
-        return unwrap(response, "question")
 
     def classification(self, requirements):
         print("CLASSIFICATION")

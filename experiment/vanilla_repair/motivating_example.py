@@ -1,11 +1,7 @@
-import configparser
-
 import jsonlines
 
 from specfix.evaluator import SpecFixAccuracyEvaluator
 
-config = configparser.ConfigParser()
-config.read('../../.config')
 model_name = "o1-mini"
 
 specfix_accuracy_evaluator = SpecFixAccuracyEvaluator(

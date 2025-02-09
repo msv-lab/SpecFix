@@ -1,8 +1,7 @@
 import random
 
 from specfix.cluster import Cluster, Clusters
-from specfix.utils import execute_inputs, check_discrepancy, check_failed_semantic_input_output, compare
-from specfix.model import Model
+from specfix.utils import execute_inputs, check_failed_semantic_input_output, compare
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):
@@ -14,7 +13,7 @@ def differential_tester(generated_programs, test_inputs, entry_point):
         result_list = execute_inputs(program_str, test_inputs, entry_point)
 
         # Use class Cluster to add program to cluster
-        for cluster in program_clusters.get_clusters():
+        for cluster in program_clusters.get_cluster_list():
             try:
                 if compare(result_list, cluster.entropy_outputs):
                     cluster.add_program_str(program_str)
@@ -30,17 +29,9 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     return program_clusters
 
 
-def model_verifier(requirement, program, inp, outputs, model="o1-mini", temperature=1):
-    model = Model(model, temperature)
-    answer, explanation = check_discrepancy(requirement, program, inp, outputs, model)
-    if answer.startswith("Yes"):
-        return True, explanation
-    return False, explanation
-
-
-def ground_truth_testing(clusters, semantic_input_output, entry_point):
+def ground_truth_tester(clusters, semantic_input_output, entry_point):
     clusters.set_semantic_inputs_outputs(semantic_input_output)
-    for cluster in clusters.get_clusters():
+    for cluster in clusters.get_cluster_list():
         program_str = random.choice(cluster.programs_str)
         inputs, outputs = semantic_input_output
         result_list = execute_inputs(program_str, inputs, entry_point)

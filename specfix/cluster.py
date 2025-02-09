@@ -17,7 +17,7 @@ class Clusters:
     def add_cluster(self, cluster):
         self.clusters.append(cluster)
 
-    def get_clusters(self):
+    def get_cluster_list(self):
         return self.clusters
 
     def set_entropy_inputs(self, entropy_inputs):

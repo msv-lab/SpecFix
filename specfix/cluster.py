@@ -22,6 +22,12 @@ class Clusters:
 
     def get_clusters(self):
         return self.clusters
+    
+    def get_canonical_outputs(self):
+        return self.canonical_outputs
+    
+    def set_canonical_outputs(self, outputs):
+        self.canonical_outputs = outputs
 
     def set_entropy_inputs(self, entropy_inputs):
         self.entropy_inputs = entropy_inputs

@@ -59,11 +59,11 @@ def calculate_accuracy_ground_truth_testing(canonical_solution, clusters, test_i
     clusters.set_canonical_outputs(canonical_outputs)
     for cluster in clusters.get_clusters():
         canonical_len = len(canonical_outputs)
-        cluster_len = len(cluster.outputs)
+        cluster_len = len(cluster.entropy_outputs)
         min_length = min(canonical_len, cluster_len)
         
         # Compare outputs up to the shorter length
-        matches = sum(1 for i in range(min_length) if canonical_outputs[i] == cluster.outputs[i])
+        matches = sum(1 for i in range(min_length) if canonical_outputs[i] == cluster.entropy_outputs[i])
         
         # for i in range(min_length):
         #     if canonical_outputs[i] != cluster.outputs[i]:

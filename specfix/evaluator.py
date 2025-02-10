@@ -4,7 +4,7 @@ import pandas as pd
 
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import construct_test_case, unwrap
+from specfix.utils import construct_test_case, unwrap, get_parameter_number
 
 
 class SpecFixAccuracyEvaluator:
@@ -31,7 +31,7 @@ class SpecFixAccuracyEvaluator:
     def parallel_generate_programs(self, requirement, n_programs):
         generated_programs = []
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
             futures = [executor.submit(self.generate_programs, requirement)
                        for _ in range(n_programs)]
             for future in concurrent.futures.as_completed(futures):
@@ -48,23 +48,23 @@ class SpecFixAccuracyEvaluator:
             return self.generate_programs(requirements)
         return code
 
-    def generate_tests(self, requirements):
+    def generate_tests(self, requirements, entry_point):
         print("GENERATE TESTS INPUTS")
+        tests = []
+        para_number = get_parameter_number(requirements, entry_point)
         response = self.model.get_response(instruction_generate_test,
                                            prompt_generate_test(requirements))
         try:
-            response = eval(unwrap(response, "test"))
-            if isinstance(response, list) and all(isinstance(t, list) for t in response):
-                response = [t for t in response if t != []]
-                if len(response) > 0:
-                    return response
-                else:
-                    raise Exception
-            else:
+            response = unwrap(response, "tests")
+            for line in response.splitlines():
+                test = eval("[" + unwrap(line, "test") + "]")
+                if len(test) == para_number:
+                    tests.append(test)
+            if len(tests) == 0:
                 raise Exception
         except Exception as e:
-            response = self.generate_tests(requirements)
-        return response
+            tests = self.generate_tests(requirements, entry_point)
+        return tests
 
     def generate_requirement(self, program):
         print("REQUIREMENTS GENERATION")

@@ -65,13 +65,15 @@ def main():
             requirement, entry_point = parse_problem(problem)
             print(f"Case {i}: {requirement}")
 
-            test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
+            test_inputs = specfix_accuracy_evaluator.generate_tests(requirement, entry_point)
             print(f"Test inputs: {test_inputs}")
             programs = specfix_accuracy_evaluator.parallel_generate_programs(requirement, n_programs)
             clusters = specfix_accuracy_evaluator.get_clusters(programs, test_inputs, entry_point)
             result["task_id"] = problem["task_id"]
             result["requirement"] = requirement
             result["clusters"] = clusters.serialize()
+            result["entry_point"] = entry_point
+            result["input_output_examples"] = problem["input_output_examples"]
             if len(clusters.get_cluster_list()) == 1:
                 result["ground_truth"] = "Unambiguous"
             else:

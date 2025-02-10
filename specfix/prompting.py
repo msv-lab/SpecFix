@@ -118,19 +118,31 @@ instruction_generate_test = "You are an assistant that generates Python code inp
 
 def prompt_generate_test(requirement):
     return f"""
-Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. Store each test case in a list as function input. If an parameter type is list, it is nested inside the outer list. Gather all test cases into a general list. Wrap the collection in <test></test> tags. Here is an example:
+Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. 
+Don't output the function name, only the test inputs. If the function requires multiple arguments, separate them with commas.
+Wrap each test input in <test></test> tags. Wrap all the test inputs in <tests></tests> tags. Here is an example:
 
 # Example
 
 ## Requirements
 
-Write a function that sorts a list and select the kth smallest element.
+def is_anagram(test, original):
+\"\"\"
+An **anagram** is the result of rearranging the letters of a word to produce a new word.
+
+**Note:** anagrams are case insensitive
+
+Complete the function to return `true` if the two arguments given are anagrams of each other; return `false` otherwise.
+\"\"\"
+
 
 ## Test inputs
 
-<test>
-[[[1, 2, 3, 2, 3], 2], [[1, 2, 3, 4, 5], 3], [[1, 2, 3, 4, 5], 1]]
-</test>
+<tests>
+<test>'listen', 'silent'</test>
+<test>'hello', 'llohe'</test>
+<test>'LISTEN', 'SILENT'</test>
+</tests>
 
 # Your task
 
@@ -332,6 +344,3 @@ You are tasked with repairing a programming problem description to ensure it una
 **OTHER_VERSIONS:**
 {programs_str}
 """
-
-
-

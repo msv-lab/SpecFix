@@ -1,13 +1,14 @@
 import configparser
-
+from os.path import dirname, abspath
 from openai import OpenAI
 import time
+
+config = configparser.ConfigParser()
+config.read(dirname(abspath(__file__)) + '/../.config')
 
 
 class Model:
     def __init__(self, model, temperature=1, top_p=1, frequency_penalty=0):
-        config = configparser.ConfigParser()
-        config.read('../../.config')
         api_key = ""
         if "qwen" in model:
             api_key = config['API_KEY']['qwen_key']

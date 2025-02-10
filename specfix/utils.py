@@ -4,8 +4,10 @@ import random
 import math
 import types
 import re
-from func_timeout import func_set_timeout
-from specfix.solution_transformer import remove_comments_and_asserts
+from func_timeout import func_timeout, FunctionTimedOut
+from tqdm import trange
+
+from specfix.solution_transformer import remove_comments_and_asserts, transform_code
 
 
 def post_process(text: str) -> str:
@@ -21,7 +23,6 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
-@func_set_timeout(1)
 def execute(func_str, func_args, entry_point):
     try:
         local_env = {}
@@ -41,13 +42,13 @@ def execute(func_str, func_args, entry_point):
         return repr(e)
 
 
-def execute_inputs(func_str, inputs_list, entry_point):
+def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
-    # for i in trange(len(inputs_list)):
-    for i in range(len(inputs_list)):
+    for i in trange(len(inputs_list)):
+        # for i in range(len(inputs_list)):
         try:
-            results.append([execute(func_str, inputs_list[i], entry_point)])
-        except:
+            results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
+        except FunctionTimedOut:
             results.append("Timeout")
     return results
 
@@ -76,12 +77,15 @@ def unwrap(string, label):
     if label == "code":
         try:
             string = remove_comments_and_asserts(string).strip()
+            string = transform_code(string)
         except:
             return ""
     return string
 
 
 def check_failed_semantic_input_output(result_list, inputs, outputs):
+    if inputs == [] or outputs == []:
+        return [], 1
     failed_semantic_input_output = []
     for i in range(len(inputs)):
         if result_list[i] != outputs[i]:
@@ -141,9 +145,25 @@ def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task)
     return output_file
 
 
-def calculate_f1_score(results, ground_truths):
-    precision = len(set(results).intersection(set(ground_truths))) / len(set(results))
-    recall = len(set(results).intersection(set(ground_truths))) / len(set(ground_truths))
-    if precision + recall == 0:
+def calculate_f1_score(judges, ground_truths):
+    tp = 0
+    fp = 0
+    fn = 0
+    for judge, ground_truth in zip(judges, ground_truths):
+        if judge == "Ambiguous" and ground_truth == "Ambiguous":
+            tp += 1
+        elif judge == "Ambiguous" and ground_truth == "Unambiguous":
+            fp += 1
+        elif judge == "Unambiguous" and ground_truth == "Ambiguous":
+            fn += 1
+    if tp == 0:
         return 0
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
     return 2 * precision * recall / (precision + recall)
+
+
+def get_parameter_number(requirement, entry_point):
+    for line in requirement.split("\n"):
+        if f"def {entry_point}(" in line:
+            return len(line.split("(")[1].split(")")[0].split(","))

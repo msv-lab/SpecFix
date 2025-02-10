@@ -21,7 +21,8 @@ def differential_tester(generated_programs, test_inputs, entry_point):
             except ValueError:
                 continue
         else:
-            new_cluster = Cluster(result_list)
+            new_cluster = Cluster()
+            new_cluster.entropy_outputs = result_list
             new_cluster.add_program_str(program_str)
             program_clusters.add_cluster(new_cluster)
     program_clusters.calculate_distribution()

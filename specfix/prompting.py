@@ -254,9 +254,9 @@ Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap
 instruction_test_based_repair = "You are a programming assistant specialized in debugging and fixing Python code."
 
 
-def prompt_test_based_repair(requirement, code, failed_semantic_input_output):
+def prompt_test_based_repair(requirement, code, failed_input_output_examples):
     tests = ""
-    for i, (inp, output, canonical_output) in enumerate(failed_semantic_input_output):
+    for i, (inp, output, canonical_output) in enumerate(failed_input_output_examples):
         tests += f"### Test {i + 1}\nInput: {inp}\nOutput: {output}\nExpected: {canonical_output}\n"
     return f"""
 You are a coding assistant specialized in repairing buggy Python programs.

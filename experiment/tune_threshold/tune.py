@@ -5,15 +5,15 @@ import jsonlines
 from specfix.cluster import Clusters
 from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import calculate_f1_score
+from specfix.utils import calculate_mcc
 
 
 def tune_threshold(results, ground_truth):
     threshold_dict = {}
     for threshold in range(0, 1000):
         threshold = threshold / 1000
-        judges = ["Ambiguous" if result > threshold else "Unambiguous" for result in results]
-        f1_score = calculate_f1_score(judges, ground_truth)
+        judges = [1 if result > threshold else 0 for result in results]
+        f1_score = calculate_mcc(judges, ground_truth)
         threshold_dict[threshold] = f1_score
     # Find the best threshold
     best_threshold = max(threshold_dict, key=threshold_dict.get)
@@ -49,11 +49,10 @@ def main():
     with jsonlines.open(dataset_path) as reader:
         for i, problem in enumerate(reader):
             requirement, entry_point = parse_problem(problem)
-            example = problem["clusters"]["input_output_examples"]
             ground_truth = problem["ground_truth"]
             clusters = Clusters()
             clusters.deserialize(problem["clusters"])
-            specfix_accuracy_evaluator.calculate_ambiguity(clusters, example, entry_point)
+            specfix_accuracy_evaluator.calculate_ambiguity(clusters, entry_point)
             ambiguity_results.append(clusters.ambiguity)
             ground_truths.append(ground_truth)
         best_threshold = tune_threshold(ambiguity_results, ground_truths)

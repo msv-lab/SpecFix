@@ -7,25 +7,6 @@ from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_output_file, unwrap
 
-instruction_label = "You are an assistant that classifies the understanding gap between different programs. "
-
-
-def prompt_label(requirement, programs):
-    program_str = ""
-    for i, program in enumerate(programs):
-        program_str += f"{i + 1}. {program}\n"
-    return f"""
-You will be given a user requirement and its candidate solutions. Your task is to clarify this requirement by asking clarifying questions. Specifically, you will first analyze the functionality of each solution. Then by comparing their differences, you can determine which parts in the requirement are ambiguous and ask targeted clarification questions.
-
-Wrap your answer in <classification></classification> tags.
-
-Requirement:
-{requirement}
-
-Solutions:
-{program_str}   
-    """
-
 
 def parse_problem(problem):
     requirement = problem['requirement']
@@ -69,19 +50,16 @@ def main():
             print(f"Test inputs: {test_inputs}")
             programs = specfix_accuracy_evaluator.parallel_generate_programs(requirement, n_programs)
             clusters = specfix_accuracy_evaluator.get_clusters(programs, test_inputs, entry_point)
+            clusters.input_output_examples = problem["input_output_examples"]
             result["task_id"] = problem["task_id"]
             result["requirement"] = requirement
             result["clusters"] = clusters.serialize()
             result["entry_point"] = entry_point
-            result["input_output_examples"] = problem["input_output_examples"]
             if len(clusters.get_cluster_list()) == 1:
-                result["ground_truth"] = "Unambiguous"
+                result["ground_truth"] = 0
             else:
-                response = specfix_accuracy_evaluator.model.get_response(instruction_label, prompt_label(requirement, [
-                    cluster.programs_str[0] for cluster in clusters.get_cluster_list()]))
-                gaps = unwrap(response, "classification")
-                result["gaps"] = gaps
-                result["ground_truth"] = ""
+                print(problem["requirement"])
+                result["ground_truth"] = int(input("Enter ground truth: "))
             writer.write(result)
 
 

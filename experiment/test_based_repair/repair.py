@@ -58,7 +58,7 @@ def main():
                 cluster = clusters.get_largest_cluster()
                 if cluster.test_consistency != 1:
                     repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, requirement,
-                                                                                 cluster.failed_semantic_input_output)
+                                                                                 cluster.failed_input_output_examples)
                     repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
                 else:
                     other_programs = [c.program_str[0] for c in clusters.clusters if c != cluster]

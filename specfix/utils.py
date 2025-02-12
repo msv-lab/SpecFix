@@ -6,6 +6,7 @@ import types
 import re
 from func_timeout import func_timeout, FunctionTimedOut
 from tqdm import trange
+from sklearn.metrics import matthews_corrcoef
 
 from specfix.solution_transformer import remove_comments_and_asserts, transform_code
 
@@ -83,14 +84,14 @@ def unwrap(string, label):
     return string
 
 
-def check_failed_semantic_input_output(result_list, inputs, outputs):
+def check_failed_input_output_examples(result_list, inputs, outputs):
     if inputs == [] or outputs == []:
         return [], 1
-    failed_semantic_input_output = []
+    failed_input_output_examples = []
     for i in range(len(inputs)):
         if result_list[i] != outputs[i]:
-            failed_semantic_input_output.append([inputs[i], result_list[i], outputs[i]])
-    return failed_semantic_input_output, 1 - (len(failed_semantic_input_output) / len(inputs))
+            failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
+    return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
 
 
 def compare(results, outputs):
@@ -145,22 +146,8 @@ def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task)
     return output_file
 
 
-def calculate_f1_score(judges, ground_truths):
-    tp = 0
-    fp = 0
-    fn = 0
-    for judge, ground_truth in zip(judges, ground_truths):
-        if judge == "Ambiguous" and ground_truth == "Ambiguous":
-            tp += 1
-        elif judge == "Ambiguous" and ground_truth == "Unambiguous":
-            fp += 1
-        elif judge == "Unambiguous" and ground_truth == "Ambiguous":
-            fn += 1
-    if tp == 0:
-        return 0
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-    return 2 * precision * recall / (precision + recall)
+def calculate_mcc(predict, ground_truths):
+    return matthews_corrcoef(ground_truths, predict)
 
 
 def get_parameter_number(requirement, entry_point):

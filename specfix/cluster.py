@@ -1,3 +1,5 @@
+import ast
+
 import math
 import sys
 
@@ -12,8 +14,8 @@ class Clusters:
     def __init__(self):
         self.cluster_list = []  # list of clusters.
         self.entropy = 0  # entropy of the clusters.
-        self.entropy_inputs = []  # LLM generated test inputs for entropy measure.
-        self.semantic_inputs_outputs = []  # input output examples for semantic measure
+        self.llm_generated_inputs = []  # LLM generated test inputs for entropy measure.
+        self.input_output_examples = []  # input output examples for semantic measure
         self.at_least_one_align = False  # whether at least one cluster is aligned with the examples.
         self.ambiguity = 0  # ambiguity of the clusters.
 
@@ -23,11 +25,11 @@ class Clusters:
     def get_cluster_list(self):
         return self.cluster_list
 
-    def set_entropy_inputs(self, entropy_inputs):
-        self.entropy_inputs = entropy_inputs
+    def set_llm_generated_inputs(self, llm_generated_inputs):
+        self.llm_generated_inputs = llm_generated_inputs
 
-    def set_semantic_inputs_outputs(self, semantic_inputs_outputs):
-        self.semantic_inputs_outputs = semantic_inputs_outputs
+    def set_input_output_examples(self, input_output_examples):
+        self.input_output_examples = input_output_examples
 
     def set_at_least_one_align(self):
         self.at_least_one_align = True if any([cluster.is_align_req for cluster in self.cluster_list]) else False
@@ -49,24 +51,22 @@ class Clusters:
         return {
             'cluster_list': [cluster.serialize() for cluster in self.cluster_list],
             'entropy': self.entropy,
-            'LLM_generated_inputs': self.entropy_inputs if any(
-                isinstance(i, set) for i in self.entropy_inputs) else str(
-                self.entropy_inputs),
-            'input_output_examples': self.semantic_inputs_outputs,
+            'llm_generated_inputs': str(self.llm_generated_inputs),
+            'input_output_examples': str(self.input_output_examples),
             'at_least_one_align': self.at_least_one_align
         }
 
     def deserialize(self, data):
         self.cluster_list = [Cluster().deserialize(cluster) for cluster in data['cluster_list']]
         self.entropy = data['entropy']
-        self.entropy_inputs = data['LLM_generated_inputs']
-        self.semantic_inputs_outputs = data['input_output_examples']
+        self.llm_generated_inputs = ast.literal_eval(data['llm_generated_inputs'])
+        self.input_output_examples = ast.literal_eval(data['input_output_examples'])
         self.at_least_one_align = data['at_least_one_align']
         return self
 
     def calculate_ambiguity(self):
         weighted_t_consistency = sum(
-            [wilson_lower(cluster.test_consistency, len(self.semantic_inputs_outputs)) * cluster.probability for cluster
+            [wilson_lower(cluster.test_consistency, len(self.input_output_examples)) * cluster.probability for cluster
              in self.cluster_list])
         # weighted_t_consistency = sum(
         #     [cluster.test_consistency * cluster.probability for cluster in self.cluster_list])
@@ -79,7 +79,7 @@ class Cluster:
         self.requirement = []  # TODO: future work for inverse requirement.
         self.is_align_req = False  # whether the requirement is aligned with the examples.
         self.entropy_outputs = []  # the corresponding outputs for LLM generated test inputs in entropy measure.
-        self.failed_semantic_input_output = []  # failed input output examples in semantic measure. (input, output, expected)
+        self.failed_input_output_examples = []  # failed input output examples in semantic measure. (input, output, expected)
         self.test_consistency = 0  # test consistency for semantic measure.
         self.probability = 0  # probability of the cluster.
         self.DRS = None

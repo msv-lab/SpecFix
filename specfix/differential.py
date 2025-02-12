@@ -1,13 +1,13 @@
 import random
 
 from specfix.cluster import Cluster, Clusters
-from specfix.utils import execute_inputs, check_failed_semantic_input_output, compare
+from specfix.utils import execute_inputs, check_failed_input_output_examples, compare
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):
     # Store test results
     program_clusters = Clusters()
-    program_clusters.set_entropy_inputs(test_inputs)
+    program_clusters.set_llm_generated_inputs(test_inputs)
     # Test each generated program against the reference
     for program_str in generated_programs:
         result_list = execute_inputs(program_str, test_inputs, entry_point)
@@ -30,15 +30,14 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     return program_clusters
 
 
-def ground_truth_tester(clusters, semantic_input_output, entry_point):
-    clusters.set_semantic_inputs_outputs(semantic_input_output)
+def ground_truth_tester(clusters, entry_point):
     for cluster in clusters.get_cluster_list():
         program_str = random.choice(cluster.programs_str)
-        inputs, outputs = semantic_input_output
+        inputs, outputs = clusters.input_output_examples
         result_list = execute_inputs(program_str, inputs, entry_point)
-        failed_semantic_input_output, t_consistency = check_failed_semantic_input_output(result_list,
+        failed_input_output_examples, t_consistency = check_failed_input_output_examples(result_list,
                                                                                          inputs, outputs)
-        cluster.failed_semantic_input_output = failed_semantic_input_output
+        cluster.failed_input_output_examples = failed_input_output_examples
         cluster.test_consistency = t_consistency
         if t_consistency == 1:
             cluster.align()

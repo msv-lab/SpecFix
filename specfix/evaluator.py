@@ -1,10 +1,11 @@
+import ast
 import concurrent.futures
 import random
 import pandas as pd
 
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import construct_test_case, unwrap, get_parameter_number
+from specfix.utils import unwrap, get_parameter_number
 
 
 class SpecFixAccuracyEvaluator:
@@ -24,8 +25,8 @@ class SpecFixAccuracyEvaluator:
         clusters = self.differential_tester(programs, test_inputs, entry_point)
         return clusters
 
-    def calculate_ambiguity(self, clusters, examples, entry_point):
-        self.ground_truth_tester(clusters, examples, entry_point)
+    def calculate_ambiguity(self, clusters, entry_point):
+        self.ground_truth_tester(clusters, entry_point)
         clusters.calculate_ambiguity()
 
     def parallel_generate_programs(self, requirement, n_programs):
@@ -103,11 +104,11 @@ class SpecFixAccuracyEvaluator:
                                            prompt_inverse_requirement(code))
         return unwrap(response, "requirement")
 
-    def test_based_repair(self, program, requirement, failed_semantic_input_output):
+    def test_based_repair(self, program, requirement, failed_input_output_examples):
 
         print("TEST BASED REPAIR")
         response = self.model.get_response(instruction_test_based_repair,
-                                           prompt_test_based_repair(requirement, program, failed_semantic_input_output))
+                                           prompt_test_based_repair(requirement, program, failed_input_output_examples))
         return unwrap(response, "code")
 
     def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):

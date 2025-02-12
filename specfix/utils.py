@@ -1,8 +1,9 @@
 import os
-import random
-
-import math
+import subprocess
+import sys
 import types
+import random
+import math
 import re
 from func_timeout import func_timeout, FunctionTimedOut
 from tqdm import trange
@@ -25,47 +26,53 @@ def post_process(text: str) -> str:
 
 
 def execute(func_str, func_args, entry_point):
-    try:
-        local_env = {}
-        exec(func_str, local_env)
+    max_install_attempts = 3
+    installed_modules = set()
 
-        if entry_point in local_env:
-            func = local_env[entry_point]
-        else:
-            target_funcs = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
-            if len(target_funcs) == 1:
-                func = target_funcs[0]
+    while True:
+        try:
+            local_env = {}
+            exec(func_str, local_env)
+
+            if entry_point in local_env:
+                func = local_env[entry_point]
             else:
-                func = random.choice(target_funcs)
+                target_funcs = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
+                if len(target_funcs) == 1:
+                    func = target_funcs[0]
+                else:
+                    func = random.choice(target_funcs)
 
-        return func(*func_args)
-    except Exception as e:
-        return repr(e)
+            return func(*func_args)
+
+        except ModuleNotFoundError as e:
+            module_name = e.name
+            if module_name in installed_modules:
+                return "ModuleNotFoundError"
+            if len(installed_modules) >= max_install_attempts:
+                return "ModuleNotFoundError"
+
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", module_name], stdout=subprocess.DEVNULL,
+                                      stderr=subprocess.DEVNULL)
+                installed_modules.add(module_name)
+                continue
+            except subprocess.CalledProcessError:
+                return "ModuleNotFoundError"
+
+        except Exception as e:
+            return e.__class__.__name__
 
 
 def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
     for i in trange(len(inputs_list)):
-        # for i in range(len(inputs_list)):
         try:
-            results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
+            results.append([execute(func_str, inputs_list[i], entry_point)])
+            # results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
         except FunctionTimedOut:
             results.append("Timeout")
     return results
-
-
-def construct_test_case(program, inputs):
-    """
-    First extract function name from program. Then construct a test case for a given program.e.g., assert func_name(inputs) == outputs. return a list of assertions.
-    """
-    local_scope = {}
-    exec(program, {}, local_scope)
-    func_name = next(iter(local_scope))
-    assertions = []
-    outputs = execute_inputs(program, inputs)
-    for i, input_args in enumerate(inputs):
-        assertions.append(f"assert {func_name}({input_args}) == {outputs[i]}")
-    return assertions
 
 
 def unwrap(string, label):

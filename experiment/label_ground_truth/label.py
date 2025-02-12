@@ -59,7 +59,8 @@ def main():
                 result["ground_truth"] = 0
             else:
                 print(problem["requirement"])
-                result["ground_truth"] = int(input("Enter ground truth: "))
+                result["ground_truth"] = -1
+                # result["ground_truth"] = int(input("Enter ground truth: "))
             writer.write(result)
 
 

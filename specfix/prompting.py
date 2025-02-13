@@ -226,11 +226,12 @@ instruction_classification = "You are an assistant that classifies the requireme
 
 def prompt_classification(requirement):
     return f"""
-Given a requirement and corresponding code, determine if the requirement is ambiguous. A requirement is considered ambiguous if it can be interpreted in multiple ways due to missing or unclear information (e.g., vague definitions, unspecified relationships, or incomplete instructions). Think step-by-step. Your response should include:
+Are the requirement ambiguous, i.e. leave room for multiple reasonable interpretations or contain contradictions, when considering the intended functionality? In your evaluation, consider how the program is expected to handle edge cases like extreme values. Exclude considerations related to handling invalid inputs or addressing aspects unrelated to functionality, such as performance.
 
 1. If the requirement is ambiguous, answer "Yes".
-2. Otherwise, answer "No".
-3. Provide Your step-by-step reasoning for your judgment.
+2. If the requirement is unambiguous, answer "No".
+3. If you are unsure, answer "Unsure".
+4. Provide Your step-by-step reasoning for your judgment.
 
 Format your final response in the following tags:
 <answer>Yes or No</answer>

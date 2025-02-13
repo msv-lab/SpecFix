@@ -42,9 +42,9 @@ def prompt_remove_example(origin: str) -> str:
     """
     prompt = (
             "Remove all examples from the provided programming problem description, including sample inputs/outputs, "
-            "in-text illustrations (e.g., 'for example, if...'), or standalone example sections. Retain all other content "
+            "in-text illustrations (e.g., 'for example, if...'), or standalone example sections (including assertion statement). Retain all other content "
             "such as the problem statement, constraints, notes, and explanations that are not explicitly part of an example. "
-            "Do not modify, rephrase, or delete any non-example text. Wrap the modified description in <requirement></requirement> tags.\n"
+            "Don't delete function signature at the beginning of requirement. Do not modify, rephrase, or delete any non-example text. Wrap the modified description in <requirement></requirement> tags.\n"
             + origin
     )
     return prompt
@@ -74,8 +74,8 @@ def taco_ambiguous_collection():
             obj['requirement'] = remove_example(req)
         return idx, obj
 
-    with jsonlines.open("taco_lite.jsonl") as reader, \
-            jsonlines.open("taco_lite_woe.jsonl", "w", flush=True) as writer:
+    with jsonlines.open("mbpp.jsonl") as reader, \
+            jsonlines.open("mbpp_woe.jsonl", "w", flush=True) as writer:
         objs = list(reader)
         processed_objs = [None] * len(objs)
 

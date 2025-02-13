@@ -68,8 +68,8 @@ def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
     for i in trange(len(inputs_list)):
         try:
-            results.append([execute(func_str, inputs_list[i], entry_point)])
-            # results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
+            # results.append([execute(func_str, inputs_list[i], entry_point)])
+            results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
         except FunctionTimedOut:
             results.append("Timeout")
     return results
@@ -142,14 +142,14 @@ def wilson_lower(p_obs, n, z=1.96):
 def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
     model_name = model_name.replace(".", "")
 
-    if not os.path.exists(f"{cwd}/{model_name}"):
-        os.mkdir(f"{cwd}/{model_name}")
+    if not os.path.exists(f"{cwd}/{task}/{model_name}"):
+        os.mkdir(f"{cwd}/{task}/{model_name}")
 
     # Open dataset and output JSONL in one place
     if threshold is None:
-        output_file = f"{cwd}/{model_name}/{dataset}{wo_example}_{task}.jsonl"
+        output_file = f"{cwd}/{task}/{dataset}{wo_example}.jsonl"
     else:
-        output_file = f"{cwd}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}_{task}.jsonl"
+        output_file = f"{cwd}/{task}/{dataset}_{str(int(threshold * 100))}{wo_example}.jsonl"
     return output_file
 
 
@@ -160,4 +160,4 @@ def calculate_mcc(predict, ground_truths):
 def get_parameter_number(requirement, entry_point):
     for line in requirement.split("\n"):
         if f"def {entry_point}(" in line:
-            return len(line.split("(")[1].split(")")[0].split(","))
+            return line.split("(")[1].split(")")[0].count(":")

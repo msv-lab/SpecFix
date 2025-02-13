@@ -13,7 +13,7 @@ sys.set_int_max_str_digits(0)
 
 # --- Configuration and Model Initialization ---
 def load_config_and_model():
-    model_name = "qwen-plus"
+    model_name = "gpt-4o-mini"
     return Model(model_name)
 
 
@@ -50,7 +50,7 @@ instruction_repair_response = (
 )
 
 
-def prompt_extract_example(requirement, inputs, outputs) -> str:
+def prompt_extract_example(requirement) -> str:
     return f"""
 You are given the following programming problem description. Your task is to locate and extract *all example cases* found in the description, including sample inputs/outputs, in-text illustrations (e.g., 'for example, if...'), or standalone example sections. 
 
@@ -77,13 +77,10 @@ If there are no examples, respond with <example></example>.
 
 Here is the problem description:
 {requirement}
-
-Here is the illustrated format of the example inputs and outputs for the problem:
-{inputs[0]} -> {outputs[0]}
 """
 
 
-def prompt_repair_response(description, response, inputs, outputs) -> str:
+def prompt_repair_response(description, response) -> str:
     return f"""
 You are given the following programming problem description and an incorrect example extraction from the description. Your task is to repair the response based on the problem description.
 
@@ -101,9 +98,6 @@ Here is the problem description:
 
 Here is the incorrect response:
 {response}
-
-Here is the illustrated format of the example inputs and outputs for the problem:
-{inputs[0]} -> {outputs[0]}
 """
 
 
@@ -114,11 +108,11 @@ def extract(problem: dict, requirement: str) -> dict:
     parsing errors, attempts to repair the response.
     """
     try:
-        prompt = prompt_extract_example(requirement, problem["inputs"], problem["outputs"])
+        prompt = prompt_extract_example(requirement)
         response = model.get_response(instruction_extract_example, prompt)
     except Exception as e:
         print(f"Final error during extraction: {e}")
-        print(prompt_extract_example(requirement, problem["inputs"], problem["outputs"]))
+        print(prompt_extract_example(requirement))
         response = requirement  # Fallback: use requirement text
 
     response = unwrap(response, "example")
@@ -138,7 +132,7 @@ def extract(problem: dict, requirement: str) -> dict:
             outputs_list.append(oup)
         except Exception:
             # Attempt to repair the response using the repair prompt
-            repair_prompt = prompt_repair_response(requirement, example, problem["inputs"], problem["outputs"])
+            repair_prompt = prompt_repair_response(requirement, example)
             repaired_example = model.get_response(instruction_repair_response, repair_prompt)
             repaired_example = unwrap(repaired_example, "response")
             try:
@@ -155,7 +149,7 @@ def extract(problem: dict, requirement: str) -> dict:
                 outputs_list.clear()
                 break
 
-    problem["examples"] = [inputs_list, outputs_list]
+    problem["input_output_examples"] = str([inputs_list, outputs_list])
     return problem
 
 
@@ -165,8 +159,8 @@ def main():
     results = []
 
     # Open dataset and output file with context managers.
-    with jsonlines.open("../../dataset/taco_lite.jsonl") as reader, \
-            jsonlines.open("taco_lite_example.jsonl", mode='w', flush=True) as writer:
+    with jsonlines.open("../../dataset/humaneval.jsonl") as reader, \
+            jsonlines.open("humaneval_example.jsonl", mode='w', flush=True) as writer:
 
         # Load all problems so that we can count them for tqdm.
         problems = list(reader)
@@ -192,11 +186,30 @@ def main():
 
         # Write each processed problem to the output file.
         for item in results:
-            try:
-                writer.write(item)
-            except Exception as write_err:
-                print(f"Error writing item {item.get('task_id', 'unknown')}: {write_err}")
+            writer.write(item)
 
+
+def manually_extract():
+    with jsonlines.open("taco_example.jsonl") as reader, jsonlines.open("taco_example1.jsonl", "w",
+                                                                        flush=True) as writer:
+        count = 0
+        for problem in reader:
+            try:
+                examples = ast.literal_eval(problem["input_output_examples"])
+                if examples == [[], []]:
+                    print(problem["task_id"])
+                    print(problem["requirement"])
+                    examples = input("Enter examples: ")
+                    problem["input_output_examples"] = examples
+                    count += 1
+            except Exception as e:
+                print(problem["task_id"])
+                print(problem["requirement"])
+                examples = input("Enter examples: ")
+                problem["input_output_examples"] = examples
+            writer.write(problem)
+        print(count)
 
 if __name__ == '__main__':
     main()
+    manually_extract()

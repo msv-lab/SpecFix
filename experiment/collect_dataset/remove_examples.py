@@ -17,7 +17,7 @@ from tqdm import tqdm
 sys.set_int_max_str_digits(0)
 
 # --- Model Configuration ---
-model_name = "qwen-plus"
+model_name = "gpt-4o"
 model = Model(model_name)
 
 # --- Removal Instruction and Prompts ---
@@ -58,7 +58,7 @@ def remove_example(requirement: str) -> str:
     return unwrap(response, "requirement")
 
 
-def taco_ambiguous_collection():
+def remove_examples():
     """
     Process ambiguous taco data from "taco_lite.jsonl" by removing examples from the requirement.
     The function writes the processed objects into "taco_lite_woe.jsonl".
@@ -74,8 +74,8 @@ def taco_ambiguous_collection():
             obj['requirement'] = remove_example(req)
         return idx, obj
 
-    with jsonlines.open("mbpp.jsonl") as reader, \
-            jsonlines.open("mbpp_woe.jsonl", "w", flush=True) as writer:
+    with jsonlines.open("humaneval.jsonl") as reader, \
+            jsonlines.open("humaneval_woe.jsonl", "w", flush=True) as writer:
         objs = list(reader)
         processed_objs = [None] * len(objs)
 
@@ -89,5 +89,15 @@ def taco_ambiguous_collection():
             writer.write(obj)
 
 
+def manual_remove():
+    with jsonlines.open("humaneval_woe.jsonl") as reader:
+        for problem in reader:
+            if problem["requirement"].count(problem["entry_point"]+"(") != 1:
+                print(f"Problem: {problem['task_id']}")
+                print(problem["requirement"])
+                a = 1
+
+
 if __name__ == "__main__":
-    taco_ambiguous_collection()
+    # remove_examples()
+    manual_remove()

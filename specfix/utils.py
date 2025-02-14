@@ -5,6 +5,7 @@ import types
 import random
 import math
 import re
+import jsonlines
 from func_timeout import func_timeout, FunctionTimedOut
 from tqdm import trange
 from sklearn.metrics import matthews_corrcoef
@@ -143,13 +144,13 @@ def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task)
     model_name = model_name.replace(".", "")
 
     if not os.path.exists(f"{cwd}/{task}/{model_name}"):
-        os.mkdir(f"{cwd}/{task}/{model_name}")
+        os.makedirs(f"{cwd}/{task}/{model_name}")
 
     # Open dataset and output JSONL in one place
     if threshold is None:
-        output_file = f"{cwd}/{task}/{dataset}{wo_example}.jsonl"
+        output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}.jsonl"
     else:
-        output_file = f"{cwd}/{task}/{dataset}_{str(int(threshold * 100))}{wo_example}.jsonl"
+        output_file = f"{cwd}/{task}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}.jsonl"
     return output_file
 
 
@@ -161,3 +162,11 @@ def get_parameter_number(requirement, entry_point):
     for line in requirement.split("\n"):
         if f"def {entry_point}(" in line:
             return line.split("(")[1].split(")")[0].count(":")
+
+
+def generate_pilot(file_name):
+    with jsonlines.open(file_name) as reader, jsonlines.open(file_name.replace(".jsonl", "_pilot.jsonl"),
+                                                             "w") as writer:
+        for i, problem in enumerate(reader):
+            if i < 50:
+                writer.write(problem)

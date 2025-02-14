@@ -13,7 +13,7 @@ sys.set_int_max_str_digits(0)
 
 # --- Configuration and Model Initialization ---
 def load_config_and_model():
-    model_name = "gpt-4o-mini"
+    model_name = "gpt-4o"
     return Model(model_name)
 
 
@@ -159,7 +159,7 @@ def main():
     results = []
 
     # Open dataset and output file with context managers.
-    with jsonlines.open("../../dataset/humaneval.jsonl") as reader, \
+    with jsonlines.open("humaneval.jsonl") as reader, \
             jsonlines.open("humaneval_example.jsonl", mode='w', flush=True) as writer:
 
         # Load all problems so that we can count them for tqdm.
@@ -190,7 +190,7 @@ def main():
 
 
 def manually_extract():
-    with jsonlines.open("taco_example.jsonl") as reader, jsonlines.open("taco_example1.jsonl", "w",
+    with jsonlines.open("humaneval_example.jsonl") as reader, jsonlines.open("humaneval_example1.jsonl", "w",
                                                                         flush=True) as writer:
         count = 0
         for problem in reader:
@@ -211,5 +211,5 @@ def manually_extract():
         print(count)
 
 if __name__ == '__main__':
-    main()
+    # main()
     manually_extract()

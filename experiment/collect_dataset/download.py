@@ -9,6 +9,32 @@ import json
 import jsonlines
 from datasets import load_dataset
 from tqdm import tqdm
+from evalplus.data import get_mbpp_plus, get_human_eval_plus
+
+
+def collect_humaneval_mbpp():
+    humaneval = get_human_eval_plus()
+    mbpp = get_mbpp_plus()
+
+    with jsonlines.open("humaneval.jsonl", "w", flush=True) as writer:
+        for key in humaneval.keys():
+            result = {}
+            problem = humaneval[key]
+            result["task_id"] = problem["task_id"]
+            result["requirement"] = problem["prompt"]
+            result["entry_point"] = problem["entry_point"]
+            result["canonical_solution"] = problem["prompt"] + problem["canonical_solution"]
+            writer.write(result)
+
+    with jsonlines.open("mbpp.jsonl", "w", flush=True) as writer:
+        for key in mbpp.keys():
+            result = {}
+            problem = mbpp[key]
+            result["task_id"] = problem["task_id"]
+            result["requirement"] = problem["prompt"]
+            result["entry_point"] = problem["entry_point"]
+            result["canonical_solution"] = problem["canonical_solution"].strip()
+            writer.write(result)
 
 
 def collect_taco():

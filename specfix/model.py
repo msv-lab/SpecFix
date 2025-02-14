@@ -39,7 +39,7 @@ class Model:
         elif "gpt" in self.model or "o1" in self.model:  # based on the transit of the model
             client = OpenAI(
                 api_key=self.api_key,
-                base_url="https://xiaoai.plus/v1",
+                base_url="https://api.openai-proxy.org/v1",
             )
         elif "llama" in self.model:
             client = OpenAI(
@@ -50,19 +50,28 @@ class Model:
             raise ValueError("Invalid model")
         return client
 
-    def get_response(self, instruction, prompt, temperature=None):
+    def get_response(self, instruction, prompt, use_model_settings=None):
         for _ in range(5):
             try:
-                chat_completion = self.client.chat.completions.create(
-                    messages=[
-                        {"role": "assistant", "content": instruction},
-                        {"role": "user", "content": prompt}
-                    ],
-                    model=self.model,
-                    temperature=self.temperature if temperature is None else temperature,
-                    top_p=self.top_p,
-                    frequency_penalty=self.frequency_penalty,
-                )
+                if use_model_settings is None:
+                    chat_completion = self.client.chat.completions.create(
+                        messages=[
+                            {"role": "assistant", "content": instruction},
+                            {"role": "user", "content": prompt}
+                        ],
+                        model=self.model
+                    )
+                else:
+                    chat_completion = self.client.chat.completions.create(
+                        messages=[
+                            {"role": "assistant", "content": instruction},
+                            {"role": "user", "content": prompt}
+                        ],
+                        model=self.model,
+                        temperature=self.temperature,
+                        top_p=self.top_p,
+                        frequency_penalty=self.frequency_penalty
+                    )
                 response = chat_completion.choices[0].message.content
                 if response:
                     return response

@@ -9,3 +9,4 @@ matplotlib~=3.10.0
 func_timeout~=4.3.5
 datasets~=3.2.0
 pyarrow~=19.0.0
+scikit-learn~=1.6.1

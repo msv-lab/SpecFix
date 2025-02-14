@@ -76,20 +76,23 @@ def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     return results
 
 
-def unwrap(string, label):
-    string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
-        0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(
-        f"<{label}>") < string.index(
-        f"</{label}>") else string
-    if "```" in string and (label == "code" or label == "test"):
-        string = post_process(string)
-    if label == "code":
+def unwrap(string: str, label: str) -> str:
+    pattern = re.compile(rf'<{label}>(.*?)</{label}>', re.DOTALL)
+    match = pattern.search(string)
+
+    extracted = match.group(1).strip() if match else string
+
+    if label in {'code', 'test'} and '```' in extracted:
+        extracted = post_process(extracted)
+
+    if label == 'code':
         try:
-            string = remove_comments_and_asserts(string).strip()
-            string = transform_code(string)
-        except:
-            return ""
-    return string
+            cleaned = remove_comments_and_asserts(extracted)
+            return transform_code(cleaned).strip()
+        except Exception as e:
+            return ''
+
+    return extracted
 
 
 def check_failed_input_output_examples(result_list, inputs, outputs):

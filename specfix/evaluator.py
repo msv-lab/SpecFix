@@ -43,7 +43,7 @@ class SpecFixAccuracyEvaluator:
     def generate_programs(self, requirements):
         print("GENERATE PROGRAMS")
         response = self.model.get_response(instruction_generate_code,
-                                           prompt_generate_code(requirements), 1)
+                                           prompt_generate_code(requirements))
         code = unwrap(response, "code")
         if code == "":
             return self.generate_programs(requirements)
@@ -54,7 +54,7 @@ class SpecFixAccuracyEvaluator:
         tests = []
         para_number = get_parameter_number(requirements, entry_point)
         response = self.model.get_response(instruction_generate_test,
-                                           prompt_generate_test(requirements))
+                                           prompt_generate_test(requirements, entry_point))
         try:
             response = unwrap(response, "tests")
             for line in response.splitlines():
@@ -110,69 +110,6 @@ class SpecFixAccuracyEvaluator:
         response = self.model.get_response(instruction_test_based_repair,
                                            prompt_test_based_repair(requirement, program, failed_input_output_examples))
         return unwrap(response, "code")
-
-    def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
-        self.total_runs += 1
-        requirement = initial_requirement
-        test_inputs = self.generate_tests(requirement)
-        try:
-            for iteration in range(max_iterations):
-                print("REQUIREMENT:", task_id)
-                print(requirement)
-                # Generate programs (currently set to N=1 for testing speed)
-                print(f"GENERATED PROGRAMS FOR ITERATION {iteration}:")
-                generated_programs = []
-                for i in range(N):
-                    generated_programs.append(self.generate_programs(requirement))
-                    print(generated_programs[i])
-
-                # Check for clusters
-                clusters = self.differential_tester(generated_programs, test_inputs, entry_point)
-                if len(clusters) == 1:
-                    self.successful_runs += 1
-                    self.run_details.append({
-                        'task_id': task_id,
-                        'initial_requirement': initial_requirement,
-                        'iterations_to_success': iteration + 1,
-                        'success': True
-                    })
-                    return requirement
-                for cluster in clusters.get_cluster_list():
-                    cluster.set_requirement(self.generate_requirement(random.choice(cluster.programs_str)))
-                requirements = ""
-                for i, cluster in enumerate(clusters):
-                    requirements += f"Requirement {i + 1}: {cluster.requirement}\n"
-                if DRS:
-                    DRSs = self.generate_DRS(requirements)
-                    for i, cluster in enumerate(clusters):
-                        cluster.set_DRS(DRSs[i])
-                    clarifying_question = self.find_discrepancy_DRS(requirement, clusters)
-                    answer = self.simulate_answer(requirement, program, test_inputs, clarifying_question)
-                    requirement = self.repair_requirements(requirement, answer)
-                else:
-                    clarifying_question = self.find_discrepancy_DRS(requirement, clusters)
-                    answer = self.simulate_answer(requirement, program, test_inputs, clarifying_question)
-                    requirement = self.repair_requirements(requirement, answer)
-
-                # requirement = self.minimize_requirement(requirement)
-            # If max iterations reached
-            self.run_details.append({
-                'task_id': task_id,
-                'initial_requirements': initial_requirement,
-                'iterations_to_success': max_iterations,
-                'success': False
-            })
-            return requirement
-        except Exception as e:
-            print('EXCEPTION THROWN: ', e)
-            # If max iterations reached
-            self.run_details.append({
-                'task_id': task_id,
-                'initial_requirement': initial_requirement,
-                'iterations_to_success': max_iterations,
-                'success': False
-            })
-            return requirement
 
     def calculate_accuracy(self):
         """Calculate and print accuracy metrics"""

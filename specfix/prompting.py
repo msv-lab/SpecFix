@@ -116,9 +116,9 @@ Write a function that removes all consecutive duplicates in the given array and 
 instruction_generate_test = "You are an assistant that generates Python code inputs based on requirement."
 
 
-def prompt_generate_test(requirement):
+def prompt_generate_test(requirement, entry_point):
     return f"""
-Given the requirement, generate inputs to cover all functional aspects, including normal cases, edge cases, and error handling. 
+Given the requirement, generate inputs for function {entry_point} to cover all functional aspects, including normal cases and edge cases. Don't generate invalid inputs, including invalid data types or values.:   
 Don't output the function name, only the test inputs. If the function requires multiple arguments, separate them with commas.
 Wrap each test input in <test></test> tags. Wrap all the test inputs in <tests></tests> tags. Here is an example:
 

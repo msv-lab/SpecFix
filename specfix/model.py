@@ -39,7 +39,8 @@ class Model:
         elif "gpt" in self.model or "o1" in self.model:  # based on the transit of the model
             client = OpenAI(
                 api_key=self.api_key,
-                base_url="https://api.openai-proxy.org/v1",
+                # base_url="https://api.openai-proxy.org/v1",
+                base_url="https://xiaoai.plus/v1"
             )
         elif "llama" in self.model:
             client = OpenAI(

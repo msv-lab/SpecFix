@@ -1,4 +1,4 @@
-openai==1.59.8
+openai~=1.63.0
 evalplus==0.3.1
 jsonlines==4.0.0
 pandas~=2.2.3
@@ -7,6 +7,8 @@ scipy~=1.15.1
 tqdm~=4.67.1
 matplotlib~=3.10.0
 func_timeout~=4.3.5
-datasets~=3.2.0
+datasets~=3.3.0
 pyarrow~=19.0.0
 scikit-learn~=1.6.1
+protobuf~=5.29.3
+google-api-python-client~=2.161.0

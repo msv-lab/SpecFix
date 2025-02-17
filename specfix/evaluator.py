@@ -58,7 +58,7 @@ class SpecFixAccuracyEvaluator:
         try:
             response = unwrap(response, "tests")
             for line in response.splitlines():
-                test = eval("[" + unwrap(line, "test") + "]")
+                test = ast.literal_eval("[" + unwrap(line, "test") + "]")
                 if len(test) == para_number:
                     tests.append(test)
             if len(tests) == 0:

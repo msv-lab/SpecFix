@@ -11,17 +11,19 @@ function createForm() {
 
   // Create all pages and questions
   data.forEach((row, i) => {
+    const progress = ((i + 1) / data.length) * 100;
+
     // Add Part1 page (question without examples)
-    form.addPageBreakItem().setTitle(`Requirement ${i+1}`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
+    form.addPageBreakItem().setTitle(`Requirement ${i+1} (Progress: ${Math.round(progress)}%)`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
     form.addMultipleChoiceItem()
-      .setTitle("**Please assess the requirement**")
+      .setTitle(`**Please assess the requirement ${i+1}**`)
       .setHelpText(row[1])  // requirement_without_examples
       .setRequired(true);
 
     // Add Part2 page (question with examples)
-    form.addPageBreakItem().setTitle(`Requirement ${i+1} - with original examples`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
+    form.addPageBreakItem().setTitle(`Requirement ${i+1} - with original examples (Progress: ${Math.round(progress)}%)`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
     form.addMultipleChoiceItem()
-      .setTitle("**Please assess the requirement with original examples**")
+      .setTitle(`**Please assess the requirement ${i+1} with original examples**`)
       .setHelpText(row[0])  // requirement
       .setRequired(true);
   });

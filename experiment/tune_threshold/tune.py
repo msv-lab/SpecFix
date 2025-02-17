@@ -10,11 +10,11 @@ from specfix.utils import calculate_mcc
 
 def tune_threshold(results, ground_truth):
     threshold_dict = {}
-    for threshold in range(0, 1000):
+    for threshold in range(0, 5000):
         threshold = threshold / 1000
-        judges = [1 if result > threshold else 0 for result in results]
-        f1_score = calculate_mcc(judges, ground_truth)
-        threshold_dict[threshold] = f1_score
+        predicts = [1 if result > threshold else 0 for result in results]
+        mcc = calculate_mcc(ground_truth, predicts)
+        threshold_dict[threshold] = mcc
     # Find the best threshold
     best_threshold = max(threshold_dict, key=threshold_dict.get)
     return best_threshold

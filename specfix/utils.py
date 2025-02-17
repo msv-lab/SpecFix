@@ -96,13 +96,25 @@ def unwrap(string: str, label: str) -> str:
 
 
 def check_failed_input_output_examples(result_list, inputs, outputs):
-    if inputs == [] or outputs == []:
+    if inputs == [] or outputs == [] or compare(result_list, outputs):
         return [], 1
     failed_input_output_examples = []
     for i in range(len(inputs)):
-        if result_list[i] != outputs[i]:
+        if compare_unit(result_list[i], outputs[i]):
             failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
     return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
+
+
+def compare_unit(res, out):
+    try:
+        if (isinstance(res, (int, float, complex)) and isinstance(out, (int, float, complex))
+                and not math.isclose(res, out, rel_tol=0.001)):
+            return False
+        elif res != out:
+            return False
+        return True
+    except:
+        return False
 
 
 def compare(results, outputs):
@@ -112,13 +124,7 @@ def compare(results, outputs):
         if len(result) != len(output):
             return False
         for res, out in zip(result, output):
-            try:
-                if (isinstance(res, (int, float, complex)) and isinstance(out, (int, float, complex))
-                        and math.isclose(res, out, rel_tol=0.001)):
-                    continue
-                if res != out:
-                    return False
-            except:
+            if not compare_unit(result, output):
                 return False
     return True
 
@@ -157,7 +163,7 @@ def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task)
     return output_file
 
 
-def calculate_mcc(predict, ground_truths):
+def calculate_mcc(ground_truths, predict):
     return matthews_corrcoef(ground_truths, predict)
 
 

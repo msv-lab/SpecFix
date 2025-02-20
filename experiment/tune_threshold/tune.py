@@ -3,9 +3,9 @@ import argparse
 import jsonlines
 
 from specfix.cluster import Clusters
-from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import calculate_mcc
+from specfix.tester import differential_tester, ground_truth_tester
 
 
 def tune_threshold(results, ground_truth):

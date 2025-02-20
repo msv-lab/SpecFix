@@ -1,11 +1,9 @@
 import ast
 import concurrent.futures
-import random
-import pandas as pd
 
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import unwrap, get_parameter_number
+from specfix.utils import unwrap, get_parameter_number, execute_inputs, check_failed_input_output_examples, compare
 
 
 class SpecFixAccuracyEvaluator:
@@ -16,13 +14,9 @@ class SpecFixAccuracyEvaluator:
         self.model = Model(model, temperature)
         self.temperature = temperature
 
-        # Initialize result tracking
-        self.total_runs = 0
-        self.successful_runs = 0
-        self.run_details = []
-
-    def get_clusters(self, programs, test_inputs, entry_point):
+    def get_clusters(self, programs, test_inputs, entry_point, examples):
         clusters = self.differential_tester(programs, test_inputs, entry_point)
+        clusters.set_input_output_examples(examples)
         return clusters
 
     def calculate_ambiguity(self, clusters, entry_point):
@@ -91,13 +85,6 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
 
-    def find_discrepancy_DRS(self, requirements, clusters):
-        print("FIND DISCREPANCY WITH DRS")
-        DRS_list = [cluster.DRS for cluster in clusters]
-        response = self.model.get_response(instruction_find_discrepancy_DRS,
-                                           prompt_find_discrepancy_DRS(requirements, DRS_list))
-        return unwrap(response, "discrepancy")
-
     def inverse_requirement(self, code):
         print("INVERSE REQUIREMENT")
         response = self.model.get_response(instruction_inverse_requirement,
@@ -110,30 +97,6 @@ class SpecFixAccuracyEvaluator:
         response = self.model.get_response(instruction_test_based_repair,
                                            prompt_test_based_repair(requirement, program, failed_input_output_examples))
         return unwrap(response, "code")
-
-    def calculate_accuracy(self):
-        """Calculate and print accuracy metrics"""
-        accuracy = self.successful_runs / self.total_runs if self.total_runs > 0 else 0
-
-        print("\n--- SpecFix Computation Accuracy ---")
-        print(f"Total Runs: {self.total_runs}")
-        print(f"Successful Runs: {self.successful_runs}")
-        print(f"Accuracy: {accuracy:.2%}")
-
-        # Convert run details to DataFrame for further analysis
-        df = pd.DataFrame(self.run_details)
-
-        # Additional insights
-        if not df.empty:
-            print("\nAdditional Insights:")
-            print("Success Rate by Iterations:")
-            iterations_success = df.groupby('iterations_to_success')['success'].mean()
-            print(iterations_success)
-
-        return accuracy, df
-
-    def get_probability(self):
-        return self.successful_runs / self.total_runs if self.total_runs > 0 else 0
 
     def classification(self, requirements):
         print("CLASSIFICATION")
@@ -149,3 +112,11 @@ class SpecFixAccuracyEvaluator:
                                            prompt_repair_largest_cluster_requirement(requirement, programs,
                                                                                      specified_programs))
         return unwrap(response, "requirement")
+
+    def pass_k(self, requirement, inputs, outputs, entry_point, k):
+        for _ in range(k):
+            program = self.generate_programs(requirement)
+            result_list = execute_inputs(program, inputs, entry_point)
+            if compare(result_list, outputs):
+                return True
+        return False

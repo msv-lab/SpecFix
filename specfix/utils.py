@@ -9,7 +9,6 @@ import jsonlines
 from func_timeout import func_timeout, FunctionTimedOut
 from tqdm import trange
 from sklearn.metrics import matthews_corrcoef
-
 from specfix.solution_transformer import remove_comments_and_asserts, transform_code
 
 
@@ -150,6 +149,8 @@ def wilson_lower(p_obs, n, z=1.96):
 
 
 def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
+    if os.sep in model_name:
+        model_name = model_name.split(os.sep)[-1]
     model_name = model_name.replace(".", "")
 
     if not os.path.exists(f"{cwd}/{task}/{model_name}"):
@@ -179,3 +180,8 @@ def generate_pilot(file_name):
         for i, problem in enumerate(reader):
             if i < 50:
                 writer.write(problem)
+
+
+def read_jsonl(file_name):
+    with jsonlines.open(file_name) as reader:
+        return list(reader)

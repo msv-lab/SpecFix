@@ -9,16 +9,7 @@ config.read(dirname(abspath(__file__)) + '/../.config')
 
 class Model:
     def __init__(self, model, temperature=1, top_p=1, frequency_penalty=0):
-        api_key = ""
-        if "qwen" in model:
-            api_key = config['API_KEY']['qwen_key']
-        elif "gpt" in model or "o1" in model:
-            api_key = config['API_KEY']['openai_key']
-        elif "deepseek" in model:
-            api_key = config['API_KEY']['deepseek_key']
-
         self.model = model
-        self.api_key = api_key
         self.client = self.model_setup()
         self.temperature = temperature
         self.top_p = top_p
@@ -26,29 +17,32 @@ class Model:
 
     def model_setup(self):
         if "qwen" in self.model:
+            api_key = config['API_KEY']['qwen_key']
             client = OpenAI(
-                api_key=self.api_key,
+                api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
         elif "deepseek" in self.model:
+            api_key = config['API_KEY']['fireworksai_key']
             client = OpenAI(
-                api_key=self.api_key,
-                # base_url="https://api.deepseek.com"
-                base_url="https://api.lkeap.cloud.tencent.com/v1"
+                api_key=api_key,
+                base_url="https://api.fireworks.ai/inference/v1"
             )
         elif "gpt" in self.model or "o1" in self.model:  # based on the transit of the model
+            api_key = config['API_KEY']['closeai_key']
             client = OpenAI(
-                api_key=self.api_key,
-                # base_url="https://api.openai-proxy.org/v1",
-                base_url="https://xiaoai.plus/v1"
+                api_key=api_key,
+                base_url="https://api.openai-proxy.org/v1",
             )
         elif "llama" in self.model:
+            api_key = config['API_KEY']['fireworksai_key']
             client = OpenAI(
-                api_key=self.api_key,
-                base_url="https://api.llama-api.com"
+                api_key=api_key,
+                base_url="https://api.fireworks.ai/inference/v1"
             )
         else:
             raise ValueError("Invalid model")
+
         return client
 
     def get_response(self, instruction, prompt, use_model_settings=None):

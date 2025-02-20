@@ -2,9 +2,9 @@ import argparse
 
 import jsonlines
 
-from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
 from specfix.utils import construct_output_file
+from specfix.tester import differential_tester, ground_truth_tester
 
 
 def parse_problem(problem):
@@ -51,8 +51,8 @@ def main():
             test_inputs = specfix_accuracy_evaluator.generate_tests(requirement)
             print(f"Test inputs: {test_inputs}")
             programs = specfix_accuracy_evaluator.parallel_generate_programs(requirement, n_programs)
-            clusters = specfix_accuracy_evaluator.get_clusters(programs, test_inputs, examples, entry_point)
-            specfix_accuracy_evaluator.calculate_ambiguity(clusters, examples, entry_point)
+            clusters = specfix_accuracy_evaluator.get_clusters(programs, test_inputs, entry_point, examples)
+            specfix_accuracy_evaluator.calculate_ambiguity(clusters, entry_point)
             print(f"Case {i}: clusters entropy: {clusters.entropy}")
             if clusters.ambiguity > threshold:
                 cluster = clusters.get_largest_cluster()
@@ -70,9 +70,9 @@ def main():
 
                 repaired_programs = specfix_accuracy_evaluator.parallel_generate_programs(repaired_requirement,
                                                                                           n_programs)
-                repaired_clusters = specfix_accuracy_evaluator.get_clusters(repaired_programs, test_inputs, examples,
-                                                                            entry_point)
-                specfix_accuracy_evaluator.calculate_ambiguity(repaired_clusters, examples, entry_point)
+                repaired_clusters = specfix_accuracy_evaluator.get_clusters(repaired_programs, test_inputs,
+                                                                            entry_point, examples)
+                specfix_accuracy_evaluator.calculate_ambiguity(repaired_clusters, entry_point)
                 entropy_diff = clusters.entropy - repaired_clusters.entropy
                 ambiguity_diff = clusters.ambiguity - repaired_clusters.ambiguity
                 result = {

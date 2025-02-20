@@ -3,8 +3,6 @@ import ast
 import math
 import sys
 
-from scipy.cluster.hierarchy import weighted
-
 from specfix.utils import wilson_lower
 
 sys.set_int_max_str_digits(0)

@@ -4,7 +4,7 @@ from specfix.cluster import Clusters, Cluster
 from specfix.utils import execute_inputs, compare, check_failed_input_output_examples
 
 
-def differential_tester( generated_programs, test_inputs, entry_point):
+def differential_tester(generated_programs, test_inputs, entry_point):
     # Store test results
     program_clusters = Clusters()
     program_clusters.set_llm_generated_inputs(test_inputs)

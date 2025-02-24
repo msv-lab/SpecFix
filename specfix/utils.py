@@ -10,6 +10,8 @@ from func_timeout import func_timeout, FunctionTimedOut
 from tqdm import trange
 from sklearn.metrics import matthews_corrcoef
 from specfix.solution_transformer import remove_comments_and_asserts, transform_code
+from evalplus.data import get_human_eval_plus, get_mbpp_plus, get_human_eval_plus_hash, get_mbpp_plus_hash
+from evalplus.evaluate import get_groundtruth
 
 
 def post_process(text: str) -> str:
@@ -45,7 +47,7 @@ def execute(func_str, func_args, entry_point):
 
             return func(*func_args)
 
-        except ModuleNotFoundError as e:
+        except (ModuleNotFoundError, ImportError) as e:
             module_name = e.name
             if module_name in installed_modules:
                 return "ModuleNotFoundError"
@@ -64,7 +66,7 @@ def execute(func_str, func_args, entry_point):
             return e.__class__.__name__
 
 
-def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
+def execute_inputs(func_str, inputs_list, entry_point, timeout=10):
     results = []
     for i in trange(len(inputs_list)):
         try:
@@ -99,7 +101,7 @@ def check_failed_input_output_examples(result_list, inputs, outputs):
         return [], 1
     failed_input_output_examples = []
     for i in range(len(inputs)):
-        if compare_unit(result_list[i], outputs[i]):
+        if not compare_unit(result_list[i], outputs[i]):
             failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
     return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
 
@@ -109,6 +111,12 @@ def compare_unit(res, out):
         if (isinstance(res, (int, float, complex)) and isinstance(out, (int, float, complex))
                 and not math.isclose(res, out, rel_tol=0.001)):
             return False
+        elif isinstance(res, (list, tuple)) and isinstance(out, (list, tuple)):
+            if len(res) != len(out):
+                return False
+            for r, o in zip(res, out):
+                if not compare_unit(r, o):
+                    return False
         elif res != out:
             return False
         return True
@@ -123,7 +131,7 @@ def compare(results, outputs):
         if len(result) != len(output):
             return False
         for res, out in zip(result, output):
-            if not compare_unit(result, output):
+            if not compare_unit(res, out):
                 return False
     return True
 
@@ -185,3 +193,17 @@ def generate_pilot(file_name):
 def read_jsonl(file_name):
     with jsonlines.open(file_name) as reader:
         return list(reader)
+
+
+def get_evalplus_inputs_outputs(data_name):
+    data = get_human_eval_plus() if data_name == "humaneval" else get_mbpp_plus()
+    hash = get_human_eval_plus_hash() if data_name == "humaneval" else get_mbpp_plus_hash()
+    expected_outputs = get_groundtruth(data, hash, [])
+    inputs = []
+    outputs = []
+    for key in data.keys():
+        problem = data[key]
+        inputs.extend(problem['base_inputs'])
+        inputs.extend(problem['plus_inputs'])
+        outputs.extend(expected_outputs[key]['base'])
+        outputs.extend(expected_outputs[key]['plus'])

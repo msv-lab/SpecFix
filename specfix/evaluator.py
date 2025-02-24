@@ -3,7 +3,7 @@ import concurrent.futures
 
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import unwrap, get_parameter_number, execute_inputs, check_failed_input_output_examples, compare
+from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare
 
 
 class SpecFixAccuracyEvaluator:
@@ -48,13 +48,15 @@ class SpecFixAccuracyEvaluator:
         tests = []
         para_number = get_parameter_number(requirements, entry_point)
         response = self.model.get_response(instruction_generate_test,
-                                           prompt_generate_test(requirements, entry_point))
+                                           prompt_generate_test(requirements, entry_point, para_number))
         try:
             response = unwrap(response, "tests")
             for line in response.splitlines():
                 test = ast.literal_eval("[" + unwrap(line, "test") + "]")
                 if len(test) == para_number:
                     tests.append(test)
+                if len(tests) > 50:
+                    break
             if len(tests) == 0:
                 raise Exception
         except Exception as e:
@@ -66,12 +68,6 @@ class SpecFixAccuracyEvaluator:
         response = self.model.get_response(instruction_generate_requirement,
                                            prompt_generate_requirement(program))
         return unwrap(response, "requirement")
-
-    def generate_DRS(self, requirements):
-        print("DRS GENERATION")
-        response = self.model.get_response(instruction_generate_DRS,
-                                           prompt_generate_DRS(requirements))
-        return unwrap(response, "drs")
 
     def repair_requirements(self, requirements, answer):
         print("REPAIR REQUIREMENTS")

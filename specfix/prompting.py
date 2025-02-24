@@ -3,7 +3,8 @@ instruction_generate_code = "You are an assistant that generates Python code bas
 
 def prompt_generate_code(requirement):
     return f"""
-Implement a python function that adheres to the requirements. Include imports that are used in the implementation. Wrap the generated code in <code></code> tags. Here is an example:
+Given a requirement containing a function signature and docstring, implement a python function that adheres to the requirements. Include imports that are used in the implementation. Don't output explanations. Wrap the generated code in <code></code> tags.
+Here is an example:
 # Example
 
 ## Requirement
@@ -24,56 +25,6 @@ def sort_remove_consecutive_duplicates(arr):
 {requirement}
 
 ## Code
-"""
-
-
-instruction_find_discrepancy_DRS = "You are an assistant that finds discrepancies between the Discourse Representation Structures(DRS)."
-
-
-def prompt_find_discrepancy_DRS(requirement, DRS_list):
-    drs_str = ""
-    for i, drs in enumerate(DRS_list):
-        drs_str += f"### DRS {i + 1}\n {drs}\n"
-    return f"""
-Given requirement and corresponding DRS, find the discrepancies between DRSs. Wrap the discrepancies in the <discrepancy></discrepancy> tags. Here is an example:
-# Example
-
-## Requirement
-
-Write a function that sorts array while removing the consecutive duplicates.
-
-## DRS
-
-### DRS 1
-
-x, y, z, t1, t2
-program(x), array(y), duplicates(z), consecutive(z)
-t1 < t2,
-removes(x, z, y, t1), sorts(x, y, t2)
-
-### DRS 2
-
-x, y, z, t1, t2
-program(x), array(y), duplicates(z), consecutive(z)
-t1 < t2,
-sorts(x, y, t1), removes(x, z, y, t2)
-
-## Discrepancy
-
-<discrepancy>
-The order of operation (i.e., sort and remove) is different in DRS1 and DRS2. DRS1 specifies to remove duplicates first and then sort the array, while DRS2 specifies to sort the array first and then remove duplicates.
-</discrepancy>
-
-# Your task
-
-## Requirement
-
-{requirement}
-
-## DRS
-{drs_str}
-
-## Discrepancy
 """
 
 
@@ -116,14 +67,14 @@ Write a function that removes all consecutive duplicates in the given array and 
 instruction_generate_test = "You are an assistant that generates Python code inputs based on requirement."
 
 
-def prompt_generate_test(requirement, entry_point):
+def prompt_generate_test(requirement, entry_point, para_number):
     return f"""
-Given the requirement, generate inputs for function {entry_point} to cover all functional aspects, including normal cases and edge cases. Don't generate invalid inputs, including invalid data types or values.:   
-Don't output the function name, only the test inputs. If the function requires multiple arguments, separate them with commas.
-Wrap each test input in <test></test> tags. Wrap all the test inputs in <tests></tests> tags. Here is an example:
+Given a requirement containing a function signature and docstring, your task is to generate inputs for function {entry_point} to cover all functionalities, including normal cases and corner cases.
+Ensure the type and number of argument are matching the function signature. In this requirement, the argument number is {para_number}.
+Don't output the function name, only the test inputs. If there are multiple arguments, separate them with commas.
+Wrap each test input in <test></test> tags and all test inputs in <tests></tests> tags. 
 
 # Example
-
 ## Requirements
 
 def is_anagram(test, original):
@@ -180,44 +131,6 @@ Write a function that computes the square of a given number.
 {program}
 
 ## Problem requirement
-"""
-
-
-instruction_generate_DRS = "You are an assistant that generates Discourse Representation Structures based on requirement."
-
-
-def prompt_generate_DRS(requirements):
-    return f"""
-Given the requirements, generate the corresponding Discourse Representation Structures, a way to represent the meaning of natural language sentences and their relationships in a structured formalism. Wrap the generated DRS in <drs></drs> tags. "##########" are used as intervals between different DRS. Here is an example:
-
-# Example
-
-## Requirements
-
-Requirement 1: Write a function that sorts array while removing the consecutive duplicates.
-Requirement 2: Write a function that removes consecutive duplicates while sorting array.
-
-## DRS
-
-<drs>
-x, y, z, t1, t2
-program(x), array(y), duplicates(z), consecutive(z)
-t1 < t2,
-removes(x, z, y, t1), sorts(x, y, t2)
-##########
-x, y, z, t1, t2
-program(x), array(y), duplicates(z), consecutive(z)
-t1 < t2,
-sorts(x, y, t1), removes(x, z, y, t2)
-</drs>
-
-# Your task
-
-## Requirement
-
-{requirements}
-
-## DRS
 """
 
 

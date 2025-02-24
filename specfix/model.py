@@ -23,16 +23,21 @@ class Model:
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
         elif "deepseek" in self.model:
-            api_key = config['API_KEY']['fireworksai_key']
+            # accounts/fireworks/models/deepseek-v3
+            api_key = config['API_KEY']['xiaoai_key']
+            # api_key = config['API_KEY']['fireworksai_key']
             client = OpenAI(
                 api_key=api_key,
-                base_url="https://api.fireworks.ai/inference/v1"
+                base_url="https://xiaoai.plus/v1"
+                # base_url="https://api.fireworks.ai/inference/v1"
             )
         elif "gpt" in self.model or "o1" in self.model:  # based on the transit of the model
-            api_key = config['API_KEY']['closeai_key']
+            api_key = config['API_KEY']['xiaoai_key']
+            # api_key = config['API_KEY']['closeai_key']
             client = OpenAI(
                 api_key=api_key,
-                base_url="https://api.openai-proxy.org/v1",
+                base_url="https://xiaoai.plus/v1",
+                # base_url="https://api.openai-proxy.org/v1",
             )
         elif "llama" in self.model:
             api_key = config['API_KEY']['fireworksai_key']

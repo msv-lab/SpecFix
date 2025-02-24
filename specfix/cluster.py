@@ -14,7 +14,7 @@ class Clusters:
         self.entropy = 0  # entropy of the clusters.
         self.llm_generated_inputs = []  # LLM generated test inputs for entropy measure.
         self.input_output_examples = []  # input output examples for semantic measure
-        self.at_least_one_align = False  # whether at least one cluster is aligned with the examples.
+        self.at_least_one_align = None  # whether at least one cluster is aligned with the examples.
         self.ambiguity = 0  # ambiguity of the clusters.
 
     def add_cluster(self, cluster):
@@ -27,7 +27,7 @@ class Clusters:
         self.llm_generated_inputs = llm_generated_inputs
 
     def set_input_output_examples(self, input_output_examples):
-        self.input_output_examples = input_output_examples
+        self.input_output_examples = ast.literal_eval(input_output_examples)
 
     def set_at_least_one_align(self):
         self.at_least_one_align = True if any([cluster.is_align_req for cluster in self.cluster_list]) else False
@@ -39,8 +39,9 @@ class Clusters:
 
     def calculate_entropy(self):
         total = sum([cluster.probability for cluster in self.cluster_list])
-        self.entropy = sum(
+        entropy = sum(
             [-cluster.probability / total * math.log(cluster.probability / total) for cluster in self.cluster_list])
+        self.entropy = 0 if len(self.cluster_list) == 1 else entropy / math.log(len(self.cluster_list))
 
     def get_largest_cluster(self):
         return max(self.cluster_list, key=lambda cluster: cluster.probability)
@@ -51,7 +52,8 @@ class Clusters:
             'entropy': self.entropy,
             'llm_generated_inputs': str(self.llm_generated_inputs),
             'input_output_examples': str(self.input_output_examples),
-            'at_least_one_align': self.at_least_one_align
+            'at_least_one_align': self.at_least_one_align,
+            'ambiguity': self.ambiguity
         }
 
     def deserialize(self, data):
@@ -68,28 +70,20 @@ class Clusters:
              in self.cluster_list])
         # weighted_t_consistency = sum(
         #     [cluster.test_consistency * cluster.probability for cluster in self.cluster_list])
-        self.ambiguity = self.entropy * (1 - weighted_t_consistency)
+        self.ambiguity = (self.entropy + (1 - weighted_t_consistency)) / 2
 
 
 class Cluster:
     def __init__(self):
         self.programs_str = []  # list of programs in the cluster.
-        self.requirement = []  # TODO: future work for inverse requirement.
-        self.is_align_req = False  # whether the requirement is aligned with the examples.
+        self.is_align_req = None  # whether the requirement is aligned with the examples.
         self.entropy_outputs = []  # the corresponding outputs for LLM generated test inputs in entropy measure.
         self.failed_input_output_examples = []  # failed input output examples in semantic measure. (input, output, expected)
         self.test_consistency = 0  # test consistency for semantic measure.
         self.probability = 0  # probability of the cluster.
-        self.DRS = None
 
     def add_program_str(self, program_str):
         self.programs_str.append(program_str)
-
-    def set_requirement(self, requirement):
-        self.requirement = requirement
-
-    def set_DRS(self, DRS):
-        self.DRS = DRS
 
     def align(self):
         self.is_align_req = True
@@ -97,18 +91,14 @@ class Cluster:
     def serialize(self):
         return {
             'programs_str': self.programs_str,
-            'requirement': self.requirement,
             'outputs': str(self.entropy_outputs),
             'probability': self.probability,
-            'is_align_req': self.is_align_req,
-            'DRS': self.DRS
+            'is_align_req': self.is_align_req
         }
 
     def deserialize(self, data):
         self.programs_str = data['programs_str']
-        self.requirement = data['requirement']
         self.entropy_outputs = data['outputs']
         self.probability = data['probability']
         self.is_align_req = data['is_align_req']
-        self.DRS = data['DRS']
         return self

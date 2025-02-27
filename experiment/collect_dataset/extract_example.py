@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from specfix.model import Model
+from specfix.utils import get_parameter_number
 
 # Allow very large integers (for Python 3.11+)
 sys.set_int_max_str_digits(0)
@@ -54,7 +55,7 @@ def prompt_extract_example(requirement) -> str:
     return f"""
 You are given the following programming problem description. Your task is to locate and extract *all example cases* found in the description, including sample inputs/outputs, in-text illustrations (e.g., 'for example, if...'), or standalone example sections. 
 
-An "example" includes sample input and output pairs.
+An "example" includes sample input (argument) and output (return value) pairs.
 
 Please provide the extracted examples in the following format:
 <example>
@@ -63,15 +64,15 @@ Please provide the extracted examples in the following format:
 ...
 </example>
 
-Do not include function name, only the arguments. Ensure that you keep the types of the arguments. Store inputs/outputs in one example in one list. If it is a list, nest it inside the outer list.
+Do not include function name, only the arguments and return values. Ensure that you keep the types of the arguments. If argument or return value is a list, wrap it in square brackets.
 
 For example,
 assert check_tuplex(("w", 3, "r", "e", "s", "o", "u", "r", "c", "e"),'r')==True should be 
-<input>[("w", 3, "r", "e", "s", "o", "u", "r", "c", "e"), 'r']</input><output>[True]</output>.
+<input>("w", 3, "r", "e", "s", "o", "u", "r", "c", "e"), 'r'</input><output>True</output>.
 assert sum_of_squares([1, 2, 3, 4, 5])==55 should be 
-<input>[[1, 2, 3, 4, 5]]</input><output>[55]</output>.
+<input>[1, 2, 3, 4, 5]</input><output>55</output>.
 assert how_many_times('', 'a') == 0 should be 
-<input>['', 'a']</input><output>[0]</output>.
+<input>'', 'a'</input><output>0</output>.
 
 If there are no examples, respond with <example></example>.
 
@@ -84,13 +85,9 @@ def prompt_repair_response(description, response) -> str:
     return f"""
 You are given the following programming problem description and an incorrect example extraction from the description. Your task is to repair the response based on the problem description.
 
-All responses are in the following format:
-<input>[xxx]</input><output>[xxx]</output>
-
 There are several reasons why the response may be incorrect:
 1. The response may miss quotation marks when problem descriptions require the type should be string. For example, <input>["GEEK"]</input><output>[EEKGAY]</output> should be <input>["GEEK"]</input><output>["EEKGAY"]</output>.
 2. The response may miss commas. For example, <input>[25, 35]</input><output>[7 5]</output> should be <input>[25, 35]</input><output>[7, 5]</output>.
-3. The response may miss brackets. For example, <input>25, 35</input><output>75</output> should be <input>[25, 35]</input><output>[75]</output>.
 
 Please repair the response based on the problem description, wrapped in the <response></response> tag.
 Here is the problem description:
@@ -121,13 +118,16 @@ def extract(problem: dict, requirement: str) -> dict:
 
     for example in response.splitlines():
         try:
-            inp = ast.literal_eval(unwrap(example, "input"))
+            inp = unwrap(example, "input")
             output = unwrap(example, "output")
             # Replace lower-case booleans for correct evaluation
+            inp = inp.replace("false", "False").replace("true", "True")
             output = output.replace("false", "False").replace("true", "True")
-            oup = ast.literal_eval(output)
-            if not isinstance(inp, list) or not isinstance(oup, list):
-                raise ValueError("Parsed example is not a list.")
+            inp = ast.literal_eval("[" + inp + "]")
+            oup = ast.literal_eval("[" + output + "]")
+            para_number = get_parameter_number(problem["requirement"], problem["entry_point"])
+            if len(inp) != para_number or len(oup) != 1:
+                raise Exception("Invalid example format")
             inputs_list.append(inp)
             outputs_list.append(oup)
         except Exception:
@@ -136,10 +136,10 @@ def extract(problem: dict, requirement: str) -> dict:
             repaired_example = model.get_response(instruction_repair_response, repair_prompt)
             repaired_example = unwrap(repaired_example, "response")
             try:
-                inp = ast.literal_eval(unwrap(repaired_example, "input"))
+                inp = ast.literal_eval("[" + unwrap(repaired_example, "input") + "]")
                 output = unwrap(repaired_example, "output")
                 output = output.replace("false", "False").replace("true", "True")
-                oup = ast.literal_eval(output)
+                oup = ast.literal_eval("[" + output + "]")
                 inputs_list.append(inp)
                 outputs_list.append(oup)
             except Exception as repair_err:
@@ -159,8 +159,8 @@ def main():
     results = []
 
     # Open dataset and output file with context managers.
-    with jsonlines.open("humaneval.jsonl") as reader, \
-            jsonlines.open("humaneval_example.jsonl", mode='w', flush=True) as writer:
+    with jsonlines.open("taco_lite.jsonl") as reader, \
+            jsonlines.open("taco_lite_example.jsonl", mode='w', flush=True) as writer:
 
         # Load all problems so that we can count them for tqdm.
         problems = list(reader)
@@ -188,10 +188,15 @@ def main():
         for item in results:
             writer.write(item)
 
+    # with jsonlines.open("humaneval.jsonl") as reader, jsonlines.open("humaneval_example.jsonl", mode='w', flush=True) as writer:
+    #     for problem in reader:
+    #         problem = extract(problem, problem["requirement"])
+    #         writer.write(problem)
+
 
 def manually_extract():
     with jsonlines.open("humaneval_example.jsonl") as reader, jsonlines.open("humaneval_example1.jsonl", "w",
-                                                                        flush=True) as writer:
+                                                                             flush=True) as writer:
         count = 0
         for problem in reader:
             try:
@@ -210,6 +215,7 @@ def manually_extract():
             writer.write(problem)
         print(count)
 
+
 if __name__ == '__main__':
-    # main()
-    manually_extract()
+    main()
+    # manually_extract()

@@ -116,3 +116,23 @@ class SpecFixAccuracyEvaluator:
             if compare(result_list, outputs):
                 return True
         return False
+
+    def pass_k_repair(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
+        original_results = []
+        repaired_results = []
+        for _ in range(k):
+            original_program = self.generate_programs(original_requirement)
+            result = execute_inputs(original_program, inputs, entry_point)
+            if compare(result, outputs):
+                original_results.append(True)
+            else:
+                original_results.append(False)
+            if repaired_requirement is not None:
+                repaired_program = self.generate_programs(repaired_requirement)
+                result = execute_inputs(repaired_program, inputs, entry_point)
+                if compare(result, outputs):
+                    repaired_results.append(True)
+                else:
+                    repaired_results.append(False)
+        return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
+            original_results)

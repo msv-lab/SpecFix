@@ -1,0 +1,756 @@
+requirement,requirement_without_examples
+"def cycpattern_check(a: str, b: str) -> bool:
+    """"""You are given 2 words. You need to return True if the second word or any of its rotations is a substring in the first word
+    cycpattern_check(""abcd"",""abd"") => False
+    cycpattern_check(""hello"",""ell"") => True
+    cycpattern_check(""whassup"",""psus"") => False
+    cycpattern_check(""abab"",""baa"") => True
+    cycpattern_check(""efef"",""eeff"") => False
+    cycpattern_check(""himenss"",""simen"") => True
+
+    """"""","def cycpattern_check(a: str, b: str) -> bool:
+    """"""You are given 2 words. You need to return True if the second word or any of its rotations is a substring in the first word
+    """""""
+"from typing import List
+
+
+def chess_bishop_dream(b: List[int], p: List[int], d: List[int], k: int) -> List[int]:
+""""""# Task
+ In ChessLand there is a small but proud chess bishop with a recurring dream. 
+ 
+ In the dream the bishop finds itself on an `n × m` chessboard with mirrors along each edge, and it is not a bishop but a ray of light. This ray of light moves only along diagonals (the bishop can't imagine any other types of moves even in its dreams), it never stops, and once it reaches an edge or a corner of the chessboard it reflects from it and moves on.
+
+ Given the initial position and the direction of the ray, find its position after `k` steps where a step means either moving from one cell to the neighboring one or reflecting from a corner of the board.
+
+# Example
+
+ For `boardSize = [3, 7], initPosition = [1, 2], initDirection = [-1, 1] and k = 13,` the output should be `[0, 1]`.
+
+ Here is the bishop's path:
+```
+[1, 2] -> [0, 3] -(reflection from the top edge)
+         -> [0, 4] -> [1, 5] -> [2, 6] -(reflection from the bottom right corner)
+         -> [2, 6] ->[1, 5] -> [0, 4] -(reflection from the top edge)
+         -> [0, 3] ->[1, 2] -> [2, 1] -(reflection from the bottom edge)
+         -> [2, 0] -(reflection from the left edge)
+         -> [1, 0] -> [0, 1]```
+
+ ![](https://codefightsuserpics.s3.amazonaws.com/tasks/chessBishopDream/img/example.png?_tm=1472324389202)
+
+# Input/Output
+
+
+ - `[input]` integer array `boardSize`
+
+    An array of two integers, the number of `rows` and `columns`, respectively. Rows are numbered by integers from `0 to boardSize[0] - 1`, columns are numbered by integers from `0 to boardSize[1] - 1` (both inclusive).
+
+    Constraints: `1 ≤ boardSize[i] ≤ 20.`
+
+
+ - `[input]` integer array `initPosition`
+
+    An array of two integers, indices of the `row` and the `column` where the bishop initially stands, respectively.
+
+    Constraints:  `0 ≤ initPosition[i] < boardSize[i]`.
+
+
+ - `[input]` integer array `initDirection`
+
+    An array of two integers representing the initial direction of the bishop. 
+    
+    If it stands in `(a, b)`, the next cell he'll move to is `(a + initDirection[0], b + initDirection[1])` or whichever it'll reflect to in case it runs into a mirror immediately.
+
+    Constraints: `initDirection[i] ∈ {-1, 1}`.
+
+
+ - `[input]` integer `k`
+
+    Constraints: `1 ≤ k ≤ 1000000000`.
+
+
+ - `[output]` an integer array
+
+    The position of the bishop after `k` steps.
+""""""","from typing import List
+
+
+def chess_bishop_dream(b: List[int], p: List[int], d: List[int], k: int) -> List[int]:
+""""""# Task
+ In ChessLand there is a small but proud chess bishop with a recurring dream. 
+ 
+ In the dream the bishop finds itself on an `n × m` chessboard with mirrors along each edge, and it is not a bishop but a ray of light. This ray of light moves only along diagonals (the bishop can't imagine any other types of moves even in its dreams), it never stops, and once it reaches an edge or a corner of the chessboard it reflects from it and moves on.
+
+ Given the initial position and the direction of the ray, find its position after `k` steps where a step means either moving from one cell to the neighboring one or reflecting from a corner of the board.
+
+# Input/Output
+
+
+ - `[input]` integer array `boardSize`
+
+    An array of two integers, the number of `rows` and `columns`, respectively. Rows are numbered by integers from `0 to boardSize[0] - 1`, columns are numbered by integers from `0 to boardSize[1] - 1` (both inclusive).
+
+    Constraints: `1 ≤ boardSize[i] ≤ 20.`
+
+
+ - `[input]` integer array `initPosition`
+
+    An array of two integers, indices of the `row` and the `column` where the bishop initially stands, respectively.
+
+    Constraints:  `0 ≤ initPosition[i] < boardSize[i]`.
+
+
+ - `[input]` integer array `initDirection`
+
+    An array of two integers representing the initial direction of the bishop. 
+    
+    If it stands in `(a, b)`, the next cell he'll move to is `(a + initDirection[0], b + initDirection[1])` or whichever it'll reflect to in case it runs into a mirror immediately.
+
+    Constraints: `initDirection[i] ∈ {-1, 1}`.
+
+
+ - `[input]` integer `k`
+
+    Constraints: `1 ≤ k ≤ 1000000000`.
+
+
+ - `[output]` an integer array
+
+    The position of the bishop after `k` steps.
+"""""""
+"def reverse_list(l: list) -> list:
+""""""In this kata you will create a function that takes in a list and returns a list with the reverse order.
+
+### Examples
+
+```python
+reverse_list([1,2,3,4]) == [4,3,2,1]
+reverse_list([3,1,5,4]) == [4,5,1,3]
+```
+""""""","def reverse_list(l: list) -> list:
+""""""In this kata you will create a function that takes in a list and returns a list with the reverse order.
+"""""""
+"def hex_key(num: str) -> int:
+    """"""You have been tasked to write a function that receives 
+    a hexadecimal number as a string and counts the number of hexadecimal 
+    digits that are primes (prime number, or a prime, is a natural number 
+    greater than 1 that is not a product of two smaller natural numbers).
+    Hexadecimal digits are 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F.
+    Prime numbers are 2, 3, 5, 7, 11, 13, 17,...
+    So you have to determine a number of the following digits: 2, 3, 5, 7, 
+    B (=decimal 11), D (=decimal 13).
+    Note: you may assume the input is always correct or empty string, 
+    and symbols A,B,C,D,E,F are always uppercase.
+    Examples:
+    For num = ""AB"" the output should be 1.
+    For num = ""1077E"" the output should be 2.
+    For num = ""ABED1A33"" the output should be 4.
+    For num = ""123456789ABCDEF0"" the output should be 6.
+    For num = ""2020"" the output should be 2.
+    """"""","def hex_key(num: str) -> int:
+    """"""You have been tasked to write a function that receives 
+    a hexadecimal number as a string and counts the number of hexadecimal 
+    digits that are primes (prime number, or a prime, is a natural number 
+    greater than 1 that is not a product of two smaller natural numbers).
+    Hexadecimal digits are 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F.
+    Prime numbers are 2, 3, 5, 7, 11, 13, 17,...
+    So you have to determine a number of the following digits: 2, 3, 5, 7, 
+    B (=decimal 11), D (=decimal 13).
+    Note: you may assume the input is always correct or empty string, 
+    and symbols A,B,C,D,E,F are always uppercase.
+    """""""
+"from typing import List
+
+
+def numerical_letter_grade(grades: List[float]) -> List[str]:
+    """"""It is the last week of the semester and the teacher has to give the grades
+    to students. The teacher has been making her own algorithm for grading.
+    The only problem is, she has lost the code she used for grading.
+    She has given you a list of GPAs for some students and you have to write 
+    a function that can output a list of letter grades using the following table:
+             GPA       |    Letter grade
+              4.0                A+
+            > 3.7                A 
+            > 3.3                A- 
+            > 3.0                B+
+            > 2.7                B 
+            > 2.3                B-
+            > 2.0                C+
+            > 1.7                C
+            > 1.3                C-
+            > 1.0                D+ 
+            > 0.7                D 
+            > 0.0                D-
+              0.0                E
+    
+
+    Example:
+    grade_equation([4.0, 3, 1.7, 2, 3.5]) ==> ['A+', 'B', 'C-', 'C', 'A-']
+    """"""","from typing import List
+
+
+def numerical_letter_grade(grades: List[float]) -> List[str]:
+    """"""It is the last week of the semester and the teacher has to give the grades
+    to students. The teacher has been making her own algorithm for grading.
+    The only problem is, she has lost the code she used for grading.
+    She has given you a list of GPAs for some students and you have to write 
+    a function that can output a list of letter grades using the following table:
+             GPA       |    Letter grade
+              4.0                A+
+            > 3.7                A 
+            > 3.3                A- 
+            > 3.0                B+
+            > 2.7                B 
+            > 2.3                B-
+            > 2.0                C+
+            > 1.7                C
+            > 1.3                C-
+            > 1.0                D+ 
+            > 0.7                D 
+            > 0.0                D-
+              0.0                E
+    """""""
+"def finance(n: int) -> float:
+""""""I need to save some money to buy a gift. I think I can do something like that:
+
+First week (W0) I save nothing on Sunday, 1 on Monday, 2 on Tuesday... 6 on Saturday,
+second week (W1) 2 on Monday... 7 on Saturday and so on according to the table below where the days are numbered from 0 to 6.
+
+Can you tell me how much I will have for my gift on Saturday evening after I have saved 12? (Your function finance(6) should return 168 which is the sum of the savings in the table). 
+
+Imagine now that we live on planet XY140Z-n where the days of the week are numbered from 0 to n (integer n > 0) and where
+I save from week number 0 to week number n included (in the table below n = 6).
+
+How much money would I have at the end of my financing plan on planet XY140Z-n?
+
+
+
+  -- |Su|Mo|Tu|We|Th|Fr|Sa|
+   --|--|--|--|--|--|--|--|
+  W6 |  |  |  |  |  |  |12|
+  W5 |  |  |  |  |  |10|11|
+  W4 |  |  |  |  |8 |9 |10|
+  W3 |  |  |  |6 |7 |8 |9 |
+  W2 |  |  |4 |5 |6 |7 |8 |
+  W1 |  |2 |3 |4 |5 |6 |7 |
+  W0 |0 |1 |2 |3 |4 |5 |6 |
+  
+#Example:
+```
+finance(5) --> 105
+finance(6) --> 168
+finance(7) --> 252
+finance(5000) --> 62537505000
+```
+#Hint: 
+try to avoid nested loops
+""""""","def finance(n: int) -> float:
+""""""I need to save some money to buy a gift. I think I can do something like that:
+
+First week (W0) I save nothing on Sunday, 1 on Monday, 2 on Tuesday... 6 on Saturday,
+second week (W1) 2 on Monday... 7 on Saturday and so on according to the table below where the days are numbered from 0 to 6.
+
+Imagine now that we live on planet XY140Z-n where the days of the week are numbered from 0 to n (integer n > 0) and where
+I save from week number 0 to week number n included (in the table below n = 6).
+
+How much money would I have at the end of my financing plan on planet XY140Z-n?
+
+"""""""
+"from typing import List
+
+
+def string_to_list(string: str) -> List[str]:
+""""""
+Write a function to convert a string to a list of strings split on the space character.
+assert string_to_list(""python programming"")==['python','programming']
+""""""","from typing import List
+
+
+def string_to_list(string: str) -> List[str]:
+""""""
+Write a function to convert a string to a list of strings split on the space character.
+"""""""
+"def remove_all_spaces(text: str) -> str:
+""""""
+Write a function to remove all whitespaces from a string.
+
+
+assert remove_all_spaces('python  program')==('pythonprogram')
+""""""","def remove_all_spaces(text: str) -> str:
+""""""
+Write a function to remove all whitespaces from a string.
+
+
+"""""""
+"from typing import List
+
+
+def add_elements(arr: List[int], k: int) -> int:
+    """"""
+    Given a non-empty array of integers arr and an integer k, return
+    the sum of the elements with at most two digits from the first k elements of arr.
+
+    Example:
+
+        Input: arr = [111,21,3,4000,5,6,7,8,9], k = 4
+        Output: 24 # sum of 21 + 3
+
+    Constraints:
+        1. 1 <= len(arr) <= 100
+        2. 1 <= k <= len(arr)
+    """"""","from typing import List
+
+
+def add_elements(arr: List[int], k: int) -> int:
+    """"""
+    Given a non-empty array of integers arr and an integer k, return
+    the sum of the elements with at most two digits from the first k elements of arr.
+
+    Constraints:
+        1. 1 <= len(arr) <= 100
+        2. 1 <= k <= len(arr)
+    """""""
+"from typing import List
+
+
+def find_uniq(arr: List[float]) -> float:
+""""""There is an array with some numbers. All numbers are equal except for one. Try to find it!
+
+```python
+find_uniq([ 1, 1, 1, 2, 1, 1 ]) == 2
+find_uniq([ 0, 0, 0.55, 0, 0 ]) == 0.55
+```
+
+It’s guaranteed that array contains at least 3 numbers.
+
+The tests contain some very huge arrays, so think about performance.
+
+This is the first kata in series:
+
+1. Find the unique number (this kata)
+2. [Find the unique string](https://www.codewars.com/kata/585d8c8a28bc7403ea0000c3)
+3. [Find The Unique](https://www.codewars.com/kata/5862e0db4f7ab47bed0000e5)
+""""""","from typing import List
+
+
+def find_uniq(arr: List[float]) -> float:
+""""""There is an array with some numbers. All numbers are equal except for one. Try to find it!
+
+It’s guaranteed that array contains at least 3 numbers.
+
+The tests contain some very huge arrays, so think about performance.
+
+This is the first kata in series:
+
+1. Find the unique number (this kata)
+2. [Find the unique string](https://www.codewars.com/kata/585d8c8a28bc7403ea0000c3)
+3. [Find The Unique](https://www.codewars.com/kata/5862e0db4f7ab47bed0000e5)
+"""""""
+"from typing import List
+
+
+def move_one_ball(arr: List[int]) -> bool:
+    """"""We have an array 'arr' of N integers arr[1], arr[2], ..., arr[N].The
+    numbers in the array will be randomly ordered. Your task is to determine if
+    it is possible to get an array sorted in non-decreasing order by performing 
+    the following operation on the given array:
+        You are allowed to perform right shift operation any number of times.
+    
+    One right shift operation means shifting all elements of the array by one
+    position in the right direction. The last element of the array will be moved to
+    the starting position in the array i.e. 0th index. 
+
+    If it is possible to obtain the sorted array by performing the above operation
+    then return True else return False.
+    If the given array is empty then return True.
+
+    Note: The given list is guaranteed to have unique elements.
+
+    For Example:
+    
+    move_one_ball([3, 4, 5, 1, 2])==>True
+    Explanation: By performin 2 right shift operations, non-decreasing order can
+                 be achieved for the given array.
+    move_one_ball([3, 5, 4, 1, 2])==>False
+    Explanation:It is not possible to get non-decreasing order for the given
+                array by performing any number of right shift operations.
+                
+    """"""","from typing import List
+
+
+def move_one_ball(arr: List[int]) -> bool:
+    """"""We have an array 'arr' of N integers arr[1], arr[2], ..., arr[N].The
+    numbers in the array will be randomly ordered. Your task is to determine if
+    it is possible to get an array sorted in non-decreasing order by performing 
+    the following operation on the given array:
+        You are allowed to perform right shift operation any number of times.
+    
+    One right shift operation means shifting all elements of the array by one
+    position in the right direction. The last element of the array will be moved to
+    the starting position in the array i.e. 0th index. 
+
+    If it is possible to obtain the sorted array by performing the above operation
+    then return True else return False.
+    If the given array is empty then return True.
+
+    Note: The given list is guaranteed to have unique elements.
+    """""""
+"from typing import List
+
+
+def highest_rank(arr: List[int]) -> int:
+""""""Complete the method which returns the number which is most frequent in the given input array. If there is a tie for most frequent number, return the largest number among them.
+
+Note: no empty arrays will be given.
+
+
+## Examples
+
+```
+[12, 10, 8, 12, 7, 6, 4, 10, 12]              -->  12
+[12, 10, 8, 12, 7, 6, 4, 10, 12, 10]          -->  12
+[12, 10, 8, 8, 3, 3, 3, 3, 2, 4, 10, 12, 10]  -->   3
+```
+""""""","from typing import List
+
+
+def highest_rank(arr: List[int]) -> int:
+""""""Complete the method which returns the number which is most frequent in the given input array. If there is a tie for most frequent number, return the largest number among them.
+
+Note: no empty arrays will be given.
+"""""""
+"from typing import List
+
+
+def solve(a: List[int]) -> List[int]:
+""""""Assume we take a number `x` and perform any one of the following operations:
+```Pearl
+a) Divide x by 3 (if it is divisible by 3), or
+b) Multiply x by 2
+```
+After each operation, we write down the result. If we start with `9`, we can get a sequence such as:
+```
+[9,3,6,12,4,8] -- 9/3=3 -> 3*2=6 -> 6*2=12 -> 12/3=4 -> 4*2=8
+```
+You will be given a shuffled sequence of integers and your task is to reorder them so that they conform to the above sequence. There will always be an answer. 
+```
+For the above example:
+solve([12,3,9,4,6,8]) = [9,3,6,12,4,8].
+```
+
+More examples in the test cases. Good luck!
+""""""","from typing import List
+
+
+def solve(a: List[int]) -> List[int]:
+""""""Assume we take a number `x` and perform any one of the following operations:
+```Pearl
+a) Divide x by 3 (if it is divisible by 3), or
+b) Multiply x by 2
+```
+After each operation, we write down the result. 
+
+You will be given a shuffled sequence of integers and your task is to reorder them so that they conform to the above sequence. There will always be an answer. 
+"""""""
+"from typing import List
+from typing import Union
+
+
+def split_words(txt: str) -> Union[List[str], int]:
+    '''
+    Given a string of words, return a list of words split on whitespace, if no whitespaces exists in the text you
+    should split on commas ',' if no commas exists you should return the number of lower-case letters with odd order in the
+    alphabet, ord('a') = 0, ord('b') = 1, ... ord('z') = 25
+    Examples
+    split_words(""Hello world!"") ➞ [""Hello"", ""world!""]
+    split_words(""Hello,world!"") ➞ [""Hello"", ""world!""]
+    split_words(""abcdef"") == 3 
+    '''","from typing import List
+from typing import Union
+
+
+def split_words(txt: str) -> Union[List[str], int]:
+    '''
+    Given a string of words, return a list of words split on whitespace, if no whitespaces exists in the text you
+    should split on commas ',' if no commas exists you should return the number of lower-case letters with odd order in the
+    alphabet, ord('a') = 0, ord('b') = 1, ... ord('z') = 25
+    '''"
+"from typing import List
+
+
+def below_threshold(l: List[int], t: int) -> bool:
+    """"""Return True if all numbers in the list l are below threshold t.
+    >>> below_threshold([1, 2, 4, 10], 100)
+    True
+    >>> below_threshold([1, 20, 4, 10], 5)
+    False
+    """"""","from typing import List
+
+
+def below_threshold(l: List[int], t: int) -> bool:
+    """"""Return True if all numbers in the list l are below threshold t.
+    """""""
+"from typing import List
+
+
+def large_product(nums1: List[int], nums2: List[int], N: int) -> List[int]:
+""""""
+Write a function to find the specified number of largest products from two given lists, selecting one factor from each list.
+assert large_product([1, 2, 3, 4, 5, 6],[3, 6, 8, 9, 10, 6],3)==[60, 54, 50]
+""""""","from typing import List
+
+
+def large_product(nums1: List[int], nums2: List[int], N: int) -> List[int]:
+""""""
+Write a function to find the specified number of largest products from two given lists, selecting one factor from each list.
+"""""""
+"def lateralsuface_cylinder(r: float, h: float) -> float:
+""""""
+Write a function to find the lateral surface area of a cylinder.
+assert math.isclose(lateralsuface_cylinder(10,5), 314.15000000000003, rel_tol=0.001)
+""""""","def lateralsuface_cylinder(r: float, h: float) -> float:
+""""""
+Write a function to find the lateral surface area of a cylinder.
+"""""""
+"def combs(a: str, b: str) -> int:
+""""""# Task
+ Miss X has only two combs in her possession, both of which are old and miss a tooth or two. She also has many purses of different length, in which she carries the combs. The only way they fit is horizontally and without overlapping. Given teeth' positions on both combs, find the minimum length of the purse she needs to take them with her.
+
+ It is guaranteed that there is at least one tooth at each end of the comb. 
+
+ - Note, that the combs can not be rotated/reversed.
+
+# Example
+
+ For `comb1 = ""*..*"" and comb2 = ""*.*""`, the output should be `5`
+
+ Although it is possible to place the combs like on the first picture, the best way to do this is either picture 2 or picture 3.
+
+ ![](https://codefightsuserpics.s3.amazonaws.com/tasks/combs/img/cbs.png?_tm=1484930552851)
+
+# Input/Output
+
+
+ - `[input]` string `comb1`
+
+   A comb is represented as a string. If there is an asterisk ('*') in the ith position, there is a tooth there. Otherwise there is a dot ('.'), which means there is a missing tooth on the comb.
+
+   Constraints: 1 ≤ comb1.length ≤ 10.
+   
+   
+
+ - `[input]` string `comb2`
+
+   The second comb is represented in the same way as the first one.
+
+   Constraints: 1 ≤ comb2.length ≤ 10.
+   
+
+ - `[output]` an integer
+
+   The minimum length of a purse Miss X needs.
+""""""","def combs(a: str, b: str) -> int:
+""""""# Task
+ Miss X has only two combs in her possession, both of which are old and miss a tooth or two. She also has many purses of different length, in which she carries the combs. The only way they fit is horizontally and without overlapping. Given teeth' positions on both combs, find the minimum length of the purse she needs to take them with her.
+
+ It is guaranteed that there is at least one tooth at each end of the comb. 
+
+ - Note, that the combs can not be rotated/reversed.
+
+# Input/Output
+
+ - `[input]` string `comb1`
+
+   A comb is represented as a string. If there is an asterisk ('*') in the ith position, there is a tooth there. Otherwise there is a dot ('.'), which means there is a missing tooth on the comb.
+
+   Constraints: 1 ≤ comb1.length ≤ 10.
+   
+   
+
+ - `[input]` string `comb2`
+
+   The second comb is represented in the same way as the first one.
+
+   Constraints: 1 ≤ comb2.length ≤ 10.
+   
+
+ - `[output]` an integer
+
+   The minimum length of a purse Miss X needs.
+"""""""
+"def prime_length(string: str) -> bool:
+    """"""Write a function that takes a string and returns True if the string
+    length is a prime number or False otherwise
+    Examples
+    prime_length('Hello') == True
+    prime_length('abcdcba') == True
+    prime_length('kittens') == True
+    prime_length('orange') == False
+    """"""","def prime_length(string: str) -> bool:
+    """"""Write a function that takes a string and returns True if the string
+    length is a prime number or False otherwise
+    """""""
+"def even_Power_Sum(n: int) -> int:
+""""""
+Write a python function that takes in an integer n and finds the sum of the first n even natural numbers that are raised to the fifth power.
+assert even_Power_Sum(2) == 1056
+""""""","def even_Power_Sum(n: int) -> int:
+""""""
+Write a python function that takes in an integer n and finds the sum of the first n even natural numbers that are raised to the fifth power.
+"""""""
+"from typing import List
+
+
+def solve(arr: List[int]) -> int:
+""""""In this Kata, you will be given an array of integers and your task is to return the number of arithmetic progressions of size `3` that are possible from that list. In each progression, the differences between the elements must be the same.
+
+```
+[1, 2, 3, 5, 7, 9] ==> 5
+// [1, 2, 3], [1, 3, 5], [1, 5, 9], [3, 5, 7], and [5, 7, 9]
+```
+
+All inputs will be sorted. More examples in test cases. 
+
+Good luck!
+""""""","from typing import List
+
+
+def solve(arr: List[int]) -> int:
+""""""In this Kata, you will be given an array of integers and your task is to return the number of arithmetic progressions of size `3` that are possible from that list. In each progression, the differences between the elements must be the same.
+
+All inputs will be sorted. 
+
+Good luck!
+"""""""
+"def iscube(a: int) -> bool:
+    '''
+    Write a function that takes an integer a and returns True 
+    if this ingeger is a cube of some integer number.
+    Note: you may assume the input is always valid.
+    Examples:
+    iscube(1) ==> True
+    iscube(2) ==> False
+    iscube(-1) ==> True
+    iscube(64) ==> True
+    iscube(0) ==> True
+    iscube(180) ==> False
+    '''","def iscube(a: int) -> bool:
+    '''
+    Write a function that takes an integer a and returns True 
+    if this integer is a cube of some integer number.
+    Note: you may assume the input is always valid.
+    '''"
+"def square_Sum(n: int) -> float:
+""""""
+Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.
+assert square_Sum(2) == 10
+""""""","def square_Sum(n: int) -> float:
+""""""
+Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.
+"""""""
+"from typing import Tuple
+
+
+def tuple_modulo(test_tup1: Tuple[int, ...], test_tup2: Tuple[int, ...]) -> Tuple[int, ...]:
+""""""
+Write a function which takes two tuples of the same length and performs the element wise modulo.
+assert tuple_modulo((10, 4, 5, 6), (5, 6, 7, 5)) == (0, 4, 5, 1)
+""""""","from typing import Tuple
+
+
+def tuple_modulo(test_tup1: Tuple[int, ...], test_tup2: Tuple[int, ...]) -> Tuple[int, ...]:
+""""""
+Write a function which takes two tuples of the same length and performs the element wise modulo.
+"""""""
+"def otherside_rightangle(w: float, h: float) -> float:
+""""""
+Write a function to find the third side of a right angled triangle.
+assert otherside_rightangle(7,8)==10.63014581273465
+""""""","def otherside_rightangle(w: float, h: float) -> float:
+""""""
+Write a function to find the third side of a right angled triangle.
+"""""""
+"def cockroach_speed(s: float) -> int:
+""""""The cockroach is one of the fastest insects. Write a function which takes its speed in km per hour and returns it in cm per second, rounded down to the integer (= floored).
+
+For example:
+
+```python
+cockroach_speed(1.08) == 30
+```
+
+Note! The input is a Real number (actual type is language dependent) and is >= 0. The result should be an Integer.
+""""""","def cockroach_speed(s: float) -> int:
+""""""The cockroach is one of the fastest insects. Write a function which takes its speed in km per hour and returns it in cm per second, rounded down to the integer (= floored).
+
+Note! The input is a Real number (actual type is language dependent) and is >= 0. The result should be an Integer.
+"""""""
+"def correct_bracketing(brackets: str) -> bool:
+    """""" brackets is a string of ""("" and "")"".
+    return True if every opening bracket has a corresponding closing bracket.
+
+    >>> correct_bracketing(""("")
+    False
+    >>> correct_bracketing(""()"")
+    True
+    >>> correct_bracketing(""(()())"")
+    True
+    >>> correct_bracketing("")(()"")
+    False
+    """"""","def correct_bracketing(brackets: str) -> bool:
+    """""" brackets is a string of ""("" and "")"".
+    return True if every opening bracket has a corresponding closing bracket.
+    """""""
+"from typing import Tuple
+
+
+def polar_rect(x: float, y: float) -> Tuple[Tuple[float, float], complex]:
+""""""
+Write a function to convert polar coordinates to rectangular coordinates.
+assert polar_rect(3,4)==((5.0, 0.9272952180016122), (-2+2.4492935982947064e-16j))
+""""""","from typing import Tuple
+
+
+def polar_rect(x: float, y: float) -> Tuple[Tuple[float, float], complex]:
+""""""
+Write a function to convert polar coordinates to rectangular coordinates.
+"""""""
+"def longer(s: str) -> str:
+""""""Create a function `longer` that accepts a string and sorts the words in it based on their respective lengths in an ascending order. If there are two words of the same lengths, sort them alphabetically. Look at the examples below for more details.
+
+```python
+longer(""Another Green World"") => Green World Another
+longer(""Darkness on the edge of Town"") => of on the Town edge Darkness
+longer(""Have you ever Seen the Rain"") => the you Have Rain Seen ever
+```
+
+Assume that only only Alphabets will be entered as the input.
+Uppercase characters have priority over lowercase characters. That is,
+```python
+longer(""hello Hello"") => Hello hello
+```
+
+Don't forget to rate this kata and leave your feedback!! 
+Thanks
+""""""","def longer(s: str) -> str:
+""""""Create a function `longer` that accepts a string and sorts the words in it based on their respective lengths in an ascending order. If there are two words of the same lengths, sort them alphabetically.
+
+Assume that only Alphabets will be entered as the input.
+Uppercase characters have priority over lowercase characters. 
+
+Don't forget to rate this kata and leave your feedback!! 
+Thanks
+"""""""
+"from typing import List
+
+
+def count(lst: List[bool]) -> int:
+""""""
+Write a python function to count true booleans in the given list.
+assert count([True,False,True]) == 2
+""""""","from typing import List
+
+
+def count(lst: List[bool]) -> int:
+""""""
+Write a python function to count true booleans in the given list.
+"""""""

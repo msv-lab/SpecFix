@@ -1,5 +1,3 @@
-import random
-
 from specfix.cluster import Clusters, Cluster
 from specfix.utils import execute_inputs, compare, check_failed_input_output_examples
 
@@ -32,7 +30,7 @@ def differential_tester(generated_programs, test_inputs, entry_point):
 
 def ground_truth_tester(clusters, entry_point):
     for cluster in clusters.get_cluster_list():
-        program_str = random.choice(cluster.programs_str)
+        program_str = cluster.programs_str[0]
         inputs, outputs = clusters.input_output_examples
         result_list = execute_inputs(program_str, inputs, entry_point)
         failed_input_output_examples, t_consistency = check_failed_input_output_examples(result_list,

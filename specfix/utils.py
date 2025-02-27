@@ -203,7 +203,6 @@ def get_evalplus_inputs_outputs(data_name):
     outputs = []
     for key in data.keys():
         problem = data[key]
-        inputs.extend(problem['base_inputs'])
-        inputs.extend(problem['plus_inputs'])
-        outputs.extend(expected_outputs[key]['base'])
-        outputs.extend(expected_outputs[key]['plus'])
+        inputs.append(problem['base_input'] + problem['plus_input'])
+        outputs.append([[output] for output in expected_outputs[key]['base'] + expected_outputs[key]['plus']])
+    return inputs, outputs

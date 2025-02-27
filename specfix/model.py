@@ -31,7 +31,7 @@ class Model:
                 base_url="https://xiaoai.plus/v1"
                 # base_url="https://api.fireworks.ai/inference/v1"
             )
-        elif "gpt" in self.model or "o1" in self.model:  # based on the transit of the model
+        elif "gpt" in self.model or "o1" in self.model or "o3" in self.model:  # based on the transit of the model
             api_key = config['API_KEY']['xiaoai_key']
             # api_key = config['API_KEY']['closeai_key']
             client = OpenAI(

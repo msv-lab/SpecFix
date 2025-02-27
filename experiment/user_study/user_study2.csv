@@ -1,0 +1,772 @@
+requirement,requirement_without_examples
+"from typing import List
+
+
+def distribute(nodes: int, workload: int) -> List[List[int]]:
+""""""Bob has a server farm crunching numbers. He has `nodes` servers in his farm. His company has a lot of work to do. 
+
+The work comes as a number `workload` which indicates how many jobs there are. Bob wants his servers to get an equal number of jobs each. If that is impossible, he wants the first servers to receive more jobs. He also wants the jobs sorted, so that the first server receives the first jobs.
+
+The way this works, Bob wants an array indicating which jobs are going to which servers.
+
+Can you help him distribute all this work as evenly as possible onto his servers?
+
+Example
+-------
+
+Bob has `2` servers and `4` jobs. The first server should receive job 0 and 1 while the second should receive 2 and 3.
+
+```
+distribute(2, 4) # => [[0, 1], [2, 3]]
+```
+
+On a different occasion Bob has `3` servers and `3` jobs. Each should get just one.
+
+```
+distribute(3, 3) # => [[0], [1], [2]]
+```
+
+A couple of days go by and Bob sees a spike in jobs. Now there are `10`, but he hasn't got more than `4` servers available. He boots all of them. This time the first and second should get a job more than the third and fourth.
+
+```
+distribute(4, 10) # => [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9]]
+```
+
+Input
+-----
+
+Don't worry about invalid inputs. That is, `nodes > 0` and `workload > 0` and both will always be integers.
+""""""","from typing import List
+
+
+def distribute(nodes: int, workload: int) -> List[List[int]]:
+""""""Bob has a server farm crunching numbers. He has `nodes` servers in his farm. His company has a lot of work to do. 
+
+The work comes as a number `workload` which indicates how many jobs there are. Bob wants his servers to get an equal number of jobs each. If that is impossible, he wants the first servers to receive more jobs. He also wants the jobs sorted, so that the first server receives the first jobs.
+
+The way this works, Bob wants an array indicating which jobs are going to which servers.
+
+Can you help him distribute all this work as evenly as possible onto his servers?
+
+Input
+-----
+
+Don't worry about invalid inputs. That is, `nodes > 0` and `workload > 0` and both will always be integers.
+"""""""
+"from typing import List
+
+
+def cube_nums(nums: List[int]) -> List[int]:
+""""""
+Write a function to find cubes of individual elements in a list.
+assert cube_nums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])==[1, 8, 27, 64, 125, 216, 343, 512, 729, 1000]
+""""""","from typing import List
+
+
+def cube_nums(nums: List[int]) -> List[int]:
+""""""
+Write a function to find cubes of individual elements in a list.
+"""""""
+"from typing import List
+
+
+def sort_sublists(list_of_lists: List[List[str]]) -> List[List[str]]:
+""""""
+Write a function to sort each sublist of strings in a given list of lists.
+assert sort_sublists([['green', 'orange'], ['black', 'white'], ['white', 'black', 'orange']])==[['green', 'orange'], ['black', 'white'], ['black', 'orange', 'white']]
+""""""","from typing import List
+
+
+def sort_sublists(list_of_lists: List[List[str]]) -> List[List[str]]:
+""""""
+Write a function to sort each sublist of strings in a given list of lists.
+"""""""
+"def solve(n: int) -> int:
+""""""Consider an array that has no prime numbers, and none of its elements has any prime digit. It would start with: `[1,4,6,8,9,10,14,16,18,..]`. 
+
+`12` and `15` are not in the list because `2` and `5` are primes.
+
+You will be given an integer `n` and your task will be return the number at that index in the array. 
+For example:
+```
+solve(0) = 1
+solve(2) = 6
+``` 
+
+More examples in the test cases.
+
+Good luck!
+
+If you like Prime Katas, you will enjoy this Kata: [Simple Prime Streaming](https://www.codewars.com/kata/5a908da30025e995880000e3)
+""""""","def solve(n: int) -> int:
+""""""Consider an array that has no prime numbers, and none of its elements has any prime digit. It would start with: `[1,4,6,8,9,10,14,16,18,..]`. 
+
+`12` and `15` are not in the list because `2` and `5` are primes.
+
+You will be given an integer `n` and your task will be return the number at that index in the array. 
+
+More examples in the test cases.
+
+Good luck!
+
+If you like Prime Katas, you will enjoy this Kata: [Simple Prime Streaming](https://www.codewars.com/kata/5a908da30025e995880000e3)
+"""""""
+"def get_closest_vowel(word: str) -> str:
+    """"""You are given a word. Your task is to find the closest vowel that stands between 
+    two consonants from the right side of the word (case sensitive).
+    
+    Vowels in the beginning and ending doesn't count. Return empty string if you didn't
+    find any vowel met the above condition. 
+
+    You may assume that the given string contains English letter only.
+
+    Example:
+    get_closest_vowel(""yogurt"") ==> ""u""
+    get_closest_vowel(""FULL"") ==> ""U""
+    get_closest_vowel(""quick"") ==> """"
+    get_closest_vowel(""ab"") ==> """"
+    """"""","def get_closest_vowel(word: str) -> str:
+    """"""You are given a word. Your task is to find the closest vowel that stands between 
+    two consonants from the right side of the word (case sensitive).
+    
+    Vowels in the beginning and ending doesn't count. Return empty string if you didn't
+    find any vowel met the above condition. 
+
+    You may assume that the given string contains English letter only.
+    """""""
+"def find_longest(xs: list) -> int:
+""""""Find the number with the most digits.
+
+If two numbers in the argument array have the same number of digits, return the first one in the array.
+""""""","def find_longest(xs: list) -> int:
+""""""Find the number with the most digits.
+
+If two numbers in the argument array have the same number of digits, return the first one in the array.
+"""""""
+"from typing import List
+
+
+def remove_kth_element(list1: List[int], k: int) -> List[int]:
+""""""
+Write a python function which takes a list and returns a list with the same elements, but the k'th element removed.
+assert remove_kth_element([1,1,2,3,4,4,5,1],3)==[1, 1, 3, 4, 4, 5, 1]
+""""""","from typing import List
+
+
+def remove_kth_element(list1: List[int], k: int) -> List[int]:
+""""""
+Write a python function which takes a list and returns a list with the same elements, but the k'th element removed.
+"""""""
+"from typing import List
+from typing import Dict
+from typing import Tuple
+
+
+def check_occurences(test_list: List[Tuple[Any, ...]]) -> Dict[Tuple[Any, ...], int]:
+""""""
+Write a function that takes in a list of tuples and returns a dictionary mapping each unique tuple to the number of times it occurs in the list.
+assert check_occurences([(3, 1), (1, 3), (2, 5), (5, 2), (6, 3)] ) == {(1, 3): 2, (2, 5): 2, (3, 6): 1}
+""""""","from typing import List
+from typing import Dict
+from typing import Tuple
+
+
+def check_occurences(test_list: List[Tuple[Any, ...]]) -> Dict[Tuple[Any, ...], int]:
+""""""
+Write a function that takes in a list of tuples and returns a dictionary mapping each unique tuple to the number of times it occurs in the list.
+"""""""
+"from typing import List
+from typing import Tuple
+
+
+def segments(m: int, arr: List[Tuple[int, int]]) -> List[int]:
+""""""You are given a set of `n` segments on the axis `Ox`, each segment has integer endpoints between `0` and `m` inclusive.
+ Segments may intersect, overlap or even coincide with each other. Each segment is characterized by two integers li and ri — coordinates of the left and of the right endpoints.
+
+ Consider all integer points between `0` and `m` inclusive. Your task is to print all such points that don't belong to any segment. The point x belongs to the segment `[l;r]` if and only if `l ≤ x ≤ r`.
+
+**Input:**
+ `m` — the upper bound for coordinates;
+ array of coordinates li and ri `0 ≤ li ≤ ri ≤ m` — the endpoints of the `i`-th segment. Segments may intersect, overlap or even coincide with each other.
+
+**Output:**
+ All points from `0` to `m` that don't belong to any segment.
+
+**Examples:**
+```python
+segments(5, [(2,2),(1,2),(5,5)]) => [0,3,4]
+segments(7, [(0,7)]) => []
+```
+""""""","from typing import List
+from typing import Tuple
+
+
+def segments(m: int, arr: List[Tuple[int, int]]) -> List[int]:
+""""""You are given a set of `n` segments on the axis `Ox`, each segment has integer endpoints between `0` and `m` inclusive.
+ Segments may intersect, overlap or even coincide with each other. Each segment is characterized by two integers li and ri — coordinates of the left and of the right endpoints.
+
+ Consider all integer points between `0` and `m` inclusive. Your task is to print all such points that don't belong to any segment. The point x belongs to the segment `[l;r]` if and only if `l ≤ x ≤ r`.
+
+**Input:**
+ `m` — the upper bound for coordinates;
+ array of coordinates li and ri `0 ≤ li ≤ ri ≤ m` — the endpoints of the `i`-th segment. Segments may intersect, overlap or even coincide with each other.
+
+**Output:**
+ All points from `0` to `m` that don't belong to any segment.
+"""""""
+"from typing import List
+
+
+def pluck(arr: List[int]) -> List[int]:
+    """"""
+    ""Given an array representing a branch of a tree that has non-negative integer nodes
+    your task is to pluck one of the nodes and return it.
+    The plucked node should be the node with the smallest even value.
+    If multiple nodes with the same smallest even value are found return the node that has smallest index.
+
+    The plucked node should be returned in a list, [ smalest_value, its index ],
+    If there are no even values or the given array is empty, return [].
+
+    Example 1:
+        Input: [4,2,3]
+        Output: [2, 1]
+        Explanation: 2 has the smallest even value, and 2 has the smallest index.
+
+    Example 2:
+        Input: [1,2,3]
+        Output: [2, 1]
+        Explanation: 2 has the smallest even value, and 2 has the smallest index. 
+
+    Example 3:
+        Input: []
+        Output: []
+    
+    Example 4:
+        Input: [5, 0, 3, 0, 4, 2]
+        Output: [0, 1]
+        Explanation: 0 is the smallest value, but  there are two zeros,
+                     so we will choose the first zero, which has the smallest index.
+
+    Constraints:
+        * 1 <= nodes.length <= 10000
+        * 0 <= node.value
+    """"""","from typing import List
+
+
+def pluck(arr: List[int]) -> List[int]:
+    """"""
+    ""Given an array representing a branch of a tree that has non-negative integer nodes
+    your task is to pluck one of the nodes and return it.
+    The plucked node should be the node with the smallest even value.
+    If multiple nodes with the same smallest even value are found return the node that has smallest index.
+
+    The plucked node should be returned in a list, [ smalest_value, its index ],
+    If there are no even values or the given array is empty, return [].
+
+    Constraints:
+        * 1 <= nodes.length <= 10000
+        * 0 <= node.value
+    """""""
+"from typing import List
+
+
+def array_plus_array(arr1: List[int], arr2: List[int]) -> int:
+""""""I'm new to coding and now I want to get the sum of two arrays...actually the sum of all their elements. I'll appreciate for your help.
+
+P.S. Each array includes only integer numbers. Output is a number too.
+""""""","from typing import List
+
+
+def array_plus_array(arr1: List[int], arr2: List[int]) -> int:
+""""""I'm new to coding and now I want to get the sum of two arrays...actually the sum of all their elements. I'll appreciate for your help.
+
+P.S. Each array includes only integer numbers. Output is a number too.
+"""""""
+"def convert_hash_to_array(hash: dict) -> list:
+""""""Convert a hash into an array. Nothing more, Nothing less.
+
+```
+{name: 'Jeremy', age: 24, role: 'Software Engineer'}
+```
+should be converted into
+
+```
+[[""name"", ""Jeremy""], [""age"", 24], [""role"", ""Software Engineer""]]
+```
+
+```if:python,javascript,crystal
+**Note**: The output array should be sorted alphabetically.
+```
+
+Good Luck!
+""""""","def convert_hash_to_array(hash: dict) -> list:
+""""""Convert a hash into an array. Nothing more, Nothing less.
+
+**Note**: The output array should be sorted alphabetically.
+
+Good Luck!
+"""""""
+"def minimum(a: int, b: int) -> int:
+""""""
+Write a python function to find the minimum of two numbers.
+assert minimum(1,2) == 1
+""""""","def minimum(a: int, b: int) -> int:
+""""""
+Write a python function to find the minimum of two numbers.
+"""""""
+"from typing import List
+
+
+def extract_string(str1: List[str], l: int) -> List[str]:
+""""""
+Write a function to extract specified size of strings from a given list of string values.
+assert extract_string(['Python', 'list', 'exercises', 'practice', 'solution'] ,8)==['practice', 'solution']
+""""""","from typing import List
+
+
+def extract_string(str1: List[str], l: int) -> List[str]:
+""""""
+Write a function to extract specified size of strings from a given list of string values.
+"""""""
+"from typing import List
+
+
+def count_nums(arr: List[int]) -> int:
+    """"""
+    Write a function count_nums which takes an array of integers and returns
+    the number of elements which has a sum of digits > 0.
+    If a number is negative, then its first signed digit will be negative:
+    e.g. -123 has signed digits -1, 2, and 3.
+    >>> count_nums([]) == 0
+    >>> count_nums([-1, 11, -11]) == 1
+    >>> count_nums([1, 1, 2]) == 3
+    """"""","from typing import List
+
+
+def count_nums(arr: List[int]) -> int:
+    """"""
+    Write a function count_nums which takes an array of integers and returns
+    the number of elements which has a sum of digits > 0.
+    If a number is negative, then its first signed digit will be negative:
+    """""""
+"def correct_bracketing(brackets: str) -> bool:
+    """""" brackets is a string of ""<"" and "">"".
+    return True if every opening bracket has a corresponding closing bracket.
+
+    >>> correct_bracketing(""<"")
+    False
+    >>> correct_bracketing(""<>"")
+    True
+    >>> correct_bracketing(""<<><>>"")
+    True
+    >>> correct_bracketing(""><<>"")
+    False
+    """"""","def correct_bracketing(brackets: str) -> bool:
+    """""" brackets is a string of ""<"" and "">"".
+    return True if every opening bracket has a corresponding closing bracket.
+    """""""
+"def is_equal_to_sum_even(n: int) -> bool:
+    """"""Evaluate whether the given number n can be written as the sum of exactly 4 positive even numbers
+    Example
+    is_equal_to_sum_even(4) == False
+    is_equal_to_sum_even(6) == False
+    is_equal_to_sum_even(8) == True
+    """"""","def is_equal_to_sum_even(n: int) -> bool:
+    """"""Evaluate whether the given number n can be written as the sum of exactly 4 positive even numbers
+    """""""
+"from typing import List
+
+
+def eat(number: int, need: int, remaining: int) -> List[int]:
+    """"""
+    You're a hungry rabbit, and you already have eaten a certain number of carrots,
+    but now you need to eat more carrots to complete the day's meals.
+    you should return an array of [ total number of eaten carrots after your meals,
+                                    the number of carrots left after your meals ]
+    if there are not enough remaining carrots, you will eat all remaining carrots, but will still be hungry.
+    
+    Example:
+    * eat(5, 6, 10) -> [11, 4]
+    * eat(4, 8, 9) -> [12, 1]
+    * eat(1, 10, 10) -> [11, 0]
+    * eat(2, 11, 5) -> [7, 0]
+    
+    Variables:
+    @number : integer
+        the number of carrots that you have eaten.
+    @need : integer
+        the number of carrots that you need to eat.
+    @remaining : integer
+        the number of remaining carrots thet exist in stock
+    
+    Constrain:
+    * 0 <= number <= 1000
+    * 0 <= need <= 1000
+    * 0 <= remaining <= 1000
+
+    Have fun :)
+    """"""","from typing import List
+
+
+def eat(number: int, need: int, remaining: int) -> List[int]:
+    """"""
+    You're a hungry rabbit, and you already have eaten a certain number of carrots,
+    but now you need to eat more carrots to complete the day's meals.
+    you should return an array of [ total number of eaten carrots after your meals,
+                                    the number of carrots left after your meals ]
+    if there are not enough remaining carrots, you will eat all remaining carrots, but will still be hungry.
+    
+    Variables:
+    @number : integer
+        the number of carrots that you have eaten.
+    @need : integer
+        the number of carrots that you need to eat.
+    @remaining : integer
+        the number of remaining carrots thet exist in stock
+    
+    Constrain:
+    * 0 <= number <= 1000
+    * 0 <= need <= 1000
+    * 0 <= remaining <= 1000
+
+    Have fun :)
+    """""""
+"FIX = """"""
+Add more test cases.
+""""""
+
+def vowels_count(s: str) -> int:
+    """"""Write a function vowels_count which takes a string representing
+    a word as input and returns the number of vowels in the string.
+    Vowels in this case are 'a', 'e', 'i', 'o', 'u'. Here, 'y' is also a
+    vowel, but only when it is at the end of the given word.
+
+    Example:
+    >>> vowels_count(""abcde"")
+    2
+    >>> vowels_count(""ACEDY"")
+    3
+    """"""","def vowels_count(s: str) -> int:
+    """"""Write a function vowels_count which takes a string representing
+    a word as input and returns the number of vowels in the string.
+    Vowels in this case are 'a', 'e', 'i', 'o', 'u'. Here, 'y' is also a
+    vowel, but only when it is at the end of the given word.
+    """""""
+"def fix_spaces(text: str) -> str:
+    """"""
+    Given a string text, replace all spaces in it with underscores, 
+    and if a string has more than 2 consecutive spaces, 
+    then replace all consecutive spaces with - 
+    
+    fix_spaces(""Example"") == ""Example""
+    fix_spaces(""Example 1"") == ""Example_1""
+    fix_spaces("" Example 2"") == ""_Example_2""
+    fix_spaces("" Example   3"") == ""_Example-3""
+    """"""","def fix_spaces(text: str) -> str:
+    """"""
+    Given a string text, replace all spaces in it with underscores, 
+    and if a string has more than 2 consecutive spaces, 
+    then replace all consecutive spaces with - 
+    """""""
+"from typing import List
+
+
+def find_first_occurrence(A: List[int], x: int) -> int:
+""""""
+Write a function to find the index of the first occurrence of a given number in a sorted array.
+assert find_first_occurrence([2, 5, 5, 5, 6, 6, 8, 9, 9, 9], 5) == 1
+""""""","from typing import List
+
+
+def find_first_occurrence(A: List[int], x: int) -> int:
+""""""
+Write a function to find the index of the first occurrence of a given number in a sorted array.
+"""""""
+"def sum_to_n(n: int) -> int:
+    """"""sum_to_n is a function that sums numbers from 1 to n.
+    >>> sum_to_n(30)
+    465
+    >>> sum_to_n(100)
+    5050
+    >>> sum_to_n(5)
+    15
+    >>> sum_to_n(10)
+    55
+    >>> sum_to_n(1)
+    1
+    """"""","def sum_to_n(n: int) -> int:
+    """"""sum_to_n is a function that sums numbers from 1 to n.
+    """""""
+"from typing import List
+
+
+def per(n: int) -> List[int]:
+""""""*Based on this Numberphile video: https://www.youtube.com/watch?v=Wim9WJeDTHQ*
+
+---
+
+Multiply all the digits of a nonnegative integer `n` by each other, repeating with the product until a single digit is obtained. The number of steps required is known as the **multiplicative persistence**.
+
+Create a function that calculates the individual results of each step, not including the original number, but including the single digit, and outputs the result as a list/array. If the input is a single digit, return an empty list/array.
+
+## Examples
+```
+per(1)  = []
+
+per(10) = [0]
+// 1*0 = 0
+
+per(69) = [54, 20, 0]
+// 6*9 = 54 --> 5*4 = 20 --> 2*0 = 0
+
+per(277777788888899) = [4996238671872, 438939648, 4478976, 338688, 27648, 2688, 768, 336, 54, 20, 0]
+// 2*7*7*7*7*7*7*8*8*8*8*8*8*9*9 = 4996238671872 --> 4*9*9*6*2*3*8*6*7*1*8*7*2 = 4478976 --> ...
+```
+""""""","from typing import List
+
+
+def per(n: int) -> List[int]:
+""""""*Based on this Numberphile video: https://www.youtube.com/watch?v=Wim9WJeDTHQ*
+
+---
+
+Multiply all the digits of a nonnegative integer `n` by each other, repeating with the product until a single digit is obtained. The number of steps required is known as the **multiplicative persistence**.
+
+Create a function that calculates the individual results of each step, not including the original number, but including the single digit, and outputs the result as a list/array. If the input is a single digit, return an empty list/array.
+"""""""
+"def solve(s: str) -> int:
+""""""The vowel substrings in the word `codewarriors` are `o,e,a,io`. The longest of these has a length of 2. Given a lowercase string that has alphabetic characters only (both vowels and consonants) and no spaces, return the length of the longest vowel substring.
+Vowels are any of `aeiou`. 
+
+
+```if:csharp
+Documentation:
+Kata.Solve Method (String)
+
+Returns the length of the greatest continuous vowel substring in a string.
+
+Syntax
+
+
+public
+static
+int Solve(
+string str
+    )
+  
+
+
+Parameters
+
+str
+
+Type: System.String
+The string to be processed.
+
+Return Value
+
+Type: System.Int32
+  The length of the greatest continuous vowel substring in str, or 0 if str contains no vowels.
+
+
+Exceptions
+
+
+
+Exception
+Condition
+
+ArgumentNullException
+str is null.
+
+
+
+
+```
+
+
+Good luck!
+
+If you like substring Katas, please try:
+
+[Non-even substrings](https://www.codewars.com/kata/59da47fa27ee00a8b90000b4)
+
+[Vowel-consonant lexicon](https://www.codewars.com/kata/59cf8bed1a68b75ffb000026)
+""""""","def solve(s: str) -> int:
+""""""The vowel substrings in the word `codewarriors` are `o,e,a,io`. The longest of these has a length of 2. Given a lowercase string that has alphabetic characters only (both vowels and consonants) and no spaces, return the length of the longest vowel substring.
+Vowels are any of `aeiou`. 
+
+
+```if:csharp
+Documentation:
+Kata.Solve Method (String)
+
+Returns the length of the greatest continuous vowel substring in a string.
+
+Syntax
+
+
+public
+static
+int Solve(
+string str
+    )
+  
+
+
+Parameters
+
+str
+
+Type: System.String
+The string to be processed.
+
+Return Value
+
+Type: System.Int32
+  The length of the greatest continuous vowel substring in str, or 0 if str contains no vowels.
+
+
+Exceptions
+
+
+
+Exception
+Condition
+
+ArgumentNullException
+str is null.
+
+
+
+
+```
+
+
+Good luck!
+
+If you like substring Katas, please try:
+
+[Non-even substrings](https://www.codewars.com/kata/59da47fa27ee00a8b90000b4)
+
+[Vowel-consonant lexicon](https://www.codewars.com/kata/59cf8bed1a68b75ffb000026)
+"""""""
+"from typing import List
+
+
+def is_Sub_Array(A: List[int], B: List[int]) -> bool:
+""""""
+Write a python function to check whether a list is sublist of another or not.
+assert is_Sub_Array([1,4,3,5],[1,2]) == False
+""""""","from typing import List
+
+
+def is_Sub_Array(A: List[int], B: List[int]) -> bool:
+""""""
+Write a python function to check whether a list is sublist of another or not.
+"""""""
+"from typing import List
+
+
+def count_up_to(n: int) -> List[int]:
+    """"""Implement a function that takes an non-negative integer and returns an array of the first n
+    integers that are prime numbers and less than n.
+    for example:
+    count_up_to(5) => [2,3]
+    count_up_to(11) => [2,3,5,7]
+    count_up_to(0) => []
+    count_up_to(20) => [2,3,5,7,11,13,17,19]
+    count_up_to(1) => []
+    count_up_to(18) => [2,3,5,7,11,13,17]
+    """"""","from typing import List
+
+
+def count_up_to(n: int) -> List[int]:
+    """"""Implement a function that takes a non-negative integer and returns an array of the first n
+    integers that are prime numbers and less than n.
+    """""""
+"from typing import List
+
+
+def is_product_even(arr: List[int]) -> bool:
+""""""
+Write a function to check whether the product of numbers in a list is even or not.
+assert is_product_even([1,2,3])
+""""""","from typing import List
+
+
+def is_product_even(arr: List[int]) -> bool:
+""""""
+Write a function to check whether the product of numbers in a list is even or not.
+"""""""
+"def check_root(string: str) -> str:
+""""""While surfing in web I found interesting math problem called ""Always perfect"". That means if you add 1 to the product of four consecutive numbers the answer is ALWAYS a perfect square.
+For example we have: 1,2,3,4 and the product will be 1X2X3X4=24. If we add 1 to the product that would become 25, since the result number is a perfect square the square root of 25 would be 5.
+
+So now lets write a function which takes numbers separated by commas in string format and returns the number which is a perfect square and the square root of that number.
+
+If string contains other characters than number or it has more or less than 4 numbers separated by comma function returns ""incorrect input"".
+
+If string contains 4 numbers but not consecutive it returns ""not consecutive"".
+""""""","def check_root(string: str) -> str:
+""""""While surfing in web I found interesting math problem called ""Always perfect"". That means if you add 1 to the product of four consecutive numbers the answer is ALWAYS a perfect square.
+
+So now lets write a function which takes numbers separated by commas in string format and returns the number which is a perfect square and the square root of that number.
+
+If string contains other characters than number or it has more or less than 4 numbers separated by comma function returns ""incorrect input"".
+
+If string contains 4 numbers but not consecutive it returns ""not consecutive"".
+"""""""
+"def solve(s: str) -> str:
+""""""If we alternate the vowels and consonants in the string `""have""`, we get the following list, arranged alphabetically:
+`['ahev', 'aveh', 'ehav', 'evah', 'vahe', 'veha']`. These are the only possibilities in which vowels and consonants are alternated. The first element, `ahev`, is alphabetically lowest. 
+
+Given a string:
+* alternate the vowels and consonants and return the lexicographically lowest element in the list
+* If any two or more vowels or consonants must follow each other, return `""failed""`
+* if the number of vowels and consonants are equal, the first letter of the result must be a vowel.
+
+Examples: 
+
+```Haskell
+solve(""codewars"") = ""failed"". However you alternate vowels and consonants, two consonants must follow each other
+solve(""oruder"") = ""edorur""
+solve(""orudere"") = ""ederoru"". This is the only option that allows you to alternate vowels & consonants.
+```
+
+```if c:
+In C, return an allocated string even if the response is ""failed"".
+```
+
+Vowels will be any of ""aeiou"". Input will be a lowercase string, no spaces. See test cases for more examples. 
+
+Good luck!
+
+If you like this Kata, please try: 
+
+[Consonant value](https://www.codewars.com/kata/59c633e7dcc4053512000073)
+
+[Alternate capitalization](https://www.codewars.com/kata/59cfc000aeb2844d16000075)
+""""""","def solve(s: str) -> str:
+""""""
+Given a string:
+* alternate the vowels and consonants and return the lexicographically lowest element in the list
+* If any two or more vowels or consonants must follow each other, return `""failed""`
+* if the number of vowels and consonants are equal, the first letter of the result must be a vowel.
+
+Vowels will be any of ""aeiou"". Input will be a lowercase string, no spaces. 
+
+Good luck!
+"""""""
+"def drop_empty(dict1: dict) -> dict:
+""""""
+Write a function to drop empty items from a given dictionary.
+
+
+assert drop_empty({'c1': 'Red', 'c2': 'Green', 'c3':None})=={'c1': 'Red', 'c2': 'Green'}
+""""""","def drop_empty(dict1: dict) -> dict:
+""""""
+Write a function to drop empty items from a given dictionary.
+
+
+"""""""

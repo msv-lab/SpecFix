@@ -1,0 +1,50 @@
+{"task_id": "Mbpp/2", "requirement": "def similar_elements(test_tup1, test_tup2):\"\"\"\nWrite a function to find the shared elements from the given two lists.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/3", "requirement": "import math\ndef is_not_prime(n):\"\"\"\nWrite a python function to identify non-prime numbers.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/4", "requirement": "import heapq as hq\ndef heap_queue_largest(nums: list,n: int) -> list:\"\"\"\nWrite a function to find the n largest integers from a given list of numbers, returned in descending order.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/6", "requirement": "def is_Power_Of_Two(x: int): \n    return x > 0 and (x & (x - 1)) == 0\ndef differ_At_One_Bit_Pos(a: int,b: int):\"\"\"\nWrite a python function to check whether the two numbers differ at one bit position only or not.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/7", "requirement": "import re\ndef find_char_long(text):\"\"\"\nWrite a function to find all words which are at least 4 characters long in a string.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/8", "requirement": "def square_nums(nums):\"\"\"\nWrite a function to find squares of individual elements in a list.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/9", "requirement": "def find_Rotations(s):\"\"\"\nWrite a python function to find the minimum number of rotations (greater than 0) required to get the same string.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/11", "requirement": "def remove_Occ(s,ch):\"\"\"\nWrite a python function to remove first and last occurrence of a given character from the string.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/12", "requirement": "def sort_matrix(M):\"\"\"\nWrite a function to sort a given matrix in ascending order according to the sum of its rows.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/14", "requirement": "def find_Volume(l,b,h) :\"\"\"\nWrite a python function to find the volume of a triangular prism.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/16", "requirement": "import re\ndef text_lowercase_underscore(text):\"\"\"\nWrite a function to that returns true if the input string contains sequences of lowercase letters joined with an underscore and false otherwise.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/17", "requirement": "def square_perimeter(a):\"\"\"\nWrite a function that returns the perimeter of a square given its side length as input.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/18", "requirement": "def remove_dirty_chars(string, second_string):\"\"\"\nWrite a function to remove characters from the first string which are present in the second string.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/19", "requirement": "def test_duplicate(arraynums):\"\"\"\nWrite a function to find whether a given array of integers contains any duplicate element.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/20", "requirement": "def is_woodall(x):\"\"\"\nWrite a function to check if the given number is woodball or not.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/56", "requirement": "def check(n):\"\"\"\nWrite a python function to check if a given number is one less than twice its reverse.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/57", "requirement": "def find_Max_Num(arr) :\"\"\"\nWrite a python function to find the largest number that can be formed with the given list of digits.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/58", "requirement": "def opposite_Signs(x,y):\"\"\"\nWrite a python function to check whether the given two integers have opposite sign or not.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/59", "requirement": "def is_octagonal(n):\"\"\"\nWrite a function to find the nth octagonal number.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/61", "requirement": "from collections import defaultdict\ndef count_Substrings(s):\"\"\"\nWrite a python function to count the number of substrings with the sum of digits equal to their length.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/62", "requirement": "def smallest_num(xs):\"\"\"\nWrite a python function to find smallest number in a list.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/63", "requirement": "def max_difference(test_list):\"\"\"\nWrite a function to find the maximum difference between available pairs in the given tuple list.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/64", "requirement": "def subject_marks(subjectmarks):\"\"\"\nWrite a function to sort a list of tuples using the second value of each tuple.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/65", "requirement": "def recursive_list_sum(data_list):\"\"\"\nWrite a function to flatten a list and sum all of its elements.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/66", "requirement": "def pos_count(l):\"\"\"\nWrite a python function to count the number of positive numbers in a list.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/67", "requirement": "def bell_number(n):\"\"\"\nWrite a function to find the number of ways to partition a set of Bell numbers.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/68", "requirement": "def is_Monotonic(A):\"\"\"\nWrite a python function to check whether the given array is monotonic or not.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/69", "requirement": "def is_sublist(l, s):\"\"\"\nWrite a function to check whether a list contains the given sublist or not.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/70", "requirement": "def get_equal(Input):\"\"\"\nWrite a function to find whether all the given tuples have equal length or not.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/71", "requirement": "def comb_sort(nums):\"\"\"\nWrite a function to sort a list of elements.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/72", "requirement": "def dif_Square(n):\"\"\"\nWrite a python function to check whether the given number can be represented as the difference of two squares or not.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/74", "requirement": "def is_samepatterns(colors, patterns):\"\"\"\nWrite a function to check whether it follows the sequence given in the patterns array.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/75", "requirement": "def find_tuples(test_list, K):\"\"\"\nWrite a function to find tuples which have all elements divisible by k from the given list of tuples.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/77", "requirement": "def is_Diff(n):\"\"\"\nWrite a python function to find whether a number is divisible by 11.\nassert is_Diff (12345) == False\n\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/79", "requirement": "def word_len(s):\"\"\"\nWrite a python function to check whether the length of the word is odd or not.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/80", "requirement": "def tetrahedral_number(n):\"\"\"\nWrite a function to find the nth tetrahedral number.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/82", "requirement": "import math\ndef volume_sphere(r):\"\"\"\nWrite a function to find the volume of a sphere.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/84", "requirement": "def sequence(n):\"\"\"\nWrite a function to find the nth number in the newman conway sequence.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/85", "requirement": "import math\ndef surfacearea_sphere(r):\"\"\"\nWrite a function to find the surface area of a sphere.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/86", "requirement": "def centered_hexagonal_number(n):\"\"\"\nWrite a function to find nth centered hexagonal number.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/87", "requirement": "import collections as ct\ndef merge_dictionaries_three(dict1,dict2, dict3):\"\"\"\nWrite a function to merge three dictionaries into a single dictionary.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/88", "requirement": "import collections\ndef freq_count(list1):\"\"\"\nWrite a function to get the frequency of all the elements in a list, returned as a dictionary.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/89", "requirement": "def closest_num(N):\"\"\"\nWrite a function to find the closest smaller number than n.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/90", "requirement": "def len_log(list1):\"\"\"\nWrite a python function to find the length of the longest word.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/91", "requirement": "def find_substring(str1, sub_str):\"\"\"\nWrite a function to check if a string is present as a substring in a given list of string values.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/92", "requirement": "def is_undulating(n):\"\"\"\nWrite a function to check whether the given number is undulating or not.\"\"\"", "Ambiguity": 1}
+{"task_id": "Mbpp/93", "requirement": "def power(a, b):\"\"\"\nWrite a function to calculate the value of 'a' to the power 'b'.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/94", "requirement": "from operator import itemgetter \ndef index_minimum(test_list):\"\"\"\nGiven a list of tuples, write a function that returns the first value of the tuple with the smallest second value.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/95", "requirement": "def Find_Min_Length(lst):\"\"\"\nWrite a python function to find the length of the smallest list in a list of lists.\"\"\"", "Ambiguity": 0}
+{"task_id": "Mbpp/96", "requirement": "def divisor(n):\"\"\"\nWrite a python function to find the number of divisors of a given integer.\"\"\"", "Ambiguity": 0}

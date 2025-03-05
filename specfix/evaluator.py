@@ -3,7 +3,8 @@ import concurrent.futures
 
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare
+from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare, get_entry_point, \
+    get_failed_input_output
 
 
 class SpecFixAccuracyEvaluator:
@@ -15,65 +16,78 @@ class SpecFixAccuracyEvaluator:
         self.temperature = temperature
 
     def get_clusters(self, programs, test_inputs, entry_point, examples):
+        print("GET CLUSTERS")
         clusters = self.differential_tester(programs, test_inputs, entry_point)
         clusters.set_input_output_examples(examples)
         return clusters
 
+    def get_clusters_crosshair(self, programs, entry_point, examples):
+        print("GET CLUSTERS CROSSHAIR")
+        clusters = self.differential_tester(programs, entry_point)
+        clusters.set_input_output_examples(examples)
+        return clusters
+
     def calculate_ambiguity(self, clusters, entry_point):
+        print("CALCULATE AMBIGUITY")
         self.ground_truth_tester(clusters, entry_point)
         clusters.calculate_ambiguity()
 
-    def parallel_generate_programs(self, requirement, n_programs):
+    def parallel_generate_programs(self, requirement, n_programs, entry_point, max_workers=20):
         generated_programs = []
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-            futures = [executor.submit(self.generate_programs, requirement)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(self.generate_program, requirement, entry_point)
                        for _ in range(n_programs)]
             for future in concurrent.futures.as_completed(futures):
                 prog = future.result()
                 generated_programs.append(prog)
         return generated_programs
 
-    def generate_programs(self, requirements):
-        print("GENERATE PROGRAMS")
-        response = self.model.get_response(instruction_generate_code,
-                                           prompt_generate_code(requirements))
-        code = unwrap(response, "code")
-        if code == "":
-            return self.generate_programs(requirements)
-        return code
+    def generate_programs(self, requirement, n_programs, entry_point):
+        generated_programs = []
+        for _ in range(n_programs):
+            program = self.generate_program(requirement, entry_point)
+            generated_programs.append(program)
+        return generated_programs
+
+    def generate_program(self, requirements, entry_point):
+        for i in range(5):
+            try:
+                print("GENERATE PROGRAM ATTEMPT", i)
+                response = self.model.get_response(instruction_generate_code,
+                                                   prompt_generate_code(requirements, entry_point))
+                code = unwrap(response, "code")
+                if code == "":
+                    raise Exception
+                return code
+            except Exception as e:
+                print(e)
+                continue
+        print("GENERATE PROGRAM FAILED")
+        return ""
 
     def generate_tests(self, requirements, entry_point):
-        print("GENERATE TESTS INPUTS")
-        tests = []
-        para_number = get_parameter_number(requirements, entry_point)
-        response = self.model.get_response(instruction_generate_test,
-                                           prompt_generate_test(requirements, entry_point, para_number))
-        try:
-            response = unwrap(response, "tests")
-            for line in response.splitlines():
-                test = ast.literal_eval("[" + unwrap(line, "test") + "]")
-                if len(test) == para_number:
-                    tests.append(test)
-                if len(tests) > 50:
-                    break
-            if len(tests) == 0:
-                raise Exception
-        except Exception as e:
-            tests = self.generate_tests(requirements, entry_point)
-        return tests
-
-    def generate_requirement(self, program):
-        print("REQUIREMENTS GENERATION")
-        response = self.model.get_response(instruction_generate_requirement,
-                                           prompt_generate_requirement(program))
-        return unwrap(response, "requirement")
-
-    def repair_requirements(self, requirements, answer):
-        print("REPAIR REQUIREMENTS")
-        response = self.model.get_response(instruction_repair_requirement,
-                                           prompt_repair_requirement(requirements, answer))
-        return unwrap(response, "requirement")
+        for i in range(5):
+            print("GENERATE TEST ATTEMPT", i)
+            tests = []
+            para_number = get_parameter_number(requirements, entry_point)
+            try:
+                response = self.model.get_response(instruction_generate_test,
+                                                   prompt_generate_test(requirements, entry_point, para_number))
+                response = unwrap(response, "tests")
+                for line in response.splitlines():
+                    test = ast.literal_eval("[" + unwrap(line, "test") + "]")
+                    if len(test) == para_number:
+                        tests.append(test)
+                    if len(tests) > 50:
+                        break
+                if len(tests) == 0:
+                    raise Exception
+                return tests
+            except Exception as e:
+                print(e)
+                continue
+        print("GENERATE TEST FAILED")
+        return []
 
     def vanilla_repair_requirements(self, requirements):
         print("VANILLA REPAIR REQUIREMENTS")
@@ -81,17 +95,18 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
 
-    def inverse_requirement(self, code):
-        print("INVERSE REQUIREMENT")
+    def repair_requirement(self, original_requirement, entry_point, code):
+        print("REPAIR REQUIREMENT WITH SOLUTION")
         response = self.model.get_response(instruction_inverse_requirement,
-                                           prompt_inverse_requirement(code))
+                                           prompt_repair_requirement(original_requirement, entry_point, code))
         return unwrap(response, "requirement")
 
-    def test_based_repair(self, program, requirement, failed_input_output_examples):
+    def test_based_repair(self, requirement, entry_point, program, failed_input_output_examples):
 
         print("TEST BASED REPAIR")
         response = self.model.get_response(instruction_test_based_repair,
-                                           prompt_test_based_repair(requirement, program, failed_input_output_examples))
+                                           prompt_test_based_repair(requirement, entry_point, program,
+                                                                    failed_input_output_examples))
         return unwrap(response, "code")
 
     def classification(self, requirements):
@@ -102,37 +117,44 @@ class SpecFixAccuracyEvaluator:
         reason = unwrap(response, "reasoning")
         return answer, reason
 
-    def repair_largest_cluster_requirement(self, requirement, programs, specified_programs):
+    def repair_largest_cluster_requirement(self, requirement, entry_point, programs, specified_programs):
         print("REPAIR LARGEST CLUSTER REQUIREMENT")
         response = self.model.get_response(instruction_repair_largest_cluster_requirement,
-                                           prompt_repair_largest_cluster_requirement(requirement, programs,
+                                           prompt_repair_largest_cluster_requirement(requirement, entry_point, programs,
                                                                                      specified_programs))
         return unwrap(response, "requirement")
 
-    def pass_k(self, requirement, inputs, outputs, entry_point, k):
-        for _ in range(k):
-            program = self.generate_programs(requirement)
-            result_list = execute_inputs(program, inputs, entry_point)
-            if compare(result_list, outputs):
-                return True
-        return False
-
-    def pass_k_repair(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
+    def pass_k(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
         original_results = []
         repaired_results = []
+        original_failed_inputs_outputs = []
+        repaired_failed_inputs_outputs = []
         for _ in range(k):
-            original_program = self.generate_programs(original_requirement)
-            result = execute_inputs(original_program, inputs, entry_point)
-            if compare(result, outputs):
-                original_results.append(True)
-            else:
+            original_failed_input_output = None
+            repaired_failed_input_output = None
+            original_program = self.generate_program(original_requirement, entry_point)
+            if original_program == "":
                 original_results.append(False)
-            if repaired_requirement is not None:
-                repaired_program = self.generate_programs(repaired_requirement)
-                result = execute_inputs(repaired_program, inputs, entry_point)
+            else:
+                result = execute_inputs(original_program, inputs, entry_point)
                 if compare(result, outputs):
-                    repaired_results.append(True)
+                    original_results.append(True)
                 else:
+                    original_failed_inputs_outputs, _ = get_failed_input_output(result, inputs, outputs)
+                    original_results.append(False)
+            if repaired_requirement is not None:
+                repaired_entry_point = get_entry_point(repaired_requirement)
+                repaired_program = self.generate_program(repaired_requirement, entry_point)
+                if repaired_program == "":
                     repaired_results.append(False)
+                else:
+                    result = execute_inputs(repaired_program, inputs, repaired_entry_point)
+                    if compare(result, outputs):
+                        repaired_results.append(True)
+                    else:
+                        repaired_failed_inputs_outputs, _ = get_failed_input_output(result, inputs, outputs)
+                        repaired_results.append(False)
+            original_failed_inputs_outputs.append(original_failed_input_output)
+            repaired_failed_inputs_outputs.append(repaired_failed_input_output)
         return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
-            original_results)
+            original_results), [original_failed_inputs_outputs, repaired_failed_inputs_outputs]

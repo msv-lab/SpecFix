@@ -1,66 +1,14 @@
 instruction_generate_code = "You are an assistant that generates Python code based on requirement."
 
 
-def prompt_generate_code(requirement):
+def prompt_generate_code(requirement,entry_point):
     return f"""
-Given a requirement containing a function signature and docstring, implement a python function that adheres to the requirements. Include imports that are used in the implementation. Don't output explanations. Wrap the generated code in <code></code> tags.
-Here is an example:
-# Example
-
-## Requirement
-
-Write a function that sorts array then removing the consecutive duplicates.
-
-## Code
-
-<code>
-def sort_remove_consecutive_duplicates(arr):
-    return sorted(set(arr), key=arr.index)
-</code>
-
-# Your task
-
-## Requirement
-
+Here is the given programming problem to solve.
 {requirement}
-
-## Code
-"""
-
-
-instruction_repair_requirement = "You are an assistant that repairs requirements based on clarifying questions and answers."
-
-
-def prompt_repair_requirement(requirement, q_a):
-    return f"""
-Given the clarifying question and corresponding answer, repair the requirements. Wrap the repaired requirement in <requirement></requirement> tags. Here is an example:
-# Example
-
-## Requirements
-
-Write a function that sorts array while removing the consecutive duplicates.
-
-## Question and Answer
-
-1. What is the order of the sort and duplicate removal?
-- The order is to remove duplicates first and then sort the array.
-
-## Repaired Requirements
-
-<requirement>
-Write a function that removes all consecutive duplicates in the given array and then sorts the array.
-</requirement>
-
-# Your task
-
-## Requirement
-
-{requirement}
-
-## Question and Answer
-{q_a}
-
-## Repaired Requirements
+Please implement the `{entry_point}` function and make sure that it matches the signature and functionality described in the requirement. 
+Ensure to include necessary imports.
+Don't output any explanation or comments, only the function implementation.
+Think step by step and wrap all generated code in <code></code> tags.
 """
 
 
@@ -72,7 +20,7 @@ def prompt_generate_test(requirement, entry_point, para_number):
 Given a requirement containing a function signature and docstring, your task is to generate inputs for function {entry_point} to cover all functionalities, including normal cases and corner cases.
 Ensure the type and number of argument are matching the function signature. In this requirement, the argument number is {para_number}.
 Don't output the function name, only the test inputs. If there are multiple arguments, separate them with commas.
-Wrap each test input in <test></test> tags and all test inputs in <tests></tests> tags. 
+Think step by step and wrap each test input in <test></test> tags and all test inputs in <tests></tests> tags. 
 
 # Example
 ## Requirements
@@ -105,35 +53,6 @@ Complete the function to return `true` if the two arguments given are anagrams o
 """
 
 
-instruction_generate_requirement = "You are an assistant who reads code and generates requirements. "
-
-
-def prompt_generate_requirement(program):
-    return f"""
-Write a detailed problem description based on the solution source code. Wrap the generate requirement in <requirement></requirement> tags. Here is an example:
-# Example
-
-## Program
-
-def f(x):
-    return x ** 2
-    
-## Problem requirement    
-
-<requirement>
-Write a function that computes the square of a given number.
-</requirement>
-
-# Your task
-
-## Program
-
-{program}
-
-## Problem requirement
-"""
-
-
 instruction_classification = "You are an assistant that classifies the requirement whether it is ambiguous or not."
 
 
@@ -143,7 +62,6 @@ Are the requirement ambiguous, i.e. leave room for multiple reasonable interpret
 
 1. If the requirement is ambiguous, answer "Yes".
 2. If the requirement is unambiguous, answer "No".
-3. If you are unsure, answer "Unsure".
 4. Provide Your step-by-step reasoning for your judgment.
 
 Format your final response in the following tags:
@@ -160,36 +78,38 @@ instruction_vanilla_repair = "You are an assistant that repairs ambiguous requir
 
 def prompt_vanilla_repair(requirement):
     return f"""
-Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap the repaired requirement in <requirement></requirement> tags.
+Given an ambiguous requirement, repair the requirement to remove ambiguity. 
 {requirement}
+
+Format your final repaired requirement with Python function syntax with type hints and a concise docstring, wrapped in <requirement></requirement> tags. 
+<requirement>
+def function_name(argument: type hint):->type hint 
+        \"\"\"repaired requirement\"\"\"
+</requirement>
 """
 
 
-instruction_test_based_repair = "You are a programming assistant specialized in debugging and fixing Python code."
+instruction_test_based_repair = "You are a coding assistant specialized in repairing buggy Python programs."
 
 
-def prompt_test_based_repair(requirement, code, failed_input_output_examples):
+def prompt_test_based_repair(requirement, entry_point, code, failed_input_output_examples):
     tests = ""
     for i, (inp, output, canonical_output) in enumerate(failed_input_output_examples):
-        tests += f"### Test {i + 1}\nInput: {inp}\nOutput: {output}\nExpected: {canonical_output}\n"
+        tests += f"### Test {i + 1}\nInput: {inp}\nActual Output: {output}\nExpected Output: {canonical_output}\n"
     return f"""
-You are a coding assistant specialized in repairing buggy Python programs.
-
 Below is a Python program along with:
-1. Task requirement that describes the program's intended functionality and input/output requirements.
+1. Task requirement that describes the program {entry_point}'s intended functionality and input/output requirements.
 2. The buggy Python code.
 3. Failed test cases, including 
     - Input values that produce incorrect output.
     - Actual output produced by the program.
     - Expected (canonical) output.
 
-Please:
+Your task is to:
 • Understand the task requirement and python program.
 • Compare the actual output with the canonical output to determine why the program is faulty. Identify logical errors, syntax issues, or edge-case handling flaws.
-• Provide a corrected version of the Python code that, when run on the given test input, will produce the correct (canonical) output.
-• Keep the structure and logic of the original code as much as possible unless changes are necessary for correctness.
+• Provide a corrected version of the Python code that, when run on the given test input, will produce the expected (canonical) output.
 
----
 Requirement:
 {requirement}
 
@@ -200,61 +120,79 @@ Failed Test Cases:
 {tests}
 ---
 
-Please return the repaired Python code, wrapped in <code></code> tags.
+Please return the **repaired Python code**, wrapped in <code></code> tags.
 """
 
 
 instruction_inverse_requirement = "You are an assistant that generates a task description based on the Python program."
 
 
-def prompt_inverse_requirement(program):
+def prompt_repair_requirement(requirement,entry_point, program):
     return f"""
-You are given a Python program. Your task is to generate a detailed, clear, and concise description of the task the program is designed to perform. The description should include the following:
+You are given 
+1. an ambiguous code generation task description on function {entry_point} that has led to multiple interpretations, resulting in several groups of generated programs with different behaviors.
+2. a reference program which reflects the intended behavior.
 
-Purpose: What is the overall goal of the program?
-Key Operations: What are the main operations or steps the program performs?
-Inputs: What inputs does the program require?
-Outputs: What outputs does the program produce?
-Expected Behavior: How does the program handle different inputs or conditions? (e.g., any special cases or error handling)
-Below is the Python code:
+Your task is to analyze the ambiguous description and programs, determine the key differences and identify the intended behavior. 
+Key differences may include:
+- Input/output handling (e.g., format, data types)
+- Edge cases or error handling (e.g., missing constraints)
+- Assumptions made (e.g., constraints not explicitly stated)
+
+Then, revise the original ambiguous description to create a clear, unambiguous requirement that, when used, will generate programs matching the intended behavior.
+If there are descriptions on other functions, you must keep these descriptions unchanged.
+
+Format your final repaired requirement with Python function syntax with type hints and a concise docstring, wrapped in <requirement></requirement> tags. 
+
+<requirement>
+def function_name(argument: type hint):->type hint 
+        \"\"\"repaired requirement\"\"\"
+</requirement>
+
+**Ambiguous Problem Description:**
+{requirement}
+
+**Reference program:**
 {program}
-Please provide a task description of the program is designed to accomplish based on the above criteria, wrapped in <requirement></requirement> tags.
 """
 
 
-instruction_repair_largest_cluster_requirement = "You are an assistant that repairs the requirement based on the different programs."
+instruction_repair_largest_cluster_requirement = "You are a senior software engineer specializing in requirement analysis."
 
 
-def prompt_repair_largest_cluster_requirement(requirement, programs, specified_programs):
+def prompt_repair_largest_cluster_requirement(requirement, entry_point, programs, specified_programs):
     programs_str = ""
     for i, p in enumerate(programs):
-        programs_str += f"### Program {i}\n{p}\n"
+        programs_str += f"### Incorrect program {i}\n{p}\n"
 
     return f"""
-You are tasked with repairing a programming problem description to ensure it unambiguously leads to a specific code implementation. Below is the original problem description, multiple code versions generated for it, and the target code version I want the LLM to generate. Follow these steps:
+You are given 
+1. an ambiguous code generation task description on function {entry_point} that has led to multiple interpretations, resulting in several groups of generated programs with different behaviors.
+2. a correct program which reflects the intended behavior
+3. incorrect programs which show alternative behaviors.
 
-1. **Identify Ambiguities:** Analyze the original problem description for ambiguities, missing constraints, or underspecified requirements that allowed for multiple interpretations (leading to different code versions).
+Your task is to analyze the ambiguous description and programs, determine the key differences and identify the intended behavior. 
+Key differences may include:
+- Input/output handling (e.g., format, data types)
+- Edge cases or error handling (e.g., missing constraints)
+- Assumptions made (e.g., constraints not explicitly stated)
 
-2. **Compare Code Differences:** Examine the differences between the target code (SPECIFIED_CODE) and other versions (OTHER_VERSIONS). Highlight divergences in:
-   - Input/output handling (e.g., format, data types)
-   - Edge cases or error handling (e.g., missing constraints)
-   - Assumptions made (e.g., constraints not explicitly stated)
+Then, revise the original ambiguous description to create a clear, unambiguous requirement that, when used, will generate programs matching the intended behavior.
 
-3. **Revise Requirements:** Repair the original problem description by:
-   - Adding precise constraints to eliminate alternative approaches seen in OTHER_VERSIONS.
-   - Specifying edge cases or input/output formats to match SPECIFIED_CODE.
+Format your repaired requirement with Python function syntax with type hints and a concise docstring.
 
-4. **Output Format:**
-   - Repaired Problem Description: A revised problem statement that enforces the target implementation, wrapped in <requirement></requirement> tags.
-   - Do not return the code itself—focus solely on repairing the problem description. Prioritize clarity and specificity while preserving the original intent.
----
+def function_name(argument: type hint):->type hint 
+        \"\"\"repaired requirement\"\"\"
 
-**Original Problem Description:**
+
+If there are descriptions on other functions, you should keep these descriptions unchanged and only revise the description on the function {entry_point}. Wrap the repaired requirement in <requirement></requirement> tags.
+
+**Ambiguous Problem Description:**
 {requirement}
 
-**SPECIFIED_CODE:**
+**Correct program:**
 {specified_programs}
 
-**OTHER_VERSIONS:**
+**Incorrect programs:**
 {programs_str}
 """

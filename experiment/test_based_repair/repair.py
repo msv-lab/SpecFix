@@ -4,7 +4,7 @@ from os.path import dirname, abspath
 import jsonlines
 
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import get_evalplus_inputs_outputs, construct_output_file
+from specfix.utils import get_evalplus_inputs_outputs, construct_output_file, read_jsonl, get_taco_lite_inputs_outputs
 from specfix.tester import differential_tester, ground_truth_tester
 
 
@@ -12,16 +12,15 @@ def parse_problem(problem):
     requirement = problem['requirement']
     examples = problem['input_output_examples']
     entry_point = problem['entry_point']
-    return requirement, entry_point, examples
+    task_id = problem['task_id']
+    return requirement, entry_point, examples, task_id
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset", dest="dataset",
                         help="Name of dataset: taco_lite, humaneval, mbpp")
-    parser.add_argument("-p", "--dataset_path", dest="dataset_path",
-                        help="Path to dataset")
-    parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
+    parser.add_argument("-n", "--program_number", dest="number", type=int, default=20)
     parser.add_argument("-t", "--threshold", dest="threshold", type=float, default=0.7)
     parser.add_argument("-m", "--model", dest="model")
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
@@ -37,70 +36,81 @@ def main():
     )
 
     dataset = options.dataset
-    dataset_path = options.dataset_path
     n_programs = options.number
     threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
+    dataset_path = f"../../dataset/{dataset}{wo_example}.jsonl"
     original_results = []
-    repair_results = []
+    repaired_results = []
 
     if dataset == "humaneval" or dataset == "mbpp":
         inputs, outputs = get_evalplus_inputs_outputs(dataset)
+    else:
+        inputs, outputs = get_taco_lite_inputs_outputs()
 
     output_file = construct_output_file(dirname(abspath(__file__)), model_name, dataset, threshold, wo_example,
                                         "repair")
 
-    with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
-        reader = list(reader)[50:]
-        for i, problem in enumerate(reader):
-            requirement, entry_point, examples = parse_problem(problem)
+    problems = read_jsonl(dataset_path)
+    with jsonlines.open(output_file, mode='w', flush=True) as writer:
+        for i, problem in enumerate(problems):
+            if i < 50:
+                continue
+            requirement, entry_point, examples, task_id = parse_problem(problem)
             repaired_requirement = None
-            print(f"Case {i + 50}: {requirement}")
-
-            test_inputs = specfix_accuracy_evaluator.generate_tests(requirement, entry_point)
-            print(f"Test inputs: {test_inputs}")
-            programs = specfix_accuracy_evaluator.parallel_generate_programs(requirement, n_programs)
+            repaired_clusters = None
+            print(f"Case {task_id}:\n {requirement}")
+            test_inputs = problem[model_name]["llm_generated_inputs"]
+            print(f"Test inputs:\n {test_inputs}")
+            programs = specfix_accuracy_evaluator.parallel_generate_programs(requirement, n_programs, entry_point)
             clusters = specfix_accuracy_evaluator.get_clusters(programs, test_inputs, entry_point, examples)
             specfix_accuracy_evaluator.calculate_ambiguity(clusters, entry_point)
-            print(f"Case {i + 50}: clusters ambiguity: {clusters.ambiguity}")
+            print(f"Case {task_id}:\n clusters ambiguity: {clusters.ambiguity}")
             if clusters.ambiguity > threshold:
                 cluster = clusters.get_largest_cluster()
                 if cluster.test_consistency != 1:
-                    repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, requirement,
+                    repaired_code = specfix_accuracy_evaluator.test_based_repair(requirement, entry_point,
+                                                                                 cluster.programs_str[0],
                                                                                  cluster.failed_input_output_examples)
-                    repaired_requirement = specfix_accuracy_evaluator.inverse_requirement(repaired_code)
+                    repaired_requirement = specfix_accuracy_evaluator.repair_requirement(requirement, entry_point,
+                                                                                         repaired_code)
                 else:
                     other_programs = [c.programs_str[0] for c in clusters.cluster_list if c != cluster]
-                    repaired_requirement = specfix_accuracy_evaluator.repair_largest_cluster_requirement(requirement,
-                                                                                                         other_programs,
-                                                                                                         cluster.programs_str[
-                                                                                                             0])
-                print(f"Case {i + 50}: Repaired requirement: {repaired_requirement}")
-            if dataset == "humaneval" or dataset == "mbpp":
-                original_result, repaired_result = specfix_accuracy_evaluator.pass_k_repair(requirement,
-                                                                                            repaired_requirement,
-                                                                                            inputs[i + 50],
-                                                                                            outputs[i + 50],
-                                                                                            entry_point, 1)
-            else:
-                original_result, repaired_result = specfix_accuracy_evaluator.pass_k_repair(requirement,
-                                                                                            repaired_requirement,
-                                                                                            problem["inputs"],
-                                                                                            problem["outputs"],
-                                                                                            entry_point,
-                                                                                            1)
+                    repaired_requirement = specfix_accuracy_evaluator.repair_largest_cluster_requirement(
+                        requirement, entry_point,
+                        other_programs,
+                        cluster.programs_str[
+                            0])
+                print(f"Case {task_id}:\n Repaired requirement: {repaired_requirement}")
+                repaired_programs = specfix_accuracy_evaluator.parallel_generate_programs(repaired_requirement,
+                                                                                          n_programs, entry_point)
+                repaired_clusters = specfix_accuracy_evaluator.get_clusters(repaired_programs, test_inputs,
+                                                                            entry_point, examples)
+                specfix_accuracy_evaluator.calculate_ambiguity(repaired_clusters, entry_point)
+
+            original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k(requirement,
+                                                                                                       repaired_requirement,
+                                                                                                       inputs[i],
+                                                                                                       outputs[i],
+                                                                                                       entry_point,
+                                                                                                       1)
+
             writer.write({
                 "requirement": requirement,
-                "ambiguous": clusters.ambiguity,
-                "t_consistency": clusters.weighted_t_consistency,
-                "original_result": original_result,
                 "repaired_requirement": repaired_requirement,
-                "repaired_result": repaired_result
+                "original_clusters": clusters.serialize(),
+                "repaired_clusters": repaired_clusters.serialize() if repaired_clusters is not None else None,
+                "original_result": original_result,
+                "repaired_result": repaired_result,
+                "original_failed_inputs_outputs": str(failed_inputs_ouputs[0]),
+                "repaired_failed_inputs_outputs": str(failed_inputs_ouputs[1])
             })
             original_results.append(original_result)
-            repair_results.append(repaired_result)
+            repaired_results.append(repaired_result)
+            print(
+                f"By case {task_id}, original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
         print(
-            f"{dataset}{wo_example} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repair_results) / len(repair_results)}, Improvement: {sum(repair_results) / len(repair_results) - sum(original_results) / len(original_results)}")
+            f"{dataset}{wo_example} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
 
 
 if __name__ == "__main__":

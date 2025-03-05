@@ -247,5 +247,5 @@ def clean_taco():
 
 
 # clean_taco()
-# collect_taco()
-taco_ambiguous_collection()
+collect_taco()
+# taco_ambiguous_collection()

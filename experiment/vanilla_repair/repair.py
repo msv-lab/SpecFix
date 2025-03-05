@@ -1,33 +1,51 @@
 import argparse
 import jsonlines
 from os.path import abspath, dirname
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import construct_output_file
+from specfix.utils import construct_output_file, get_evalplus_inputs_outputs
 
 
-def process_case(i, problem, specfix_accuracy_evaluator, writer):
+def process_case(i, problem, specfix_accuracy_evaluator, inputs, outputs):
     requirement = problem['requirement']
-    print(f"Case {i}: {requirement}")
 
     answer, reason = specfix_accuracy_evaluator.classification(requirement)
-
+    print("Case #{}: {}\n{}".format(i, answer, reason))
+    repaired_requirement = None
     if answer == "Yes":
         repaired_requirement = specfix_accuracy_evaluator.vanilla_repair_requirements(requirement)
         print(f"Case {i}: Repaired requirement: {repaired_requirement}")
-        result = {
-            'original_requirement': requirement,
-            'ambiguous': answer,
-            'reason': reason,
-            'repaired_requirement': repaired_requirement,
-        }
-    else:
-        result = {
-            'original_requirement': requirement,
-            'ambiguous': answer,
-        }
 
-    writer.write(result)
+    if inputs is not None and outputs is not None:
+        original_result, repaired_result, failed_inputs_outputs = specfix_accuracy_evaluator.pass_k(requirement,
+                                                                                                    repaired_requirement,
+                                                                                                    inputs[i],
+                                                                                                    outputs[i],
+                                                                                                    problem[
+                                                                                                        'entry_point'],
+                                                                                                    1)
+    else:
+        original_result, repaired_result, failed_inputs_outputs = specfix_accuracy_evaluator.pass_k(requirement,
+                                                                                                    repaired_requirement,
+                                                                                                    problem[
+                                                                                                        'inputs'],
+                                                                                                    problem[
+                                                                                                        'outputs'],
+                                                                                                    problem[
+                                                                                                        'entry_point'],
+                                                                                                    1)
+    result = {
+        'task_id': problem['task_id'],
+        'original_requirement': requirement,
+        'original_result': original_result,
+        'ambiguity': answer,
+        'reason': reason,
+        'repaired_requirement': None,
+        'repaired_result': repaired_result,
+        'original_failed_inputs_outputs': str(failed_inputs_outputs[0]),
+        'repaired_failed_inputs_outputs': str(failed_inputs_outputs[1])
+    }
+    return result
 
 
 def main():
@@ -36,7 +54,6 @@ def main():
                         help="Name of dataset: taco_lite, humaneval, mbpp")
     parser.add_argument("-p", "--dataset_path", dest="dataset_path",
                         help="Path to dataset")
-    parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
     parser.add_argument("-m", "--model", dest="model")
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
 
@@ -49,21 +66,35 @@ def main():
 
     dataset = options.dataset
     dataset_path = options.dataset_path
-    threshold = options.threshold
     wo_example = "_woe" if options.without_example else ""
 
-    output_file = construct_output_file(dirname(abspath(__file__)), model_name, dataset, threshold, wo_example,
+    output_file = construct_output_file(dirname(abspath(__file__)), model_name, dataset, None, wo_example,
                                         "vanilla_repair")
+    if dataset == "humaneval" or dataset == "mbpp":
+        inputs, outputs = get_evalplus_inputs_outputs(dataset)
 
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
-        with ThreadPoolExecutor() as executor:
-            # Submit all tasks to the executor
-            futures = [executor.submit(process_case, i, problem, specfix_accuracy_evaluator, writer)
-                       for i, problem in enumerate(reader)]
-
-            # Wait for all tasks to complete
-            for future in futures:
-                future.result()
+        # with ThreadPoolExecutor(max_workers=5) as executor:
+        #     # Prepare arguments for process_case
+        #     if dataset == "humaneval" or dataset == "mbpp":
+        #         futures = [executor.submit(process_case, i, problem, specfix_accuracy_evaluator, inputs, outputs) for
+        #                    i, problem in
+        #                    enumerate(reader)]
+        #     else:
+        #         futures = [executor.submit(process_case, i, problem, specfix_accuracy_evaluator, None, None) for
+        #                    i, problem in
+        #                    enumerate(reader)]
+        #     results = [future.result() for future in as_completed(futures)]
+        #     # sort results by task_id
+        #     results = sorted(results, key=lambda x: int(x['task_id'].split('/')[-1]))
+        #     writer.write_all(results)
+        for i, problem in enumerate(reader):
+            print(f"Case {i}: {problem['requirement']}")
+            if dataset == "humaneval" or dataset == "mbpp":
+                result = process_case(i, problem, specfix_accuracy_evaluator, inputs, outputs)
+            else:
+                result = process_case(i, problem, specfix_accuracy_evaluator, None, None)
+            writer.write(result)
 
 
 if __name__ == "__main__":

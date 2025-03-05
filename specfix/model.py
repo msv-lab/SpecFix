@@ -17,19 +17,20 @@ class Model:
 
     def model_setup(self):
         if "qwen" in self.model:
-            api_key = config['API_KEY']['qwen_key']
+            api_key = config['API_KEY']['aliyun_key']
             client = OpenAI(
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
         elif "deepseek" in self.model:
-            # accounts/fireworks/models/deepseek-v3
-            api_key = config['API_KEY']['xiaoai_key']
-            # api_key = config['API_KEY']['fireworksai_key']
+            # api_key = config['API_KEY']['deepseek_key']
+            api_key = config['API_KEY']['aliyun_key']
+            # api_key = config['API_KEY']['xiaoai_key']
             client = OpenAI(
                 api_key=api_key,
-                base_url="https://xiaoai.plus/v1"
-                # base_url="https://api.fireworks.ai/inference/v1"
+                # base_url="https://xiaoai.plus/v1"
+                # base_url="https://api.deepseek.com"
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
             )
         elif "gpt" in self.model or "o1" in self.model or "o3" in self.model:  # based on the transit of the model
             api_key = config['API_KEY']['xiaoai_key']
@@ -56,7 +57,7 @@ class Model:
                 if use_model_settings is None:
                     chat_completion = self.client.chat.completions.create(
                         messages=[
-                            {"role": "assistant", "content": instruction},
+                            {"role": "system", "content": instruction},
                             {"role": "user", "content": prompt}
                         ],
                         model=self.model
@@ -64,7 +65,7 @@ class Model:
                 else:
                     chat_completion = self.client.chat.completions.create(
                         messages=[
-                            {"role": "assistant", "content": instruction},
+                            {"role": "system", "content": instruction},
                             {"role": "user", "content": prompt}
                         ],
                         model=self.model,

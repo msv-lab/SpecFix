@@ -15,7 +15,7 @@ class Clusters:
         self.llm_generated_inputs = []  # LLM generated test inputs for entropy measure.
         self.input_output_examples = []  # input output examples for semantic measure
         self.at_least_one_align = None  # whether at least one cluster is aligned with the examples.
-        self.weighted_t_consistency = 0  # weighted test consistency for semantic measure.
+        self.weighted_test_consistency = 0  # weighted test consistency for semantic measure.
         self.ambiguity = 0  # ambiguity of the clusters.
 
     def add_cluster(self, cluster):
@@ -53,7 +53,7 @@ class Clusters:
             'entropy': self.entropy,
             'llm_generated_inputs': str(self.llm_generated_inputs),
             'input_output_examples': str(self.input_output_examples),
-            'weighted_t_consistency': self.weighted_t_consistency,
+            'weighted_test_consistency': self.weighted_test_consistency,
             'at_least_one_align': self.at_least_one_align,
             'ambiguity': self.ambiguity
         }
@@ -64,17 +64,17 @@ class Clusters:
         self.llm_generated_inputs = ast.literal_eval(data['llm_generated_inputs'])
         self.input_output_examples = ast.literal_eval(data['input_output_examples'])
         self.at_least_one_align = data['at_least_one_align']
-        self.weighted_t_consistency = data["test_consistency"]
+        self.weighted_test_consistency = data["weighted_test_consistency"]
         self.ambiguity = data['ambiguity']
         return self
 
     def calculate_ambiguity(self):
-        self.weighted_t_consistency = sum(
-            [wilson_lower(cluster.test_consistency, len(self.input_output_examples)) * cluster.probability for cluster
-             in self.cluster_list])
-        # weighted_t_consistency = sum(
-        #     [cluster.test_consistency * cluster.probability for cluster in self.cluster_list])
-        self.ambiguity = (self.entropy + (1 - self.weighted_t_consistency)) / 2
+        # self.weighted_t_consistency = sum(
+        #     [wilson_lower(cluster.test_consistency, len(self.input_output_examples)) * cluster.probability for cluster
+        #      in self.cluster_list])
+        self.weighted_test_consistency = sum(
+            [cluster.test_consistency * cluster.probability for cluster in self.cluster_list])
+        self.ambiguity = (self.entropy + (1 - self.weighted_test_consistency)) / 2
 
 
 class Cluster:

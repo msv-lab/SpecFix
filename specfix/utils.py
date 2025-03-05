@@ -1,8 +1,13 @@
+import inspect
 import os
 import subprocess
 import sys
+import tempfile
 import types
 import random
+from os.path import dirname, abspath
+from typing import List, Dict, Set, Tuple
+
 import math
 import re
 import jsonlines
@@ -30,7 +35,8 @@ def post_process(text: str) -> str:
 def execute(func_str, func_args, entry_point):
     max_install_attempts = 3
     installed_modules = set()
-
+    if func_str == "":
+        return "EmptyCodeError"
     while True:
         try:
             local_env = {}
@@ -66,7 +72,7 @@ def execute(func_str, func_args, entry_point):
             return e.__class__.__name__
 
 
-def execute_inputs(func_str, inputs_list, entry_point, timeout=10):
+def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
     for i in trange(len(inputs_list)):
         try:
@@ -96,7 +102,7 @@ def unwrap(string: str, label: str) -> str:
     return extracted
 
 
-def check_failed_input_output_examples(result_list, inputs, outputs):
+def get_failed_input_output(result_list, inputs, outputs):
     if inputs == [] or outputs == [] or compare(result_list, outputs):
         return [], 1
     failed_input_output_examples = []
@@ -114,6 +120,8 @@ def compare_unit(res, out):
         elif isinstance(res, (list, tuple)) and isinstance(out, (list, tuple)):
             if len(res) != len(out):
                 return False
+            elif res == "Timeout" or out == "Timeout":
+                return True
             for r, o in zip(res, out):
                 if not compare_unit(r, o):
                     return False
@@ -157,8 +165,10 @@ def wilson_lower(p_obs, n, z=1.96):
 
 
 def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
-    if os.sep in model_name:
-        model_name = model_name.split(os.sep)[-1]
+    if model_name == "deepseek-chat":
+        model_name = "deepseek-v3"
+    elif model_name == "deepseek-reasoner":
+        model_name = "deepseek-r1"
     model_name = model_name.replace(".", "")
 
     if not os.path.exists(f"{cwd}/{task}/{model_name}"):
@@ -168,7 +178,7 @@ def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task)
     if threshold is None:
         output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}.jsonl"
     else:
-        output_file = f"{cwd}/{task}/{model_name}/{dataset}_{str(int(threshold * 100))}{wo_example}.jsonl"
+        output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}_{str(threshold)}.jsonl"
     return output_file
 
 
@@ -203,6 +213,98 @@ def get_evalplus_inputs_outputs(data_name):
     outputs = []
     for key in data.keys():
         problem = data[key]
-        inputs.append(problem['base_input'] + problem['plus_input'])
+        inputs.append((problem['base_input'] + problem['plus_input']) if problem['plus_input'] != {} else problem[
+            'base_input'])
         outputs.append([[output] for output in expected_outputs[key]['base'] + expected_outputs[key]['plus']])
     return inputs, outputs
+
+
+def get_taco_lite_inputs_outputs():
+    path = dirname(abspath(__file__)) + '/../dataset/' + "taco_lite.jsonl"
+    problems = read_jsonl(path)
+    return [problem['inputs'] for problem in problems], [problem['outputs'] for problem in problems]
+
+
+def get_entry_point(requirement):
+    for line in requirement.split("\n"):
+        if "def " in line and "(" in line and ")" in line and ":" in line:
+            return line.split("def ")[1].split("(")[0]
+    return None
+
+
+def deepcopy(program, entry_point):
+    try:
+        namespace = {}
+        exec(program, namespace)
+
+        func_name = entry_point
+        target_func = namespace[func_name]
+
+        sig = inspect.signature(target_func)
+        params = sig.parameters
+
+        mutable_containers = {list, dict, set, tuple, List, Dict, Set, Tuple}
+        needs_deepcopy = []
+        type_hints = []
+
+        for name, param in params.items():
+            anno = param.annotation
+            type_str = "Any"
+
+            if getattr(anno, "__origin__", None) in mutable_containers:
+                needs_deepcopy.append(name)
+                args = [a.__name__ for a in getattr(anno, "__args__", [])]
+                type_str = f"{anno.__origin__.__name__}[{', '.join(args)}]"
+            elif anno in mutable_containers:
+                needs_deepcopy.append(name)
+                type_str = anno.__name__ if isinstance(anno, type) else anno._name
+            elif anno != param.empty:
+                type_str = anno.__name__ if isinstance(anno, type) else str(anno)
+
+            type_hints.append(f"{name}: {type_str}")
+
+        copy_lines = [
+            f"    {name}_copy = copy.deepcopy({name})"
+            for name in needs_deepcopy
+        ]
+        arg_list = [
+            f"{name}_copy" if name in needs_deepcopy else name
+            for name in params
+        ]
+        final_program = f"""
+import copy
+
+{program}
+
+def f({', '.join(type_hints)}):
+{chr(10).join(copy_lines) if copy_lines else "    pass"}
+    return {func_name}({', '.join(arg_list)})
+    """
+        return final_program
+    except Exception as e:
+        return ""
+
+
+def crosshair_compare(program1, program2, entry_point):
+    with tempfile.TemporaryDirectory(delete=True) as tmpdirname:
+        with open(f"{tmpdirname}/program1.py", "w") as f:
+            program1 = deepcopy(program1, entry_point).strip()
+            if program1 == "":
+                return False
+            f.write(program1)
+        with open(f"{tmpdirname}/program2.py", "w") as f:
+            program2 = deepcopy(program2, entry_point).strip()
+            if program2 == "":
+                return False
+            f.write(program2)
+        try:
+            result = subprocess.run(
+                ["crosshair", "diffbehavior", f"program1.f", f"program2.f", "--exception_equivalence", "SAME_TYPE",
+                 "--per_condition_timeout", "1"],
+                capture_output=True, text=True, cwd=f"{tmpdirname}")
+            if result.returncode != 0:
+                return False
+            else:
+                return True
+        except:
+            return "CrosshairError"

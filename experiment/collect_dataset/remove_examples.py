@@ -74,8 +74,8 @@ def remove_examples():
             obj['requirement'] = remove_example(req)
         return idx, obj
 
-    with jsonlines.open("humaneval.jsonl") as reader, \
-            jsonlines.open("humaneval_woe.jsonl", "w", flush=True) as writer:
+    with jsonlines.open("mbpp.jsonl") as reader, \
+            jsonlines.open("mbpp_woe.jsonl", "w", flush=True) as writer:
         objs = list(reader)
         processed_objs = [None] * len(objs)
 
@@ -90,7 +90,7 @@ def remove_examples():
 
 
 def manual_remove():
-    with jsonlines.open("humaneval_woe.jsonl") as reader:
+    with jsonlines.open("taco_lite_woe.jsonl") as reader:
         for problem in reader:
             if problem["requirement"].count(problem["entry_point"]+"(") != 1:
                 print(f"Problem: {problem['task_id']}")

@@ -1,7 +1,7 @@
 function createForm() {
     // Create the form
     const form = FormApp.create('User Study on Ambiguity in Requirements');
-    form.setDescription('Please assess requirements according to the definition provided below: \n\nA requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
+    form.setDescription('Please assess requirements according to the definition provided below: \n\nA requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
 
     // Read Google Sheet data
     var ss = SpreadsheetApp.getActiveSpreadsheet(); // Get the currently active spreadsheet
@@ -14,14 +14,14 @@ function createForm() {
         const progress = ((i + 1) / data.length) * 100;
 
         // Add Part1 page (question without examples)
-        form.addPageBreakItem().setTitle(`Requirement ${i + 1} (Progress: ${Math.round(progress)}%)`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
+        form.addPageBreakItem().setTitle(`Requirement ${i + 1} (Progress: ${Math.round(progress)}%)`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
         form.addMultipleChoiceItem()
             .setTitle(`**Please assess the requirement ${i + 1}**`)
             .setHelpText(row[1])  // requirement_without_examples
             .setRequired(true);
 
         // Add Part2 page (question with examples)
-        form.addPageBreakItem().setTitle(`Requirement ${i + 1} - with original examples (Progress: ${Math.round(progress)}%)`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases, such as extreme values. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
+        form.addPageBreakItem().setTitle(`Requirement ${i + 1} - with original examples (Progress: ${Math.round(progress)}%)`).setHelpText('A requirement is considered ambiguous if it allows for multiple reasonable interpretations or contains contradictions, particularly in the context of the intended functionality. While evaluating, consider how the program should behave under edge cases. Please exclude considerations related to invalid input handling or factors unrelated to functionality, like performance.');
         form.addMultipleChoiceItem()
             .setTitle(`**Please assess the requirement ${i + 1} with original examples**`)
             .setHelpText(row[0])  // requirement
@@ -48,17 +48,13 @@ function createForm() {
         // Set navigation for Part1 question
         part1Question.setChoices([
             part1Question.createChoice('Ambiguous', part2Page),
-            part1Question.createChoice('Partial Ambiguous', nextCasePart1),
             part1Question.createChoice('Unambiguous', nextCasePart1),
-            part1Question.createChoice('I don\'t know', nextCasePart1)
         ]);
 
         // Set navigation for Part2 question
         part2Question.setChoices([
             part2Question.createChoice('Ambiguous', nextCasePart1),
-            part2Question.createChoice('Partial Ambiguous', nextCasePart1),
             part2Question.createChoice('Unambiguous', nextCasePart1),
-            part2Question.createChoice('I don\'t know', nextCasePart1)
         ]);
     });
 

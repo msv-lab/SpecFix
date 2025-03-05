@@ -1,5 +1,5 @@
 from specfix.cluster import Clusters, Cluster
-from specfix.utils import execute_inputs, compare, check_failed_input_output_examples
+from specfix.utils import execute_inputs, compare, get_failed_input_output, crosshair_compare
 
 
 def differential_tester(generated_programs, test_inputs, entry_point):
@@ -28,13 +28,32 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     return program_clusters
 
 
+def differential_tester_crosshair(generated_programs,entry_point):
+    program_clusters = Clusters()
+    for program_str in generated_programs:
+        for cluster in program_clusters.get_cluster_list():
+            if crosshair_compare(cluster.programs_str[0], program_str,entry_point):
+                cluster.add_program_str(program_str)
+                break
+        else:
+            new_cluster = Cluster()
+            new_cluster.add_program_str(program_str)
+            program_clusters.add_cluster(new_cluster)
+    program_clusters.calculate_distribution()
+    program_clusters.calculate_entropy()
+    return program_clusters
+
+
 def ground_truth_tester(clusters, entry_point):
     for cluster in clusters.get_cluster_list():
         program_str = cluster.programs_str[0]
         inputs, outputs = clusters.input_output_examples
+        if inputs == [] or outputs == []:
+            cluster.test_consistency = 0
+            continue
         result_list = execute_inputs(program_str, inputs, entry_point)
-        failed_input_output_examples, t_consistency = check_failed_input_output_examples(result_list,
-                                                                                         inputs, outputs)
+        failed_input_output_examples, t_consistency = get_failed_input_output(result_list,
+                                                                              inputs, outputs)
         cluster.failed_input_output_examples = failed_input_output_examples
         cluster.test_consistency = t_consistency
         if t_consistency == 1:

@@ -48,9 +48,6 @@ def ground_truth_tester(clusters, entry_point):
     for cluster in clusters.get_cluster_list():
         program_str = cluster.programs_str[0]
         inputs, outputs = clusters.input_output_examples
-        if inputs == [] or outputs == []:
-            cluster.test_consistency = 0
-            continue
         result_list = execute_inputs(program_str, inputs, entry_point)
         failed_input_output_examples, t_consistency = get_failed_input_output(result_list,
                                                                               inputs, outputs)

@@ -79,7 +79,7 @@ def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
             # results.append([execute(func_str, inputs_list[i], entry_point)])
             results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
         except FunctionTimedOut:
-            results.append("Timeout")
+            results.append(["Timeout"])
     return results
 
 
@@ -95,7 +95,8 @@ def unwrap(string: str, label: str) -> str:
     if label == 'code':
         try:
             cleaned = remove_comments_and_asserts(extracted)
-            return transform_code(cleaned).strip()
+            # return transform_code(cleaned).strip()
+            return cleaned.strip()
         except Exception as e:
             return ''
 
@@ -107,41 +108,28 @@ def get_failed_input_output(result_list, inputs, outputs):
         return [], 1
     failed_input_output_examples = []
     for i in range(len(inputs)):
-        if not compare_unit(result_list[i], outputs[i]):
+        if not compare(result_list[i], outputs[i]):
             failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
     return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
 
 
-def compare_unit(res, out):
+def compare(a, b):
     try:
-        if (isinstance(res, (int, float, complex)) and isinstance(out, (int, float, complex))
-                and not math.isclose(res, out, rel_tol=0.001)):
-            return False
-        elif isinstance(res, (list, tuple)) and isinstance(out, (list, tuple)):
-            if len(res) != len(out):
+        if a == "Timeout" or b == "Timeout":
+            return True
+        if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+            if len(a) != len(b):
                 return False
-            elif res == "Timeout" or out == "Timeout":
-                return True
-            for r, o in zip(res, out):
-                if not compare_unit(r, o):
+            for x, y in zip(a, b):
+                if not compare(x, y):
                     return False
-        elif res != out:
-            return False
-        return True
+            return True
+        elif isinstance(a, (int, float)) and isinstance(b, (int, float)):
+            return math.isclose(a, b, rel_tol=0.001)
+        else:
+            return a == b
     except:
         return False
-
-
-def compare(results, outputs):
-    if len(results) != len(outputs):
-        return False
-    for result, output in zip(results, outputs):
-        if len(result) != len(output):
-            return False
-        for res, out in zip(result, output):
-            if not compare_unit(res, out):
-                return False
-    return True
 
 
 def wilson_lower(p_obs, n, z=1.96):
@@ -165,12 +153,6 @@ def wilson_lower(p_obs, n, z=1.96):
 
 
 def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
-    if model_name == "deepseek-chat":
-        model_name = "deepseek-v3"
-    elif model_name == "deepseek-reasoner":
-        model_name = "deepseek-r1"
-    model_name = model_name.replace(".", "")
-
     if not os.path.exists(f"{cwd}/{task}/{model_name}"):
         os.makedirs(f"{cwd}/{task}/{model_name}")
 
@@ -308,3 +290,49 @@ def crosshair_compare(program1, program2, entry_point):
                 return True
         except:
             return "CrosshairError"
+
+
+def unify_model_name(model_name):
+    model_name = model_name.split("/")[-1]
+    if model_name == "deepseek-chat" or model_name == "deepseek-v3-241226":
+        model_name = "deepseek-v3"
+    elif model_name == "deepseek-reasoner":
+        model_name = "deepseek-r1"
+    elif model_name == "qwen2p5-coder-32b-instruct":
+        model_name = "qwen2.5-coder-32b-instruct"
+    return model_name
+
+
+def count_passk_ambiguous(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    origin_result_list = []
+    repaired_result_list = []
+    for result in results:
+        if result["repaired_requirement"] is not None:
+            origin_result_list.append(result["original_result"])
+            repaired_result_list.append(result["repaired_result"])
+    print(
+        f"{dataset} original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
+
+
+def count_ambiguity(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_ambiguity = []
+    repaired_ambiguity = []
+    for result in results:
+        if result["repaired_clusters"] is not None:
+            original_ambiguity.append(result["original_clusters"]["ambiguity"])
+            repaired_ambiguity.append(result["repaired_clusters"]["ambiguity"])
+    print(
+        f"{dataset} original ambiguity: {sum(original_ambiguity) / len(original_ambiguity)}, repaired ambiguity: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
+
+
+def count_passk(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        original_results.append(result["original_result"])
+        repaired_results.append(result["repaired_result"])
+    print(
+        f"{dataset} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")

@@ -338,3 +338,4 @@ def count_passk(label, model, dataset):
         repaired_results.append(result["repaired_result"])
     print(
         f"{dataset} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+

@@ -57,3 +57,4 @@ def ground_truth_tester(clusters, entry_point):
             cluster.align()
     clusters.set_at_least_one_align()
     return clusters
+

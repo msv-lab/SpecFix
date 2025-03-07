@@ -1,12 +1,14 @@
+from experiment.collect_dataset.extract_example import instruction_repair_response
+
 instruction_generate_code = "You are an assistant that generates Python code based on requirement."
 
 
-def prompt_generate_code(requirement,entry_point):
+def prompt_generate_code(requirement, entry_point):
     return f"""
 Here is the given programming problem to solve.
 {requirement}
 Please implement the `{entry_point}` function and make sure that it matches the signature and functionality described in the requirement. 
-Ensure to include necessary imports.
+Ensure to include necessary imports for function signature and function body.
 Don't output any explanation or comments, only the function implementation.
 Think step by step and wrap all generated code in <code></code> tags.
 """
@@ -95,6 +97,9 @@ instruction_test_based_repair = "You are a coding assistant specialized in repai
 def prompt_test_based_repair(requirement, entry_point, code, failed_input_output_examples):
     tests = ""
     for i, (inp, output, canonical_output) in enumerate(failed_input_output_examples):
+        inp = str(inp)[1:-1]
+        output = str(output)[1:-1]
+        canonical_output = str(canonical_output)[1:-1]
         tests += f"### Test {i + 1}\nInput: {inp}\nActual Output: {output}\nExpected Output: {canonical_output}\n"
     return f"""
 Below is a Python program along with:
@@ -124,40 +129,49 @@ Please return the **repaired Python code**, wrapped in <code></code> tags.
 """
 
 
-instruction_inverse_requirement = "You are an assistant that generates a task description based on the Python program."
+instruction_repair_requirement = "You are an assistant that repairs ambiguous requirements based on the reference implementation."
 
 
-def prompt_repair_requirement(requirement,entry_point, program):
+def prompt_repair_requirement(requirement, entry_point, program):
     return f"""
-You are given 
-1. an ambiguous code generation task description on function {entry_point} that has led to multiple interpretations, resulting in several groups of generated programs with different behaviors.
-2. a reference program which reflects the intended behavior.
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+2. Reference implementation reflecting the intended behavior.
 
-Your task is to analyze the ambiguous description and programs, determine the key differences and identify the intended behavior. 
-Key differences may include:
-- Input/output handling (e.g., format, data types)
-- Edge cases or error handling (e.g., missing constraints)
-- Assumptions made (e.g., constraints not explicitly stated)
+Your task is to follow these steps:
+1. **Analyze** the correct program to clearly identify the intended behavior.
+2. **Compare** this correct behavior with the ambiguous description to pinpoint specific functional differences, such as:
+   - **Input/output handling** (e.g., format differences, varying data types).
+   - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
+3. **Revise** the identified functional differences. The revised description should guide an LLM to generate code matching exactly the behavior of the provided correct program.
 
-Then, revise the original ambiguous description to create a clear, unambiguous requirement that, when used, will generate programs matching the intended behavior.
-If there are descriptions on other functions, you must keep these descriptions unchanged.
+Important notes:
+- Ensure to preserve all original examples, illustrations, input/output samples, and intermediate explanations included in the original description.
+- If there is a contradiction between the correct program and the examples, prioritize the examples.
+- If the description contains references to other functions, leave those sections unchanged.
 
-Format your final repaired requirement with Python function syntax with type hints and a concise docstring, wrapped in <requirement></requirement> tags. 
+Format your revised, unambiguous requirement explicitly in Python function syntax with type hints and a clear, concise docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
 
+```
 <requirement>
-def function_name(argument: type hint):->type hint 
-        \"\"\"repaired requirement\"\"\"
+def function_name(argument: type_hint) -> return_type_hint:
+    \"\"\"Clearly revised, unambiguous description.\"\"\"
 </requirement>
+```
 
 **Ambiguous Problem Description:**
+```
 {requirement}
+```
 
-**Reference program:**
+**Reference Program:**
+```
 {program}
+```
 """
 
 
-instruction_repair_largest_cluster_requirement = "You are a senior software engineer specializing in requirement analysis."
+instruction_repair_largest_cluster_requirement = "You are an assistant that repairs ambiguous requirements based on the correct implementation."
 
 
 def prompt_repair_largest_cluster_requirement(requirement, entry_point, programs, specified_programs):
@@ -166,33 +180,44 @@ def prompt_repair_largest_cluster_requirement(requirement, entry_point, programs
         programs_str += f"### Incorrect program {i}\n{p}\n"
 
     return f"""
-You are given 
-1. an ambiguous code generation task description on function {entry_point} that has led to multiple interpretations, resulting in several groups of generated programs with different behaviors.
-2. a correct program which reflects the intended behavior
-3. incorrect programs which show alternative behaviors.
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+2. One correct implementation reflecting the intended behavior.
+3. Multiple incorrect implementations demonstrating alternative behaviors.
 
-Your task is to analyze the ambiguous description and programs, determine the key differences and identify the intended behavior. 
-Key differences may include:
-- Input/output handling (e.g., format, data types)
-- Edge cases or error handling (e.g., missing constraints)
-- Assumptions made (e.g., constraints not explicitly stated)
+Your task is to:
+1. **Analyze** the correct program to clearly identify the intended behavior.
+2. **Compare** this correct behavior with the incorrect implementations to pinpoint specific functional differences, such as:
+   - **Input/output handling** (e.g., format differences, varying data types).
+   - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
+3. **Revise** the identified functional differences. The revised description should guide an LLM to generate code matching exactly the behavior of the provided correct program.
 
-Then, revise the original ambiguous description to create a clear, unambiguous requirement that, when used, will generate programs matching the intended behavior.
+Important notes:
+- Ensure to preserve all original examples, illustrations, input/output samples, and intermediate explanations included in the original description.
+- If there is a contradiction between the correct program and the examples, prioritize the examples.
+- If the description contains references to other functions, leave those sections unchanged.
 
-Format your repaired requirement with Python function syntax with type hints and a concise docstring.
+Format your revised, unambiguous requirement explicitly in Python function syntax with type hints and a clear, concise docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
 
-def function_name(argument: type hint):->type hint 
-        \"\"\"repaired requirement\"\"\"
-
-
-If there are descriptions on other functions, you should keep these descriptions unchanged and only revise the description on the function {entry_point}. Wrap the repaired requirement in <requirement></requirement> tags.
+```
+<requirement>
+def function_name(argument: type_hint) -> return_type_hint:
+    \"\"\"Revised description.\"\"\"
+</requirement>
+```
 
 **Ambiguous Problem Description:**
+```
 {requirement}
+```
 
-**Correct program:**
+**Correct Program:**
+```
 {specified_programs}
+```
 
-**Incorrect programs:**
+**Incorrect Programs:**
+```
 {programs_str}
+```
 """

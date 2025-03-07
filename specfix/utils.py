@@ -98,6 +98,8 @@ def unwrap(string: str, label: str) -> str:
             # return transform_code(cleaned).strip()
             return cleaned.strip()
         except Exception as e:
+            print("AST parsing error")
+            print(extracted)
             return ''
 
     return extracted

@@ -28,7 +28,7 @@ class Clusters:
         self.llm_generated_inputs = llm_generated_inputs
 
     def set_input_output_examples(self, input_output_examples):
-        self.input_output_examples = ast.literal_eval(input_output_examples)
+        self.input_output_examples = eval(input_output_examples)
 
     def set_at_least_one_align(self):
         self.at_least_one_align = True if any([cluster.is_align_req for cluster in self.cluster_list]) else False

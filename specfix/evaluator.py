@@ -1,341 +1,120 @@
-import random
-import pandas as pd
-from copy import deepcopy
+import ast
+import concurrent.futures
+from time import sleep
+
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import construct_test_case, unwrap
+from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare, get_entry_point, \
+    get_failed_input_output
 
 
 class SpecFixAccuracyEvaluator:
-    def __init__(self, api_key, differential_tester=None, model="qwen2.5-coder-7b-instruct", temperature=1.0, top_p=1.0):
+    def __init__(self, differential_tester=None, ground_truth_tester=None, model="qwen2.5-coder-7b-instruct",
+                 temperature=1.0):
         self.differential_tester = differential_tester
-        self.model = Model(model, api_key, temperature, top_p)
+        self.ground_truth_tester = ground_truth_tester
+        self.model = Model(model, temperature)
         self.temperature = temperature
 
-        # Initialize result tracking
-        self.total_runs = 0
-        self.successful_runs = 0
-        self.run_details = []
+    def get_clusters(self, programs, test_inputs, entry_point, examples):
+        print("GET CLUSTERS")
+        clusters = self.differential_tester(programs, test_inputs, entry_point)
+        clusters.set_input_output_examples(examples)
+        return clusters
 
-    def generate_programs(self, requirements):
-        print("GENERATE PROGRAMS")
-        response = self.model.get_response(instruction_generate_code,
-                                           prompt_generate_code(requirements), 1)
-        code = unwrap(response, "code")
-        if code == "":
-            return self.generate_programs(requirements)
-        return code
-    
-    # ClarifyGPT has two prompts for generating programs: one for the first programs generated, and one for after requirements have been repaired
-    def generate_initial_programs_clarify_gpt(self, requirements, n_shot):
-        print("GENERATE INITIAL PROGRAMS")
-        
-        # parse requirements imports
-        first_def = requirements.find('def ')
-        imports = requirements[:first_def] if first_def != -1 else ""
-        
-        response = self.model.get_response_few_shot(prompt_generate_initial_code_clarify_gpt(requirements), 0.8)
-        code = unwrap(response, "code")
-        if code == "":
-            return self.generate_initial_programs_clarify_gpt(requirements, n_shot)
-        
-        return imports + code
-    
-    def generate_programs_clarify_gpt(self, requirements, n_shot):
-        print("GENERATE PROGRAMS")
-        
-        # parse requirements imports
-        first_def = requirements.find('def ')
-        imports = requirements[:first_def] if first_def != -1 else ""
-        
-        response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
-        code = unwrap(response, "code")
-        if code == "":
-            return self.generate_programs_clarify_gpt(requirements, n_shot)
-        
-        return imports + code
+    def get_clusters_crosshair(self, programs, entry_point, examples):
+        print("GET CLUSTERS CROSSHAIR")
+        clusters = self.differential_tester(programs, entry_point)
+        clusters.set_input_output_examples(examples)
+        return clusters
 
+    def calculate_ambiguity(self, clusters, entry_point):
+        print("CALCULATE AMBIGUITY")
+        self.ground_truth_tester(clusters, entry_point)
+        clusters.calculate_ambiguity()
 
-    def generate_tests(self, requirements):
-        print("GENERATE TESTS INPUTS")
-        response = self.model.get_response(instruction_generate_test,
-                                           prompt_generate_test(requirements))
-        try:
-            response = eval(unwrap(response, "test"))
-            if isinstance(response, list) and all(isinstance(t, list) for t in response):
-                response = [t for t in response if t != []]
-                if len(response) > 0:
-                    return response
-                else:
+    def parallel_generate_programs(self, requirement, n_programs, entry_point, max_workers=10):
+        generated_programs = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(self.generate_program, requirement, entry_point)
+                       for _ in range(n_programs)]
+            for future in concurrent.futures.as_completed(futures):
+                prog = future.result()
+                generated_programs.append(prog)
+        return generated_programs
+
+    def generate_programs(self, requirement, n_programs, entry_point):
+        generated_programs = []
+        for _ in range(n_programs):
+            program = self.generate_program(requirement, entry_point)
+            generated_programs.append(program)
+        return generated_programs
+
+    def generate_program(self, requirements, entry_point):
+        for i in range(10):
+            try:
+                print("GENERATE PROGRAM ATTEMPT", i)
+                response = self.model.get_response(instruction_generate_code,
+                                                   prompt_generate_code(requirements, entry_point))
+                code = unwrap(response, "code")
+                if code == "":
                     raise Exception
-            else:
-                raise Exception
-        except Exception as e:
-            response = self.generate_tests(requirements)
-        return response
-    
-    def generate_tests_clarify_gpt(self, requirements, n_shot):
-        print("GENERATE TESTS INPUTS")
-        response = self.model.get_response_few_shot(prompt_generate_test_clarify_gpt(requirements, n_shot))
-        try:
-            response = eval(unwrap(response, "test"))
-            if isinstance(response, list) and all(isinstance(t, list) for t in response):
-                response = [t for t in response if t != []]
-                if len(response) > 0:
-                    return response
-                else:
+                return code
+            except Exception as e:
+                print(e)
+                sleep(1)
+                continue
+        print("GENERATE PROGRAM FAILED")
+        return ""
+
+    def generate_tests(self, requirements, entry_point):
+        for i in range(10):
+            print("GENERATE TEST ATTEMPT", i)
+            tests = []
+            para_number = get_parameter_number(requirements, entry_point)
+            try:
+                response = self.model.get_response(instruction_generate_test,
+                                                   prompt_generate_test(requirements, entry_point, para_number))
+                response = unwrap(response, "tests")
+                for line in response.splitlines():
+                    test = ast.literal_eval("[" + unwrap(line, "test") + "]")
+                    if len(test) == para_number:
+                        tests.append(test)
+                    if len(tests) > 50:
+                        break
+                if len(tests) == 0:
                     raise Exception
-            else:
-                raise Exception
-        except Exception as e:
-            response = self.generate_tests(requirements)
-        return response
-
-    def type_aware_mutation(self, tests):
-
-        def mutate_single(x):
-            if x is None:
-                return None
-                
-            if isinstance(x, (int, float)):
-                return x + random.choice([-1, 1])
-                
-            elif isinstance(x, bool):
-                return random.choice([True, False])
-                
-            elif isinstance(x, str):
-                if not x:  # Handle empty string
-                    return x
-                    
-                mutation_type = random.choice(['remove', 'repeat', 'replace'])
-                if mutation_type == 'remove':
-                    pos = random.randint(0, len(x) - 1)
-                    return x[:pos] + x[pos + 1:]
-                elif mutation_type == 'repeat':
-                    pos = random.randint(0, len(x) - 1)
-                    return x[:pos] + x[pos] + x[pos:]
-                else:  # replace
-                    pos = random.randint(0, len(x) - 1)
-                    return x[:pos] + mutate_single(x[pos]) + x[pos + 1:]
-                    
-            elif isinstance(x, list):
-                if not x:  # Handle empty list
-                    return x
-                    
-                mutation_type = random.choice(['remove', 'repeat', 'insert'])
-                mutated = x.copy()
-                
-                if mutation_type == 'remove' and mutated:
-                    del mutated[random.randint(0, len(mutated) - 1)]
-                elif mutation_type == 'repeat' and mutated:
-                    idx = random.randint(0, len(mutated) - 1)
-                    mutated.insert(idx, mutated[idx])
-                else:  # insert/replace
-                    idx = random.randint(0, len(mutated) - 1)
-                    mutated[idx] = mutate_single(mutated[idx])
-                return mutated
-                
-            elif isinstance(x, tuple):
-                return tuple(mutate_single(list(x)))
-                
-            elif isinstance(x, set):
-                return set(mutate_single(list(x)))
-                
-            elif isinstance(x, dict):
-                if not x:  # Handle empty dict
-                    return x
-                    
-                mutation_type = random.choice(['remove', 'update', 'insert'])
-                mutated = x.copy()
-                
-                if mutation_type == 'remove' and mutated:
-                    key = random.choice(list(mutated.keys()))
-                    del mutated[key]
-                elif mutation_type == 'update' and mutated:
-                    key = random.choice(list(mutated.keys()))
-                    mutated[key] = mutate_single(mutated[key])
-                else:  # insert
-                    new_key = mutate_single(random.choice(list(mutated.keys())))
-                    new_value = mutate_single(random.choice(list(mutated.values())))
-                    mutated[new_key] = new_value
-                return mutated
-            
-            # Unchanged if not supported type
-            return x 
-        
-        # Create mutations for each test input
-        mutated_tests = []
-        for test in tests:
-            mutated_tests.append(mutate_single(deepcopy(test)))
-        
-        return mutated_tests
-
-    def generate_requirement(self, program):
-        print("REQUIREMENTS GENERATION")
-        response = self.model.get_response(instruction_generate_requirement,
-                                           prompt_generate_requirement(program))
-        return unwrap(response, "requirement")
-
-    def generate_DRS(self, requirements):
-        print("DRS GENERATION")
-        response = self.model.get_response(instruction_generate_DRS,
-                                           prompt_generate_DRS(requirements))
-        return unwrap(response, "drs")
-
-    def repair_requirements(self, requirements, answer):
-        print("REPAIR REQUIREMENTS")
-        response = self.model.get_response(instruction_repair_requirement,
-                                           prompt_repair_requirement(requirements, answer))
-        return unwrap(response, "requirement")
+                return tests
+            except Exception as e:
+                print(e)
+                continue
+        print("GENERATE TEST FAILED")
+        return []
 
     def vanilla_repair_requirements(self, requirements):
         print("VANILLA REPAIR REQUIREMENTS")
         response = self.model.get_response(instruction_vanilla_repair,
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
-    
-    def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
-        print("CLARIFY GPT REPAIR REQUIREMENTS")
-        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
-        return unwrap(response, "requirement")
 
-    def find_discrepancy_DRS(self, requirements, clusters):
-        print("FIND DISCREPANCY WITH DRS")
-        DRS_list = [cluster.DRS for cluster in clusters]
-        response = self.model.get_response(instruction_find_discrepancy_DRS,
-                                           prompt_find_discrepancy_DRS(requirements, DRS_list))
-        return unwrap(response, "discrepancy")
+    def repair_requirement(self, requirement, entry_point, code):
+        for i in range(10):
+            print("REPAIR REQUIREMENT", i)
+            response = self.model.get_response(instruction_repair_requirement,
+                                               prompt_repair_requirement(requirement, entry_point, code))
+            repaired_requirement = unwrap(response, "requirement")
+            if repaired_requirement != "":
+                return repaired_requirement
 
-    def find_discrepancy(self, requirements):
-        print("FIND DISCREPANCY")
-        response = self.model.get_response(instruction_find_discrepancy,
-                                           prompt_find_discrepancy(requirements),
-                                           )
-        return unwrap(response, "discrepancy")
-
-    def simulate_answer(self, requirement, program, inputs, question):
-        tests = construct_test_case(program, inputs)
-        print("SIMULATE ANSWER")
-        response = self.model.get_response(instruction_simulated_answer,
-                                           prompt_simulated_answer(requirement, program, tests, question))
-        return unwrap(response, "answer")
-
-    def minimize_requirement(self, ori_req, repaired_req):
-        print("MINIMIZE REQUIREMENT")
-        response = self.model.get_response(instruction_minimize_requirement,
-                                           prompt_minimize_requirement(ori_req, repaired_req))
-        return unwrap(response, "requirement")
-
-    def inverse_requirement(self, code):
-        print("INVERSE REQUIREMENT")
-        response = self.model.get_response(instruction_inverse_requirement,
-                                           prompt_inverse_requirement(code))
-        return unwrap(response, "requirement")
-
-    def test_based_repair(self, program, requirement, failed_semantic_input_output):
-
-        print("TEST BASED REPAIR")
-        response = self.model.get_response(instruction_test_based_repair,
-                                           prompt_test_based_repair(requirement, program, failed_semantic_input_output))
-        return unwrap(response, "code")
-
-    def specfix_code(self, program, initial_requirement, entry_point, task_id, N, max_iterations=10, DRS=False):
-        self.total_runs += 1
-        requirement = initial_requirement
-        test_inputs = self.generate_tests(requirement)
-        try:
-            for iteration in range(max_iterations):
-                print("REQUIREMENT:", task_id)
-                print(requirement)
-                # Generate programs (currently set to N=1 for testing speed)
-                print(f"GENERATED PROGRAMS FOR ITERATION {iteration}:")
-                generated_programs = []
-                for i in range(N):
-                    generated_programs.append(self.generate_programs(requirement))
-                    print(generated_programs[i])
-
-                # Check for clusters
-                clusters = self.differential_tester(generated_programs, test_inputs, entry_point)
-                if len(clusters) == 1:
-                    self.successful_runs += 1
-                    self.run_details.append({
-                        'task_id': task_id,
-                        'initial_requirement': initial_requirement,
-                        'iterations_to_success': iteration + 1,
-                        'success': True
-                    })
-                    return requirement
-                for cluster in clusters.get_clusters():
-                    cluster.set_requirement(self.generate_requirement(random.choice(cluster.programs_str)))
-                requirements = ""
-                for i, cluster in enumerate(clusters):
-                    requirements += f"Requirement {i + 1}: {cluster.requirement}\n"
-                if DRS:
-                    DRSs = self.generate_DRS(requirements)
-                    for i, cluster in enumerate(clusters):
-                        cluster.set_DRS(DRSs[i])
-                    clarifying_question = self.find_discrepancy_DRS(requirement, clusters)
-                    answer = self.simulate_answer(requirement, program, test_inputs, clarifying_question)
-                    requirement = self.repair_requirements(requirement, answer)
-                else:
-                    clarifying_question = self.find_discrepancy_DRS(requirement, clusters)
-                    answer = self.simulate_answer(requirement, program, test_inputs, clarifying_question)
-                    requirement = self.repair_requirements(requirement, answer)
-
-                # requirement = self.minimize_requirement(requirement)
-            # If max iterations reached
-            self.run_details.append({
-                'task_id': task_id,
-                'initial_requirements': initial_requirement,
-                'iterations_to_success': max_iterations,
-                'success': False
-            })
-            return requirement
-        except Exception as e:
-            print('EXCEPTION THROWN: ', e)
-            # If max iterations reached
-            self.run_details.append({
-                'task_id': task_id,
-                'initial_requirement': initial_requirement,
-                'iterations_to_success': max_iterations,
-                'success': False
-            })
-            return requirement
-
-    def calculate_accuracy(self):
-        """Calculate and print accuracy metrics"""
-        accuracy = self.successful_runs / self.total_runs if self.total_runs > 0 else 0
-
-        print("\n--- SpecFix Computation Accuracy ---")
-        print(f"Total Runs: {self.total_runs}")
-        print(f"Successful Runs: {self.successful_runs}")
-        print(f"Accuracy: {accuracy:.2%}")
-
-        # Convert run details to DataFrame for further analysis
-        df = pd.DataFrame(self.run_details)
-
-        # Additional insights
-        if not df.empty:
-            print("\nAdditional Insights:")
-            print("Success Rate by Iterations:")
-            iterations_success = df.groupby('iterations_to_success')['success'].mean()
-            print(iterations_success)
-
-        return accuracy, df
-
-    def get_probability(self):
-        return self.successful_runs / self.total_runs if self.total_runs > 0 else 0
-
-    def generate_clarifying_question(self, requirement, information):
-        print("GENERATE CLARIFYING QUESTION")
-        response = self.model.get_response(instruction_generate_clarifying_question,
-                                           prompt_generate_clarifying_question(requirement, information))
-        return unwrap(response, "question")
-    
-    def generate_clarifying_question_clarify_gpt(self, requirement, inconsistent_solutions, n_shot):
-        print("GENERATE CLARIFYING QUESTION")
-        response = self.model.get_response_few_shot(messages=prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot), max_tokens=800)
-        return unwrap(response, "question")
+    def test_based_repair(self, requirement, entry_point, program, failed_input_output_examples):
+        for i in range(10):
+            print("TEST BASED REPAIR", i)
+            response = self.model.get_response(instruction_test_based_repair,
+                                               prompt_test_based_repair(requirement, entry_point, program,
+                                                                        failed_input_output_examples))
+            repaired_program = unwrap(response, "code")
+            if repaired_program != "":
+                return repaired_program
 
     def classification(self, requirements):
         print("CLASSIFICATION")
@@ -344,3 +123,57 @@ class SpecFixAccuracyEvaluator:
         answer = unwrap(response, "answer")
         reason = unwrap(response, "reasoning")
         return answer, reason
+
+    def repair_largest_cluster_requirement(self, requirement, entry_point, programs, specified_programs):
+        for i in range(10):
+            print("REPAIR LARGEST CLUSTER REQUIREMENT", i)
+            response = self.model.get_response(instruction_repair_largest_cluster_requirement,
+                                               prompt_repair_largest_cluster_requirement(requirement, entry_point,
+                                                                                         programs,
+                                                                                         specified_programs))
+            repaired_requirement = unwrap(response, "requirement")
+            if repaired_requirement != "":
+                return repaired_requirement
+
+    def pass_k(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
+        if entry_point == "combinations_colors":
+            return True, True, [[], [], [], []]
+        original_results = []
+        repaired_results = []
+        original_failed_inputs_outputs = []
+        repaired_failed_inputs_outputs = []
+        original_programs = []
+        repaired_programs = []
+        for _ in range(k):
+            original_program = self.generate_program(original_requirement, entry_point)
+            original_programs.append(original_program)
+            if original_program == "":
+                original_results.append(False)
+            else:
+                original_result = execute_inputs(original_program, inputs, entry_point)
+                if compare(original_result, outputs):
+                    original_results.append(True)
+                else:
+                    original_failed_input_output, _ = get_failed_input_output(original_result, inputs, outputs)
+                    original_failed_inputs_outputs.append(original_failed_input_output)
+                    original_results.append(False)
+
+            if repaired_requirement is not None:
+                repaired_entry_point = get_entry_point(repaired_requirement)
+                repaired_program = self.generate_program(repaired_requirement, repaired_entry_point)
+                repaired_programs.append(repaired_program)
+                if repaired_program == "":
+                    repaired_results.append(False)
+                else:
+                    repaired_result = execute_inputs(repaired_program, inputs, repaired_entry_point)
+                    if compare(repaired_result, outputs):
+                        repaired_results.append(True)
+                    else:
+                        repaired_failed_input_output, _ = get_failed_input_output(repaired_result, inputs, outputs)
+                        repaired_failed_inputs_outputs.append(repaired_failed_input_output)
+                        repaired_results.append(False)
+                        # if original_results[-1]:
+                        #     a = 1
+        return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
+            original_results), [original_programs, original_failed_inputs_outputs, repaired_programs,
+                                repaired_failed_inputs_outputs]

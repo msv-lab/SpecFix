@@ -485,12 +485,14 @@ Given an ambiguous requirement, repair the requirement to remove ambiguity. Wrap
 def prompt_generate_initial_code_clarify_gpt(requirement):
     print(f"INITIAL CODE GENERATION:")
     
-    openai_messages = copy.deepcopy(initial_code_generation_prompt)
-    openai_messages.append({
-        'role': 'user',
-        'content': f'### User Requirement:{requirement}'
-                    f'\n\n### Code Solution:\n{{<code>insert answers here.</code>}}'
-    })
+    openai_messages = [
+    {
+        "role": "system", 
+        "content": "You are a world-class Python programming assistant."}, 
+    {
+        "role": "user", 
+        "content": f"You will be given a function signature and its docstring by the user. Respond only in code with a correct, efficient implementation of the function. Do not write explanations or assertions; simply provide only the code. Wrap the generated code in <code></code> tags.\n```python\n{requirement}\n\n```"
+    }]
     
     # print("GENERATE CODE PROMPT\n", openai_messages)
     return openai_messages
@@ -518,7 +520,7 @@ def prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_so
     openai_messages = copy.deepcopy(askcq_prompt[n_shot])
     sol_str = ""
     for i, sol in enumerate(inconsistent_solutions):
-         sol_str += f"Solution {i}:\n {sol}\n" 
+        sol_str += f"Solution {i}:\n{sol}\n" 
          
     openai_messages.append({
         'role': 'user',
@@ -541,9 +543,9 @@ def prompt_repair_requirement_clarify_gpt(requirement, clarifying_questions, n_s
     
     openai_messages.append({
         'role': 'user',
-        'content': f'### User Requirement:{requirement}'
-                    # f'\n\n### Test Cases:{tests}' # No need for this becasue our tests are public in our requirements
-                    f'\n\n### Clarifying Questions:{clarifying_questions}'
+        'content': f'### User Requirement:\n{requirement}'
+                    # f'\n\n### Test Cases:{tests}' # No need for this because our tests are public in our requirements
+                    f'\n\n### Clarifying Questions:\n{clarifying_questions}'
                     f'\n\n### Answers:\n{{<answers>insert here.</answers>}}'
     })
     
@@ -560,12 +562,36 @@ def prompt_generate_code_clarify_gpt(requirement, n_shot):
     openai_messages = copy.deepcopy(synthesize_prompt[n_shot])
     openai_messages.append({
         'role': 'user',
-        'content': f'### User Requirement:{requirement}'
+        'content': 'You will be given a user requirement and its clarification. '
+                    'The clarification aims to enhance the clarity of the requirement and should be duly noted. '
+                    'Strictly follow the function signature provided in the requirement, '
+                    'respond only with a correct, efficient Python function. '
+                    'Do not write explanations or assertions; simply provide only the code. '
+                    'Wrap the generated code in <code></code> tags.\n' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
+                    f'### User Requirement:{requirement}'
                     f'\n\n### Code Solution:\n{{<code>insert answers here.</code>}}'
     })
     
+    # openai_messages.append({
+    #     'role': 'user',
+    #     'content': f'### User Requirement:{requirement}'
+    #                 f'\n\n### Code Solution:\n{{<code>insert answers here.</code>}}'
+    # })
+    
+    
     # print("GENERATE CODE PROMPT\n", openai_messages)
     return openai_messages
+
+# openai_messages = [
+#     {
+#         "role": "system", 
+#         "content": "You are a world-class Python programming assistant."}, 
+#     {
+#         "role": "user", 
+#         "content": f"You will be given a function signature and its docstring by the user. Respond only in code with a correct, efficient implementation of the function. Do not write explanations or assertions; simply provide only the code. Wrap the generated code in <code></code> tags.\n```python\n{requirement}\n\n```"
+#     }]
+
+
 
 # def prompt_repair_requirement_clarify_gpt(requirement, clarifying_questions):
 
@@ -587,16 +613,24 @@ def prompt_generate_code_clarify_gpt(requirement, n_shot):
 
 
 
-initial_code_generation_prompt = [{
-    'role': 'system',
-    'content': 'You will be given a user requirement.'
-                'Strictly follow the function signature provided in the requirement, '
-                'Respond only with a correct, efficient Python function. '
-                'Do not write explanations or assertions; simply provide only the code. '
-                'Wrap the generated code in <code></code> tags.' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
-}]
+# initial_code_generation_prompt = [
+#     {
+#         "role": "system", 
+#         "content": "You are a world-class Python programming assistant."}, 
+#     {
+#         "role": "user", 
+#         "content": f"You will be given a function signature and its docstring by the user. Respond only in code with a correct, efficient implementation of the function. Do not write explanations or assertions; simply provide only the code. Wrap the generated code in <code></code> tags.\n```python\n{requirement}\n\n```"
+#     }]
 
-# NOTE: This is missing from ClarifyGPT's code base, although mentioned in the paper. Do they actually do any test input generation??
+# [{
+#     'role': 'system',
+#     'content': 'You will be given a user requirement.'
+#                 'Strictly follow the function signature provided in the requirement, '
+#                 'Respond only with a correct, efficient Python function. '
+#                 'Do not write explanations or assertions; simply provide only the code. '
+#                 'Wrap the generated code in <code></code> tags.' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
+# }]
+
 
 generate_prompt = {
     'zero_shot': [
@@ -655,7 +689,7 @@ askcq_prompt = {
                     'Specifically, you first analyze how each developer understands the requirement. '
                     'Then, by comparing their different understandings of the requirement, '
                     'you can determine which statements in the requirement are not clear, and ask clarification questions for those statements. '
-                    'Wrap only the generated questions (and not the analysis) in <question></question> tags.', # I ADDED THIS, NOT CLARIFY GPT
+                    'Wrap only the generated questions and not the analysis in <questions></questions> tags.',
     }],
 
     'one_shot': [
@@ -666,7 +700,8 @@ askcq_prompt = {
                     '\nYour task is to clarify this requirement by asking clarifying questions. '
                     'Specifically, you first analyze how each developer understands the requirement. '
                     'Then, by comparing their different understandings of the requirement, '
-                    'you can determine which statements in the requirement are not clear, and ask clarification questions for those statements.',
+                    'you can determine which statements in the requirement are not clear, and ask clarification questions for those statements.'
+                    'Wrap only the generated questions and not the analysis in <questions></questions> tags.'
         },
         {'role': 'user',
          'content': "User Requirement:"
@@ -682,9 +717,9 @@ askcq_prompt = {
                     '\n\nSolution 1:\n- Solution 1 also uses the `ChainMap` class from the `collections` module to merge the dictionaries.\n- It directly returns the `ChainMap` object without converting it to a regular dictionary.'
                     '\n\nSolution 2:\n- Solution 2 merges the dictionaries using the dictionary unpacking operator (`**`).\n- It creates a new dictionary by unpacking the three input dictionaries.'
                     '\n\n### Clarifying Questions:'
-                    '\n1. What should be the type of the output? `ChainMap` object or a regular dictionary?'
+                    '<questions>\n1. What should be the type of the output? `ChainMap` object or a regular dictionary?'
                     '\n2. Should the merged dictionary contain all key-value pairs from all three input dictionaries, and what should happen if there are overlapping keys?'
-                    '\n3. Can you provide an input-output example to help us better understand your requirement?'
+                    '\n3. Can you provide an input-output example to help us better understand your requirement?</questions>'
          },
     ],
 
@@ -814,6 +849,7 @@ answercq_prompt = {
                     'In cases where the requirement does not contain specific information required to answer certain questions, '
                     'you should provide reasonable answers based your own understanding or knowledge. '
                     'Reply only with the answers, do not repeat the requirement and questions.'
+                    'Wrap the repaired requirement in <answers></answers> tags.' # I ADDED THIS, NOT CLARIFYGPT
          },
         {'role': 'user',
          'content': "User Requirement:"
@@ -1067,14 +1103,10 @@ answercq_prompt = {
 
 synthesize_prompt = {
     'zero_shot': [
-        {'role': 'system',
-         'content': 'You will be given a user requirement and its clarification. '
-                    'The clarification aims to enhance the clarity of the requirement and should be duly noted. '
-                    'Strictly follow the function signature provided in the requirement, '
-                    'respond only with a correct, efficient Python function. '
-                    'Do not write explanations or assertions; simply provide only the code. '
-                    'Wrap the generated code in <code></code> tags.' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
-         }],
+        {
+            "role": "system", 
+            "content": "You are a world-class Python programming assistant."
+        }],
 
     'one_shot': [
         {'role': 'system',
@@ -1082,6 +1114,7 @@ synthesize_prompt = {
                     'Please read the docstring, understand the user\'s intention, and respond only with a correct, efficient Python function. '
                     'Do not import libraries other than those provided in the function signature; '
                     'do not write explanations or assertions; simply provide only the code. '
+                    'Wrap the generated code in <code></code> tags.' # I ADDED THIS LINE. NOT ORIGINAL CLARIFYGPT
          },
         {'role': 'user',
          'content': 'User Requirement:'
@@ -1095,7 +1128,7 @@ synthesize_prompt = {
                     '\n    - Yes, here is an input-output example: assert merge_dictionaries_three({"R": "Red", "B": "Black", "P": "Pink"}, {"L": "lavender", "B": "Blue"}, {"G": "Green", "W": "White"}) == {\'B\': \'Black\', \'P\': \'Pink\', \'R\': \'Red\', \'G\': \'Green\', \'L\': \'lavender\', \'W\': \'White\'}\n    \'\'\'\n'
          },
         {'role': 'assistant',
-         'content': 'def merge_dictionaries_three(dict1,dict2, dict3):\n    merged_dict = ct.ChainMap(dict1, dict2, dict3)\n    return dict(merged_dict)'
+         'content': '<code>def merge_dictionaries_three(dict1,dict2, dict3):\n    merged_dict = ct.ChainMap(dict1, dict2, dict3)\n    return dict(merged_dict)</code>'
          },
     ],
 

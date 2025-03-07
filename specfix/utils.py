@@ -1,5 +1,6 @@
 import inspect
 import os
+import html
 import subprocess
 import sys
 import tempfile
@@ -94,10 +95,12 @@ def unwrap(string: str, label: str) -> str:
 
     if label == 'code':
         try:
-            cleaned = remove_comments_and_asserts(extracted)
+            decoded = html.unescape(extracted)
+            cleaned = remove_comments_and_asserts(decoded)
             # return transform_code(cleaned).strip()
             return cleaned.strip()
         except Exception as e:
+            print(e)
             return ''
 
     return extracted

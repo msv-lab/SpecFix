@@ -1,13 +1,12 @@
 import argparse
-import random
 import concurrent.futures
 import jsonlines
 import configparser
-import re
-from scipy.stats import pointbiserialr
+from os.path import dirname, abspath
+
 from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import get_evalplus_inputs_outputs, get_taco_lite_inputs_outputs
+from specfix.utils import get_evalplus_inputs_outputs, get_taco_lite_inputs_outputs, construct_output_file
 
 
 def parse_problem(problem):
@@ -71,7 +70,7 @@ def main():
     dataset_path = f"../../../dataset/{dataset}{wo_example}.jsonl"
     n_programs = options.number
     n_shot = options.n_shot
-
+    threshold = 0
     original_results = []
     repaired_results = []
 
@@ -82,7 +81,10 @@ def main():
 
     # Open dataset and output JSONL in one place
     results_path = "results.jsonl"
-    output_file = f"{model_name}_{dataset}_{wo_example}_clarify_gpt_{n_shot}.jsonl"
+    
+    output_file = construct_output_file(dirname(abspath(__file__)), model_name, dataset, threshold, wo_example,
+                                        f"clarify_gpt_{n_shot}")
+    # output_file = f"/{model_name}/{dataset}{wo_example}_clarify_gpt_{n_shot}.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
             # Ignore the first 50 entries in the dataset, as we have used these for tuning our threshold
@@ -90,6 +92,10 @@ def main():
                 continue
             
             requirement, entry_point, examples, task_id = parse_problem(problem)
+            
+            # Skip extremely computationally expensive case
+            if (task_id == "Mbpp/255"):
+                continue
 
             print(f"Case {task_id}:\n {requirement}")
 
@@ -130,16 +136,16 @@ def main():
             # whether they produce identical outputs when tested with the generated input. If the outputs are
             # not identical, ClarifyGPT determines that the requirement requires further clarification; and vice
             # versa
-            threshold = 0
+
             if clusters.entropy > threshold:
                 
                 # Generate clarifying questions using requirements and clusters
                 inconsistent_solutions = [c.programs_str[0] for c in clusters.get_cluster_list()]
                 clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot)
-                print(f"Clarifying Questions: {clarifying_questions}")
+                print(f"Clarifying Questions:\n{clarifying_questions}")
                 # Repair requirement 
                 repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, clarifying_questions, n_shot)
-                print(f"Repaired requirement: {repaired_requirement}")
+                print(f"Repaired requirement:\n{repaired_requirement}")
 
                 generated_programs = generate_programs(
                     specfix_evaluator=specfix_accuracy_evaluator,
@@ -153,8 +159,8 @@ def main():
                 repaired_clusters.set_input_output_examples(examples)
                 ground_truth_tester(clusters, entry_point)
             
-            # original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k_clarify_gpt(requirement, repaired_requirement, inputs[i], outputs[i], entry_point, n_shot, 1)
-            original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k(requirement, repaired_requirement, inputs[i], outputs[i], entry_point, 1)
+            original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k_clarify_gpt(requirement, repaired_requirement, inputs[i], outputs[i], entry_point, n_shot, 1)
+            # original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k_(requirement, repaired_requirement, inputs[i], outputs[i], entry_point, 1)
 
             writer.write({
                 "requirement": requirement,

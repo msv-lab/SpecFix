@@ -80,6 +80,7 @@ class SpecFixAccuracyEvaluator:
                 response = self.model.get_response_few_shot(prompt_generate_initial_code_clarify_gpt(requirements), 0.8)
                 code = unwrap(response, "code")
                 if code == "" or "exit()" in code or "quit()" in code:
+                    print(response)
                     raise Exception
                 return code
             except Exception as e:
@@ -249,10 +250,26 @@ class SpecFixAccuracyEvaluator:
     
     def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
         print("CLARIFY GPT REPAIR REQUIREMENTS")
-        response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
-        answers = unwrap(response, "answers")
-        print()
-        return f"{requirements[:-3]}\nClarification:\n{clarifying_questions}\n{answers}\n\"\"\""
+        try:
+            response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
+            answers = unwrap(response, "answers")
+
+            # Process to interleave questions and answers
+            clarification_section = ""
+            question_list = clarifying_questions.split('\n')
+            answer_list = answers.split('\n')
+            if (answer_list[0] == "### Answers:"):
+                answer_list = answer_list[1:]
+            num = 1
+            for q, a in zip(question_list, answer_list):
+                if (a[0] == str(num)):
+                    a = a[3:]
+                    num = num + 1
+                clarification_section = clarification_section + f"{q}\n- {a}\n"
+        except Exception as e:
+            print(e)
+
+        return f"{requirements[:-3]}\nClarification:\n{clarification_section}\n\"\"\""
 
     def find_discrepancy_DRS(self, requirements, clusters):
         print("FIND DISCREPANCY WITH DRS")
@@ -384,7 +401,7 @@ class SpecFixAccuracyEvaluator:
     def generate_clarifying_question_clarify_gpt(self, requirement, inconsistent_solutions, n_shot):
         print("GENERATE CLARIFYING QUESTION")
         response = self.model.get_response_few_shot(messages=prompt_generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot), max_tokens=800)
-        return unwrap(response, "question")
+        return unwrap(response, "questions")
 
     def classification(self, requirements):
         print("CLASSIFICATION")
@@ -449,7 +466,9 @@ class SpecFixAccuracyEvaluator:
                     original_results.append(False)
             if repaired_requirement is not None:
                 repaired_entry_point = get_entry_point(repaired_requirement)
-                repaired_program = self.generate_program_clarify_gpt(repaired_requirement, n_shot)
+                # repaired_program = self.generate_program_clarify_gpt(repaired_requirement, n_shot)
+                # See dataset/clarifygpt_mbpp/mbpp_synthesize_three_shot_chatgpt_results.jsonl – they use iniital prorgram synthesis for final pass@1 analysis
+                repaired_program = self.generate_initial_program_clarify_gpt(repaired_requirement, n_shot)
                 if repaired_program == "":
                     repaired_results.append(False)
                 else:

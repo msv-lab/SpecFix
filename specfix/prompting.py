@@ -3,29 +3,14 @@ import copy
 instruction_generate_code = "You are an assistant that generates Python code based on requirement."
 
 
-def prompt_generate_code(requirement):
+def prompt_generate_code(requirement,entry_point):
     return f"""
-Implement a python function that adheres to the requirements. Include imports that are used in the implementation. Wrap the generated code in <code></code> tags. Here is an example:
-# Example
-
-## Requirement
-
-Write a function that sorts array then removing the consecutive duplicates.
-
-## Code
-
-<code>
-def sort_remove_consecutive_duplicates(arr):
-    return sorted(set(arr), key=arr.index)
-</code>
-
-# Your task
-
-## Requirement
-
+Here is the given programming problem to solve.
 {requirement}
-
-## Code
+Please implement the `{entry_point}` function and make sure that it matches the signature and functionality described in the requirement. 
+Ensure to include necessary imports.
+Don't output any explanation or comments, only the function implementation.
+Think step by step and wrap all generated code in <code></code> tags.
 """
 
 
@@ -559,7 +544,7 @@ def prompt_repair_requirement_clarify_gpt(requirement, clarifying_questions, n_s
         'content': f'### User Requirement:{requirement}'
                     # f'\n\n### Test Cases:{tests}' # No need for this becasue our tests are public in our requirements
                     f'\n\n### Clarifying Questions:{clarifying_questions}'
-                    f'\n\n### Answers:\n{{<requirement>insert here.</requirement>}}'
+                    f'\n\n### Answers:\n{{<answers>insert here.</answers>}}'
     })
     
     # print("ANSWER QUESTIONS PROMPT: \n", openai_messages)
@@ -817,9 +802,9 @@ answercq_prompt = {
          'content': 'You will receive a user requirement and its clarifying questions. '
                     'Your task is to answer these clarifying questions using the information provided in the given requirement. '
                     'In cases where the requirement does not contain specific information required to answer certain questions, '
-                    'you should provide reasonable answers based your own understanding or knowledge. '
+                    'you should provide reasonable answers based on your own understanding or knowledge. '
                     'Reply only with the answers, do not repeat the requirement and questions. '
-                    'Wrap the repaired requirement in <requirement></requirement> tags.' # I ADDED THIS, NOT CLARIFYGPT
+                    'Wrap the repaired requirement in <answers></answers> tags.' # I ADDED THIS, NOT CLARIFYGPT
          }],
 
     'one_shot': [

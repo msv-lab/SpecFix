@@ -1,9 +1,10 @@
+import ast
 import random
 import pandas as pd
 from copy import deepcopy
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import construct_test_case, unwrap
+from specfix.utils import unwrap, get_entry_point, execute_inputs, compare, get_failed_input_output
 
 
 class SpecFixAccuracyEvaluator:
@@ -26,6 +27,22 @@ class SpecFixAccuracyEvaluator:
             return self.generate_programs(requirements)
         return code
     
+    def generate_program(self, requirements, entry_point):
+        for i in range(5):
+            try:
+                print("GENERATE PROGRAM ATTEMPT", i)
+                response = self.model.get_response(instruction_generate_code,
+                                                   prompt_generate_code(requirements, entry_point))
+                code = unwrap(response, "code")
+                if code == "":
+                    raise Exception
+                return code
+            except Exception as e:
+                print(e)
+                continue
+        print("GENERATE PROGRAM FAILED")
+        return ""
+    
     # ClarifyGPT has two prompts for generating programs: one for the first programs generated, and one for after requirements have been repaired
     def generate_initial_programs_clarify_gpt(self, requirements, n_shot):
         print("GENERATE INITIAL PROGRAMS")
@@ -37,7 +54,7 @@ class SpecFixAccuracyEvaluator:
         response = self.model.get_response_few_shot(prompt_generate_initial_code_clarify_gpt(requirements), 0.8)
         code = unwrap(response, "code")
         if code == "":
-            return self.generate_initial_programs_clarify_gpt(requirements, n_shot)
+            return self.generate_initial_program_clarify_gpt(requirements, n_shot)
         
         return imports + code
     
@@ -50,11 +67,41 @@ class SpecFixAccuracyEvaluator:
         
         response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
         code = unwrap(response, "code")
+        
         if code == "":
-            return self.generate_programs_clarify_gpt(requirements, n_shot)
+            return self.generate_program_clarify_gpt(requirements, n_shot)
         
         return imports + code
 
+    def generate_initial_program_clarify_gpt(self, requirements, n_shot):
+        for i in range(5):
+            try:
+                print("GENERATE INITIAL PROGRAM ATTEMPT", i)
+                response = self.model.get_response_few_shot(prompt_generate_initial_code_clarify_gpt(requirements), 0.8)
+                code = unwrap(response, "code")
+                if code == "" or "exit()" in code or "quit()" in code:
+                    raise Exception
+                return code
+            except Exception as e:
+                print(e)
+                continue
+        print("GENERATE INITIAL PROGRAM FAILED")
+        return ""
+
+    def generate_program_clarify_gpt(self, requirements, n_shot):
+        for i in range(5):
+            try:
+                print("GENERATE PROGRAM ATTEMPT", i)
+                response = self.model.get_response_few_shot(prompt_generate_code_clarify_gpt(requirements, n_shot), 0.8)
+                code = unwrap(response, "code")
+                if code == "" or "exit()" in code or "quit()" in code:
+                    raise Exception
+                return code
+            except Exception as e:
+                print(e)
+                continue
+        print("GENERATE PROGRAM FAILED")
+        return ""
 
     def generate_tests(self, requirements):
         print("GENERATE TESTS INPUTS")
@@ -78,6 +125,7 @@ class SpecFixAccuracyEvaluator:
         print("GENERATE TESTS INPUTS")
         response = self.model.get_response_few_shot(prompt_generate_test_clarify_gpt(requirements, n_shot))
         try:
+            print(response)
             response = eval(unwrap(response, "test"))
             if isinstance(response, list) and all(isinstance(t, list) for t in response):
                 response = [t for t in response if t != []]
@@ -91,8 +139,8 @@ class SpecFixAccuracyEvaluator:
             response = self.generate_tests(requirements)
         return response
 
-    def type_aware_mutation(self, tests):
-
+    def type_aware_mutation(self, tests, n=25):
+        
         def mutate_single(x):
             if x is None:
                 return None
@@ -105,8 +153,8 @@ class SpecFixAccuracyEvaluator:
                 
             elif isinstance(x, str):
                 if not x:  # Handle empty string
-                    return x
-                    
+                    return x 
+                
                 mutation_type = random.choice(['remove', 'repeat', 'replace'])
                 if mutation_type == 'remove':
                     pos = random.randint(0, len(x) - 1)
@@ -123,7 +171,7 @@ class SpecFixAccuracyEvaluator:
                     return x
                     
                 mutation_type = random.choice(['remove', 'repeat', 'insert'])
-                mutated = x.copy()
+                mutated = copy.deepcopy(x)
                 
                 if mutation_type == 'remove' and mutated:
                     del mutated[random.randint(0, len(mutated) - 1)]
@@ -146,7 +194,7 @@ class SpecFixAccuracyEvaluator:
                     return x
                     
                 mutation_type = random.choice(['remove', 'update', 'insert'])
-                mutated = x.copy()
+                mutated = copy.deepcopy(x)
                 
                 if mutation_type == 'remove' and mutated:
                     key = random.choice(list(mutated.keys()))
@@ -163,12 +211,17 @@ class SpecFixAccuracyEvaluator:
             # Unchanged if not supported type
             return x 
         
-        # Create mutations for each test input
-        mutated_tests = []
-        for test in tests:
-            mutated_tests.append(mutate_single(deepcopy(test)))
+        tests = ast.literal_eval(tests)
+        iterations = 0
+        while(len(tests) < n and iterations < n*10):
+            chosen_test = random.choice(tests)
+            new_test = [mutate_single(x) for x in chosen_test]
+            if new_test not in tests:
+                tests.append(new_test)
+            iterations += 1
         
-        return mutated_tests
+        return tests
+
 
     def generate_requirement(self, program):
         print("REQUIREMENTS GENERATION")
@@ -197,7 +250,9 @@ class SpecFixAccuracyEvaluator:
     def repair_requirements_clarify_gpt(self, requirements, clarifying_questions, n_shot):
         print("CLARIFY GPT REPAIR REQUIREMENTS")
         response = self.model.get_response_few_shot(prompt_repair_requirement_clarify_gpt(requirements, clarifying_questions, n_shot))
-        return unwrap(response, "requirement")
+        answers = unwrap(response, "answers")
+        print()
+        return f"{requirements[:-3]}\nClarification:\n{clarifying_questions}\n{answers}\n\"\"\""
 
     def find_discrepancy_DRS(self, requirements, clusters):
         print("FIND DISCREPANCY WITH DRS")
@@ -213,12 +268,6 @@ class SpecFixAccuracyEvaluator:
                                            )
         return unwrap(response, "discrepancy")
 
-    def simulate_answer(self, requirement, program, inputs, question):
-        tests = construct_test_case(program, inputs)
-        print("SIMULATE ANSWER")
-        response = self.model.get_response(instruction_simulated_answer,
-                                           prompt_simulated_answer(requirement, program, tests, question))
-        return unwrap(response, "answer")
 
     def minimize_requirement(self, ori_req, repaired_req):
         print("MINIMIZE REQUIREMENT")
@@ -344,3 +393,74 @@ class SpecFixAccuracyEvaluator:
         answer = unwrap(response, "answer")
         reason = unwrap(response, "reasoning")
         return answer, reason
+    
+    def pass_k(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
+        original_results = []
+        repaired_results = []
+        original_failed_inputs_outputs = []
+        repaired_failed_inputs_outputs = []
+        for _ in range(k):
+            original_failed_input_output = None
+            repaired_failed_input_output = None
+            original_program = self.generate_program(original_requirement, entry_point)
+            if original_program == "":
+                original_results.append(False)
+            else:
+                result = execute_inputs(original_program, inputs, entry_point)
+                if compare(result, outputs):
+                    original_results.append(True)
+                else:
+                    original_failed_inputs_outputs, _ = get_failed_input_output(result, inputs, outputs)
+                    original_results.append(False)
+            if repaired_requirement is not None:
+                repaired_entry_point = get_entry_point(repaired_requirement)
+                repaired_program = self.generate_program(repaired_requirement, entry_point)
+                if repaired_program == "":
+                    repaired_results.append(False)
+                else:
+                    result = execute_inputs(repaired_program, inputs, repaired_entry_point)
+                    if compare(result, outputs):
+                        repaired_results.append(True)
+                    else:
+                        repaired_failed_inputs_outputs, _ = get_failed_input_output(result, inputs, outputs)
+                        repaired_results.append(False)
+            original_failed_inputs_outputs.append(original_failed_input_output)
+            repaired_failed_inputs_outputs.append(repaired_failed_input_output)
+        return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
+            original_results), [original_failed_inputs_outputs, repaired_failed_inputs_outputs]
+
+    def pass_k_clarify_gpt(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, n_shot, k):
+        original_results = []
+        repaired_results = []
+        original_failed_inputs_outputs = []
+        repaired_failed_inputs_outputs = []
+        for _ in range(k):
+            original_failed_input_output = None
+            repaired_failed_input_output = None
+            original_program = self.generate_initial_program_clarify_gpt(original_requirement, n_shot)
+            if original_program == "":
+                original_results.append(False)
+            else:
+                result = execute_inputs(original_program, inputs, entry_point)
+                if compare(result, outputs):
+                    original_results.append(True)
+                else:
+                    original_failed_inputs_outputs, _ = get_failed_input_output(result, inputs, outputs)
+                    original_results.append(False)
+            if repaired_requirement is not None:
+                repaired_entry_point = get_entry_point(repaired_requirement)
+                repaired_program = self.generate_program_clarify_gpt(repaired_requirement, n_shot)
+                if repaired_program == "":
+                    repaired_results.append(False)
+                else:
+                    result = execute_inputs(repaired_program, inputs, repaired_entry_point)
+                    if compare(result, outputs):
+                        repaired_results.append(True)
+                    else:
+                        repaired_failed_inputs_outputs, _ = get_failed_input_output(result, inputs, outputs)
+                        repaired_results.append(False)
+            original_failed_inputs_outputs.append(original_failed_input_output)
+            repaired_failed_inputs_outputs.append(repaired_failed_input_output)
+        
+        return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
+            original_results), [original_failed_inputs_outputs, repaired_failed_inputs_outputs]

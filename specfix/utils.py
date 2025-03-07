@@ -1,11 +1,22 @@
-import random
-import math
-import signal
+import inspect
+import os
+import subprocess
+import sys
+import tempfile
 import types
+import random
+from os.path import dirname, abspath
+from typing import List, Dict, Set, Tuple
+
+import math
 import re
+import jsonlines
+from func_timeout import func_timeout, FunctionTimedOut
 from tqdm import trange
-from specfix.prompting import instruction_check_code_generation, prompt_check_code_generation
-from specfix.solution_transformer import remove_comments_and_asserts
+from sklearn.metrics import matthews_corrcoef
+from specfix.solution_transformer import remove_comments_and_asserts, transform_code
+from evalplus.data import get_human_eval_plus, get_mbpp_plus, get_human_eval_plus_hash, get_mbpp_plus_hash
+from evalplus.evaluate import get_groundtruth
 
 
 def post_process(text: str) -> str:
@@ -21,125 +32,104 @@ def post_process(text: str) -> str:
     return text.strip()
 
 
-def timeout(timeout):
-    def timeout_handler(signum, frame):
-        raise TimeoutError("Function call timed out")
-
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            original_handler = signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(timeout)
-            try:
-                result = func(*args, **kwargs)
-            except TimeoutError:
-                return f"Timeout {timeout}s"
-            finally:
-                signal.alarm(0)
-                signal.signal(signal.SIGALRM, original_handler)
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-@timeout(5)
 def execute(func_str, func_args, entry_point):
-    try:
-        local_env = {}
-        exec(func_str, local_env)
+    max_install_attempts = 3
+    installed_modules = set()
+    if func_str == "":
+        return "EmptyCodeError"
+    while True:
+        try:
+            local_env = {}
+            exec(func_str, local_env)
 
-        if entry_point in local_env:
-            func = local_env[entry_point]
-        else:
-            target_funcs = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
-            if len(target_funcs) == 1:
-                func = target_funcs[0]
+            if entry_point in local_env:
+                func = local_env[entry_point]
             else:
-                func = random.choice(target_funcs)
+                target_funcs = [f for f in local_env.values() if isinstance(f, types.FunctionType)]
+                if len(target_funcs) == 1:
+                    func = target_funcs[0]
+                else:
+                    func = random.choice(target_funcs)
 
-        return func(*func_args)
-    except Exception as e:
-        return repr(e)
+            return func(*func_args)
+
+        except (ModuleNotFoundError, ImportError) as e:
+            module_name = e.name
+            if module_name in installed_modules:
+                return "ModuleNotFoundError"
+            if len(installed_modules) >= max_install_attempts:
+                return "ModuleNotFoundError"
+
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", module_name], stdout=subprocess.DEVNULL,
+                                      stderr=subprocess.DEVNULL)
+                installed_modules.add(module_name)
+                continue
+            except subprocess.CalledProcessError:
+                return "ModuleNotFoundError"
+
+        except Exception as e:
+            return e.__class__.__name__
 
 
-def execute_inputs(func_str, inputs_list, entry_point):
+def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
     for i in trange(len(inputs_list)):
-        results.append(execute(func_str, inputs_list[i], entry_point))
+        try:
+            # results.append([execute(func_str, inputs_list[i], entry_point)])
+            results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
+        except FunctionTimedOut:
+            results.append(["Timeout"])
     return results
 
 
-def construct_test_case(program, inputs):
-    """
-    First extract function name from program. Then construct a test case for a given program.e.g., assert func_name(inputs) == outputs. return a list of assertions.
-    """
-    local_scope = {}
-    exec(program, {}, local_scope)
-    func_name = next(iter(local_scope))
-    assertions = []
-    outputs = execute_inputs(program, inputs)
-    for i, input_args in enumerate(inputs):
-        assertions.append(f"assert {func_name}({input_args}) == {outputs[i]}")
-    return assertions
+def unwrap(string: str, label: str) -> str:
+    pattern = re.compile(rf'<{label}>(.*?)</{label}>', re.DOTALL)
+    match = pattern.search(string)
 
+    extracted = match.group(1).strip() if match else string
 
-def check_discrepancy(requirement, programs, inp, outputs, model):
-    """
-    Check discrepancy between the program and the requirement. Return true if the requirement is ambiguous. Return false if the program is incorrectly implemented.
-    """
-    print("CHECK DISCREPANCY")
-    program = ""
-    for i, p in enumerate(programs):
-        program += "### Program " + str(i) + "\n" + p + "\n"
-    output = ""
-    for i, o in enumerate(outputs):
-        output += "### Output " + str(i) + "\n" + repr(o) + "\n"
-    response = model.get_response(instruction_check_code_generation,
-                                  prompt_check_code_generation(requirement, program, inp, output))
-    answer = unwrap(response, "answer")
-    explanation = unwrap(response, "explanation")
-    return answer, explanation
+    if label in {'code', 'test'} and '```' in extracted:
+        extracted = post_process(extracted)
 
-
-def unwrap(string, label):
-    string = string.split(f"<{label}>", 1)[1].split(f"</{label}>")[
-        0].strip() if f"<{label}>" in string and f"</{label}>" in string and string.index(
-        f"<{label}>") < string.index(
-        f"</{label}>") else string
-    if "```" in string and (label == "code" or label == "test"):
-        string = post_process(string)
-    if label == "code":
+    if label == 'code':
         try:
-            string = remove_comments_and_asserts(string).strip()
-        except:
-            return ""
-    return string
+            cleaned = remove_comments_and_asserts(extracted)
+            # return transform_code(cleaned).strip()
+            return cleaned.strip()
+        except Exception as e:
+            return ''
+
+    return extracted
 
 
-def construct_requirement(requirement, starter_code):
-    return f"{starter_code}\"\"\"\n{requirement}\n\"\"\""
-
-
-def check_failed_semantic_input_output(result_list, inputs, outputs):
-    failed_semantic_input_output = []
+def get_failed_input_output(result_list, inputs, outputs):
+    if inputs == [] or outputs == [] or compare(result_list, outputs):
+        return [], 1
+    failed_input_output_examples = []
     for i in range(len(inputs)):
-        if result_list[i] != outputs[i]:
-            failed_semantic_input_output.append([inputs[i], result_list[i], outputs[i]])
-    return failed_semantic_input_output, 1 - (len(failed_semantic_input_output) / len(inputs))
+        if not compare(result_list[i], outputs[i]):
+            failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
+    return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
 
 
-def construct_failed_tests(cluster1, cluster2, entropy_inputs, canonical_program, entry_point):
-    target_inputs = []
-    for i in range(len(entropy_inputs)):
-        if cluster1.entropy_outputs[i] != cluster2.entropy_outputs[i]:
-            target_inputs.append(entropy_inputs[i])
-    print("GET CANONICAL OUTPUT")
-    canonical_outputs = execute_inputs(canonical_program, target_inputs, entry_point)
-    fails_tests = []
-    for i in range(len(canonical_outputs)):
-        fails_tests.append([target_inputs[i], cluster1.entropy_outputs[i], canonical_outputs[i]])
-    return fails_tests
+def compare(a, b):
+    try:
+        if a == "Timeout" or b == "Timeout":
+            return True
+        if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+            if len(a) != len(b):
+                return False
+            for x, y in zip(a, b):
+                if not compare(x, y):
+                    return False
+            return True
+        elif isinstance(a, (int, float)) and isinstance(b, (int, float)):
+            return math.isclose(a, b, rel_tol=0.001)
+        else:
+            return a == b
+    except:
+        return False
 
 
 def wilson_lower(p_obs, n, z=1.96):
@@ -160,3 +150,189 @@ def wilson_lower(p_obs, n, z=1.96):
     lower_bound = (centre_adjusted - adjust) / denominator
 
     return max(lower_bound, 0.0)
+
+
+def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
+    if not os.path.exists(f"{cwd}/{task}/{model_name}"):
+        os.makedirs(f"{cwd}/{task}/{model_name}")
+
+    # Open dataset and output JSONL in one place
+    if threshold is None:
+        output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}.jsonl"
+    else:
+        output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}_{str(threshold)}.jsonl"
+    return output_file
+
+
+def calculate_mcc(ground_truths, predict):
+    return matthews_corrcoef(ground_truths, predict)
+
+
+def get_parameter_number(requirement, entry_point):
+    for line in requirement.split("\n"):
+        if f"def {entry_point}(" in line:
+            return line.split("(")[1].split(")")[0].count(":")
+
+
+def generate_pilot(file_name):
+    with jsonlines.open(file_name) as reader, jsonlines.open(file_name.replace(".jsonl", "_pilot.jsonl"),
+                                                             "w") as writer:
+        for i, problem in enumerate(reader):
+            if i < 50:
+                writer.write(problem)
+
+
+def read_jsonl(file_name):
+    with jsonlines.open(file_name) as reader:
+        return list(reader)
+
+
+def get_evalplus_inputs_outputs(data_name):
+    data = get_human_eval_plus() if data_name == "humaneval" else get_mbpp_plus()
+    hash = get_human_eval_plus_hash() if data_name == "humaneval" else get_mbpp_plus_hash()
+    expected_outputs = get_groundtruth(data, hash, [])
+    inputs = []
+    outputs = []
+    for key in data.keys():
+        problem = data[key]
+        inputs.append((problem['base_input'] + problem['plus_input']) if problem['plus_input'] != {} else problem[
+            'base_input'])
+        outputs.append([[output] for output in expected_outputs[key]['base'] + expected_outputs[key]['plus']])
+    return inputs, outputs
+
+
+def get_taco_lite_inputs_outputs():
+    path = dirname(abspath(__file__)) + '/../../../../dataset/' + "taco_lite.jsonl"
+    problems = read_jsonl(path)
+    return [problem['inputs'] for problem in problems], [problem['outputs'] for problem in problems]
+
+
+def get_entry_point(requirement):
+    for line in requirement.split("\n"):
+        if "def " in line and "(" in line and ")" in line and ":" in line:
+            return line.split("def ")[1].split("(")[0]
+    return None
+
+
+def deepcopy(program, entry_point):
+    try:
+        namespace = {}
+        exec(program, namespace)
+
+        func_name = entry_point
+        target_func = namespace[func_name]
+
+        sig = inspect.signature(target_func)
+        params = sig.parameters
+
+        mutable_containers = {list, dict, set, tuple, List, Dict, Set, Tuple}
+        needs_deepcopy = []
+        type_hints = []
+
+        for name, param in params.items():
+            anno = param.annotation
+            type_str = "Any"
+
+            if getattr(anno, "__origin__", None) in mutable_containers:
+                needs_deepcopy.append(name)
+                args = [a.__name__ for a in getattr(anno, "__args__", [])]
+                type_str = f"{anno.__origin__.__name__}[{', '.join(args)}]"
+            elif anno in mutable_containers:
+                needs_deepcopy.append(name)
+                type_str = anno.__name__ if isinstance(anno, type) else anno._name
+            elif anno != param.empty:
+                type_str = anno.__name__ if isinstance(anno, type) else str(anno)
+
+            type_hints.append(f"{name}: {type_str}")
+
+        copy_lines = [
+            f"    {name}_copy = copy.deepcopy({name})"
+            for name in needs_deepcopy
+        ]
+        arg_list = [
+            f"{name}_copy" if name in needs_deepcopy else name
+            for name in params
+        ]
+        final_program = f"""
+import copy
+
+{program}
+
+def f({', '.join(type_hints)}):
+{chr(10).join(copy_lines) if copy_lines else "    pass"}
+    return {func_name}({', '.join(arg_list)})
+    """
+        return final_program
+    except Exception as e:
+        return ""
+
+
+def crosshair_compare(program1, program2, entry_point):
+    with tempfile.TemporaryDirectory(delete=True) as tmpdirname:
+        with open(f"{tmpdirname}/program1.py", "w") as f:
+            program1 = deepcopy(program1, entry_point).strip()
+            if program1 == "":
+                return False
+            f.write(program1)
+        with open(f"{tmpdirname}/program2.py", "w") as f:
+            program2 = deepcopy(program2, entry_point).strip()
+            if program2 == "":
+                return False
+            f.write(program2)
+        try:
+            result = subprocess.run(
+                ["crosshair", "diffbehavior", f"program1.f", f"program2.f", "--exception_equivalence", "SAME_TYPE",
+                 "--per_condition_timeout", "1"],
+                capture_output=True, text=True, cwd=f"{tmpdirname}")
+            if result.returncode != 0:
+                return False
+            else:
+                return True
+        except:
+            return "CrosshairError"
+
+
+def unify_model_name(model_name):
+    model_name = model_name.split("/")[-1]
+    if model_name == "deepseek-chat" or model_name == "deepseek-v3-241226":
+        model_name = "deepseek-v3"
+    elif model_name == "deepseek-reasoner":
+        model_name = "deepseek-r1"
+    elif model_name == "qwen2p5-coder-32b-instruct":
+        model_name = "qwen2.5-coder-32b-instruct"
+    return model_name
+
+
+def count_passk_ambiguous(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    origin_result_list = []
+    repaired_result_list = []
+    for result in results:
+        if result["repaired_requirement"] is not None:
+            origin_result_list.append(result["original_result"])
+            repaired_result_list.append(result["repaired_result"])
+    print(
+        f"{dataset} original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
+
+
+def count_ambiguity(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_ambiguity = []
+    repaired_ambiguity = []
+    for result in results:
+        if result["repaired_clusters"] is not None:
+            original_ambiguity.append(result["original_clusters"]["ambiguity"])
+            repaired_ambiguity.append(result["repaired_clusters"]["ambiguity"])
+    print(
+        f"{dataset} original ambiguity: {sum(original_ambiguity) / len(original_ambiguity)}, repaired ambiguity: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
+
+
+def count_passk(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        original_results.append(result["original_result"])
+        repaired_results.append(result["repaired_result"])
+    print(
+        f"{dataset} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")

@@ -110,3 +110,4 @@ class Cluster:
         self.test_consistency = data['test_consistency']
         # self.failed_input_output_examples = ast.literal_eval(data['failed_input_output_examples'])
         return self
+

@@ -1,0 +1,752 @@
+requirement,requirement_without_examples
+"from typing import List
+from typing import Union
+
+
+def min_val(listval: List[Union[int, Any]]) -> int:
+""""""
+Write a function to find the minimum value in a given heterogeneous list.
+assert min_val(['Python', 3, 2, 4, 5, 'version'])==2
+""""""","from typing import List
+from typing import Union
+
+
+def min_val(listval: List[Union[int, Any]]) -> int:
+""""""
+Write a function to find the minimum value in a given heterogeneous list.
+"""""""
+"from typing import List
+
+
+def compound_array(a: List[int], b: List[int]) -> List[int]:
+""""""You have to create a method ""compoundArray"" which should take as input two int arrays of different length and return one int array with numbers of both arrays shuffled one by one. 
+```Example: 
+Input - {1,2,3,4,5,6} and {9,8,7,6} 
+Output - {1,9,2,8,3,7,4,6,5,6}
+```
+""""""","from typing import List
+
+
+def compound_array(a: List[int], b: List[int]) -> List[int]:
+    """"""You have to create a method ""compoundArray"" which should take as input two int arrays of different length and return one int array with numbers of both arrays shuffled one by one.
+
+    """""""
+"from typing import List
+
+
+def compare(game: List[int], guess: List[int]) -> List[int]:
+    """"""I think we all remember that feeling when the result of some long-awaited
+    event is finally known. The feelings and thoughts you have at that moment are
+    definitely worth noting down and comparing.
+    Your task is to determine if a person correctly guessed the results of a number of matches.
+    You are given two arrays of scores and guesses of equal length, where each index shows a match. 
+    Return an array of the same length denoting how far off each guess was. If they have guessed correctly,
+    the value is 0, and if not, the value is the absolute difference between the guess and the score.
+    
+    
+    example:
+
+    compare([1,2,3,4,5,1],[1,2,3,4,2,-2]) -> [0,0,0,0,3,3]
+    compare([0,5,0,0,0,4],[4,1,1,0,0,-2]) -> [4,4,1,0,0,6]
+    """"""","from typing import List
+
+
+def compare(game: List[int], guess: List[int]) -> List[int]:
+    """"""I think we all remember that feeling when the result of some long-awaited
+    event is finally known. The feelings and thoughts you have at that moment are
+    definitely worth noting down and comparing.
+    Your task is to determine if a person correctly guessed the results of a number of matches.
+    You are given two arrays of scores and guesses of equal length, where each index shows a match. 
+    Return an array of the same length denoting how far off each guess was. If they have guessed correctly,
+    the value is 0, and if not, the value is the absolute difference between the guess and the score.
+    """""""
+"from typing import List
+
+
+def solution(lst: List[int]) -> int:
+    """"""Given a non-empty list of integers, return the sum of all of the odd elements that are in even positions.
+    
+
+    Examples
+    solution([5, 8, 7, 1]) ==> 12
+    solution([3, 3, 3, 3, 3]) ==> 9
+    solution([30, 13, 24, 321]) ==>0
+    """"""","from typing import List
+
+
+def solution(lst: List[int]) -> int:
+    """"""Given a non-empty list of integers, return the sum of all of the odd elements that are in even positions."""""""
+"from typing import List
+
+
+def prod_signs(arr: List[int]) -> Optional[int]:
+    """"""
+    You are given an array arr of integers and you need to return
+    sum of magnitudes of integers multiplied by product of all signs
+    of each number in the array, represented by 1, -1 or 0.
+    Note: return None for empty arr.
+
+    Example:
+    >>> prod_signs([1, 2, 2, -4]) == -9
+    >>> prod_signs([0, 1]) == 0
+    >>> prod_signs([]) == None
+    """"""","from typing import List
+
+
+def prod_signs(arr: List[int]) -> Optional[int]:
+    """"""
+    You are given an array arr of integers and you need to return
+    sum of magnitudes of integers multiplied by product of all signs
+    of each number in the array, represented by 1, -1 or 0.
+    Note: return None for empty arr.
+    """""""
+"from typing import List
+
+
+def shortest_arrang(n: int) -> List[int]:
+""""""Mrs Jefferson is a great teacher. One of her strategies that helped her to reach astonishing results in the learning process is to have some fun with her students. At school, she wants to make an arrangement of her class to play a certain game with her pupils. For that, she needs to create the arrangement with **the minimum amount of groups that have consecutive sizes**.
+
+Let's see. She has      ```14``` students. After trying a bit she could do the needed arrangement:
+        ```[5, 4, 3, 2]```
+- one group of  ```5``` students
+- another group of      ```4``` students
+- then, another one of  ```3``` 
+- and finally, the smallest group of    ```2``` students.
+
+As the game was a success, she was asked to help to the other classes to teach and show the game. That's why she desperately needs some help to make this required arrangements that make her spend a lot of time. 
+
+To make things worse, she found out that there are some classes with some special number of students that is impossible to get that arrangement.
+
+Please, help this teacher!
+
+Your code will receive the number of students of the class. It should output the arrangement as an array with the consecutive sizes of the groups in decreasing order.
+
+For the special case that no arrangement of the required feature is possible the code should output     ```[-1] ```
+
+The value of n is unknown and may be pretty high because some classes joined to to have fun with the game.
+
+You may see more example tests in the Example Tests Cases Box.
+""""""","from typing import List
+
+
+def shortest_arrang(n: int) -> List[int]:
+""""""Mrs Jefferson is a great teacher. One of her strategies that helped her to reach astonishing results in the learning process is to have some fun with her students. At school, she wants to make an arrangement of her class to play a certain game with her pupils. For that, she needs to create the arrangement with **the minimum amount of groups that have consecutive sizes**.
+
+As the game was a success, she was asked to help to the other classes to teach and show the game. That's why she desperately needs some help to make this required arrangements that make her spend a lot of time. 
+
+To make things worse, she found out that there are some classes with some special number of students that is impossible to get that arrangement.
+
+Please, help this teacher!
+
+Your code will receive the number of students of the class. It should output the arrangement as an array with the consecutive sizes of the groups in decreasing order.
+
+For the special case that no arrangement of the required feature is possible the code should output     ```[-1] ```
+
+The value of n is unknown and may be pretty high because some classes joined to to have fun with the game.
+
+You may see more example tests in the Example Tests Cases Box.
+"""""""
+"def count_subsequences(needle: str, haystack: str) -> int:
+""""""With your birthday coming up soon, your eccentric friend sent you a message to say ""happy birthday"":
+
+    hhhappyyyy biirrrrrthddaaaayyyyyyy to youuuu
+    hhapppyyyy biirtttthdaaay too youuu
+    happy birrrthdayy to youuu
+    happpyyyy birrtthdaaay tooooo youu
+
+At first it looks like a song, but upon closer investigation, you realize that your friend hid the phrase ""happy birthday"" thousands of times inside his message. In fact, it contains it more than 2 million times! To thank him, you'd like to reply with exactly how many times it occurs.
+
+To count all the occurences, the procedure is as follows: look through the paragraph and find a `'h'`; then find an `'a'` later in the paragraph; then find an `'p'` after that, and so on. Now count the number of ways in which you can choose letters in this way to make the full phrase.
+
+More precisely, given a text string, you are to determine how many times the search string appears as a sub-sequence of that string.
+
+Write a function called `countSubsequences` that takes two arguments: `needle`, the string to be search for and `haystack`, the string to search in. In our example, `""happy birthday""` is the needle and the birthday message is the haystack. The function should return the number of times `needle` occurs as a sub-sequence of `haystack`.  Spaces are also considered part of the needle.
+
+Since the answers can be very large, return only the last 8 digits of the answer in case it exceeds 8 digits. The answers to the test cases will all be shorter than 8 digits.
+""""""","def count_subsequences(needle: str, haystack: str) -> int:
+""""""With your birthday coming up soon, your eccentric friend sent you a message to say ""happy birthday"":
+
+At first it looks like a song, but upon closer investigation, you realize that your friend hid the phrase ""happy birthday"" thousands of times inside his message. In fact, it contains it more than 2 million times! To thank him, you'd like to reply with exactly how many times it occurs.
+
+To count all the occurrences, the procedure is as follows: look through the paragraph and find a `'h'`; then find an `'a'` later in the paragraph; then find an `'p'` after that, and so on. Now count the number of ways in which you can choose letters in this way to make the full phrase.
+
+More precisely, given a text string, you are to determine how many times the search string appears as a sub-sequence of that string.
+
+Write a function called `countSubsequences` that takes two arguments: `needle`, the string to be search for and `haystack`, the string to search in. The function should return the number of times `needle` occurs as a sub-sequence of `haystack`.  Spaces are also considered part of the needle.
+
+Since the answers can be very large, return only the last 8 digits of the answer in case it exceeds 8 digits. The answers to the test cases will all be shorter than 8 digits.
+"""""""
+"def choose_num(x: int, y: int) -> int:
+    """"""This function takes two positive numbers x and y and returns the
+    biggest even integer number that is in the range [x, y] inclusive. If 
+    there's no such number, then the function should return -1.
+
+    For example:
+    choose_num(12, 15) = 14
+    choose_num(13, 12) = -1
+    """"""","def choose_num(x: int, y: int) -> int:
+    """"""This function takes two positive numbers x and y and returns the
+    biggest even integer number that is in the range [x, y] inclusive. If 
+    there's no such number, then the function should return -1.
+    """""""
+"from typing import List
+
+
+def closest(lst: List[int]) -> Optional[int]:
+""""""Simply find the closest value to zero from the list. Notice that there are negatives in the list.
+
+List is always not empty and contains only integers. Return ```None``` if it is not possible to define only one of such values. And of course, we are expecting 0 as closest value to zero.
+
+Examples:
+```code
+[2, 4, -1, -3]  => -1
+[5, 2, -2]      => None
+[5, 2, 2]       => 2
+[13, 0, -6]     => 0
+```
+""""""","from typing import List
+
+
+def closest(lst: List[int]) -> Optional[int]:
+""""""Simply find the closest value to zero from the list. Notice that there are negatives in the list.
+
+List is always not empty and contains only integers. Return ```None``` if it is not possible to define only one of such values. And of course, we are expecting 0 as closest value to zero.
+"""""""
+"def digitSum(s: str) -> int:
+    """"""Task
+    Write a function that takes a string as input and returns the sum of the upper characters only'
+    ASCII codes.
+
+    Examples:
+        digitSum("""") => 0
+        digitSum(""abAB"") => 131
+        digitSum(""abcCd"") => 67
+        digitSum(""helloE"") => 69
+        digitSum(""woArBld"") => 131
+        digitSum(""aAaaaXa"") => 153
+    """"""","def digitSum(s: str) -> int:
+    """"""Task
+    Write a function that takes a string as input and returns the sum of the upper characters only'
+    ASCII codes.
+    """""""
+"from typing import List
+
+
+def odd_count(lst: List[str]) -> List[str]:
+    """"""Given a list of strings, where each string consists of only digits, return a list.
+    Each element i of the output should be ""the number of odd elements in the
+    string i of the input."" where all the i's should be replaced by the number
+    of odd digits in the i'th string of the input.
+
+    >>> odd_count(['1234567'])
+    [""the number of odd elements 4n the str4ng 4 of the 4nput.""]
+    >>> odd_count(['3',""11111111""])
+    [""the number of odd elements 1n the str1ng 1 of the 1nput."",
+     ""the number of odd elements 8n the str8ng 8 of the 8nput.""]
+    """"""","from typing import List
+
+
+def odd_count(lst: List[str]) -> List[str]:
+    """"""Given a list of strings, where each string consists of only digits, return a list.
+    Each element i of the output should be ""the number of odd elements in the
+    string i of the input."" where all the i's should be replaced by the number
+    of odd digits in the i'th string of the input.
+    """""""
+"from typing import List
+from typing import Tuple
+
+
+def start_withp(words: List[str]) -> Tuple[str, str]:
+""""""
+Write a function to return two words from a list of words starting with letter 'p'.
+assert start_withp([""Python PHP"", ""Java JavaScript"", ""c c++""])==('Python', 'PHP')
+""""""","from typing import List
+from typing import Tuple
+
+
+def start_withp(words: List[str]) -> Tuple[str, str]:
+""""""
+Write a function to return two words from a list of words starting with letter 'p'.
+"""""""
+"def summation(num: int) -> int:
+""""""# Summation
+
+Write a program that finds the summation of every number from 1 to num. The number will always be a positive integer greater than 0.
+
+
+
+For example:
+```if-not:racket
+~~~
+summation(2) -> 3
+1 + 2
+
+summation(8) -> 36
+1 + 2 + 3 + 4 + 5 + 6 + 7 + 8
+~~~
+```
+```if:racket
+~~~racket
+(summation 2) ; 3  (+ 1 2)
+(summation 8) ; 36 (+ 1 2 3 4 5 6 7 8)
+~~~
+```
+""""""","def summation(num: int) -> int:
+""""""# Summation
+
+Write a program that finds the summation of every number from 1 to num. The number will always be a positive integer greater than 0.
+"""""""
+"def detect_operator(num: int) -> str:
+""""""When a warrior wants to talk with another one about peace or war he uses a smartphone.  In one distinct  country warriors who spent all time in training kata not always have enough money. So if they call some number they want to know which operator serves  this number. 
+
+Write a function which **accepts number and return name of operator or string ""no info""**, if operator can't be defined. number always looks like 8yyyxxxxxxx, where yyy corresponds to operator.
+
+Here is short list of operators:
+
+* 039 xxx xx xx - Golden Telecom
+* 050 xxx xx xx - MTS
+* 063 xxx xx xx - Life:)
+* 066 xxx xx xx - MTS
+* 067 xxx xx xx - Kyivstar
+* 068 xxx xx xx - Beeline
+* 093 xxx xx xx - Life:)
+* 095 xxx xx xx - MTS
+* 096 xxx xx xx - Kyivstar
+* 097 xxx xx xx - Kyivstar
+* 098 xxx xx xx - Kyivstar
+* 099 xxx xx xx - MTS Test [Just return ""MTS""]
+""""""","def detect_operator(num: int) -> str:
+""""""When a warrior wants to talk with another one about peace or war he uses a smartphone.  In one distinct  country warriors who spent all time in training kata not always have enough money. So if they call some number they want to know which operator serves  this number.
+
+Write a function which **accepts number and return name of operator or string ""no info""**, if operator can't be defined. number always looks like 8yyyxxxxxxx, where yyy corresponds to operator.
+
+Here is short list of operators:
+
+* 039 xxx xx xx - Golden Telecom
+* 050 xxx xx xx - MTS
+* 063 xxx xx xx - Life:)
+* 066 xxx xx xx - MTS
+* 067 xxx xx xx - Kyivstar
+* 068 xxx xx xx - Beeline
+* 093 xxx xx xx - Life:)
+* 095 xxx xx xx - MTS
+* 096 xxx xx xx - Kyivstar
+* 097 xxx xx xx - Kyivstar
+* 098 xxx xx xx - Kyivstar
+* 099 xxx xx xx - MTS Test [Just return ""MTS""]
+"""""""
+"from typing import List
+
+
+def multiply_num(numbers: List[int]) -> float:
+""""""
+Write a function to multiply all the numbers in a list and divide with the length of the list.
+assert math.isclose(multiply_num((8, 2, 3, -1, 7)), -67.2, rel_tol=0.001)
+""""""","from typing import List
+
+
+def multiply_num(numbers: List[int]) -> float:
+""""""
+Write a function to multiply all the numbers in a list and divide with the length of the list.
+"""""""
+"def fruit_distribution(s: str, n: int) -> int:
+    """"""
+    In this task, you will be given a string that represents a number of apples and oranges 
+    that are distributed in a basket of fruit this basket contains 
+    apples, oranges, and mango fruits. Given the string that represents the total number of 
+    the oranges and apples and an integer that represent the total number of the fruits 
+    in the basket return the number of the mango fruits in the basket.
+    for examble:
+    fruit_distribution(""5 apples and 6 oranges"", 19) ->19 - 5 - 6 = 8
+    fruit_distribution(""0 apples and 1 oranges"",3) -> 3 - 0 - 1 = 2
+    fruit_distribution(""2 apples and 3 oranges"", 100) -> 100 - 2 - 3 = 95
+    fruit_distribution(""100 apples and 1 oranges"",120) -> 120 - 100 - 1 = 19
+    """"""","def fruit_distribution(s: str, n: int) -> int:
+    """"""
+    In this task, you will be given a string that represents a number of apples and oranges 
+    that are distributed in a basket of fruit. This basket contains 
+    apples, oranges, and mango fruits. Given the string that represents the total number of 
+    the oranges and apples and an integer that represents the total number of the fruits 
+    in the basket, return the number of the mango fruits in the basket.
+    """""""
+"from typing import Tuple
+
+
+def find_adverb_position(text: str) -> Tuple[int, int, str]:
+""""""
+Write a function to find the first adverb and their positions in a given sentence.
+assert find_adverb_position(""clearly!! we can see the sky"")==(0, 7, 'clearly')
+""""""","from typing import Tuple
+
+
+def find_adverb_position(text: str) -> Tuple[int, int, str]:
+""""""
+Write a function to find the first adverb and their positions in a given sentence.
+"""""""
+"from typing import List
+
+
+def unique_Element(arr: List[int]) -> bool:
+""""""
+Write a python function to check whether a list of numbers contains only one distinct element or not.
+assert unique_Element([1,1,1]) == True
+""""""","from typing import List
+
+
+def unique_Element(arr: List[int]) -> bool:
+""""""
+Write a python function to check whether a list of numbers contains only one distinct element or not.
+"""""""
+"def year_days(year: int) -> str:
+""""""A variation of determining leap years, assuming only integers are used and years can be negative and positive.
+
+Write a function which will return the days in the year and the year entered in a string.  For example 2000, entered as an integer, will return as a string 2000 has 366 days
+
+There are a few assumptions we will accept the year 0, even though there is no year 0 in the Gregorian Calendar.
+
+Also the basic rule for validating a leap year are as follows
+
+Most years that can be divided evenly by 4 are leap years. 
+
+Exception: Century years are NOT leap years UNLESS they can be evenly divided by 400.
+
+So the years 0, -64 and 2016 will return 366 days.
+Whilst 1974, -10 and 666 will return 365 days.
+""""""","def year_days(year: int) -> str:
+""""""A variation of determining leap years, assuming only integers are used and years can be negative and positive.
+
+Write a function which will return the days in the year and the year entered in a string.
+
+There are a few assumptions we will accept the year 0, even though there is no year 0 in the Gregorian Calendar.
+
+Also the basic rule for validating a leap year are as follows
+
+Most years that can be divided evenly by 4 are leap years. 
+
+Exception: Century years are NOT leap years UNLESS they can be evenly divided by 400.
+"""""""
+"from typing import Tuple
+
+
+def intersection(interval1: Tuple[int, int], interval2: Tuple[int, int]) -> str:
+    """"""You are given two intervals,
+    where each interval is a pair of integers. For example, interval = (start, end) = (1, 2).
+    The given intervals are closed which means that the interval (start, end)
+    includes both start and end.
+    For each given interval, it is assumed that its start is less or equal its end.
+    Your task is to determine whether the length of intersection of these two 
+    intervals is a prime number.
+    Example, the intersection of the intervals (1, 3), (2, 4) is (2, 3)
+    which its length is 1, which not a prime number.
+    If the length of the intersection is a prime number, return ""YES"",
+    otherwise, return ""NO"".
+    If the two intervals don't intersect, return ""NO"".
+
+
+    [input/output] samples:
+    intersection((1, 2), (2, 3)) ==> ""NO""
+    intersection((-1, 1), (0, 4)) ==> ""NO""
+    intersection((-3, -1), (-5, 5)) ==> ""YES""
+    """"""","from typing import Tuple
+
+
+def intersection(interval1: Tuple[int, int], interval2: Tuple[int, int]) -> str:
+    """"""You are given two intervals,
+    where each interval is a pair of integers. 
+    The given intervals are closed which means that the interval (start, end)
+    includes both start and end.
+    For each given interval, it is assumed that its start is less or equal its end.
+    Your task is to determine whether the length of intersection of these two 
+    intervals is a prime number.
+    If the length of the intersection is a prime number, return ""YES"",
+    otherwise, return ""NO"".
+    If the two intervals don't intersect, return ""NO"".
+    """""""
+"from typing import List
+
+
+def neg_nos(list1: List[int]) -> List[int]:
+""""""
+Write a python function to return the negative numbers in a list.
+assert neg_nos([-1,4,5,-6]) == [-1,-6]
+""""""","from typing import List
+
+
+def neg_nos(list1: List[int]) -> List[int]:
+""""""
+Write a python function to return the negative numbers in a list.
+"""""""
+"def snake_to_camel(word: str) -> str:
+""""""
+Write a function to convert a snake case string to camel case string.
+assert snake_to_camel('python_program')=='PythonProgram'
+""""""","def snake_to_camel(word: str) -> str:
+""""""
+Write a function to convert a snake case string to camel case string.
+"""""""
+"def permutation_average(n: int) -> int:
+""""""A number is simply made up of digits.  
+The number 1256 is made up of the digits 1, 2, 5, and 6.  
+For 1256 there are 24 distinct permutations of the digits:  
+1256, 1265, 1625, 1652, 1562, 1526, 2156, 2165, 2615, 2651, 2561, 2516,   
+5126, 5162, 5216, 5261, 5621, 5612, 6125, 6152, 6251, 6215, 6521, 6512.
+  
+Your goal is to write a program that takes a number, n, and returns the average value of all distinct permutations of the digits in n.  Your answer should be rounded to the nearest integer. For the example above the return value would be 3889. * 
+  
+  n will never be negative
+  
+A few examples:
+```python
+permutation_average(2)
+return 2
+
+permutation_average(25)
+>>> 25 + 52 = 77
+>>> 77 / 2 = 38.5
+return 39 *
+
+permutation_average(20)
+>>> 20 + 02 = 22
+>>> 22 / 2 = 11
+return 11
+
+permutation_average(737)
+>>> 737 + 377 + 773 = 1887
+>>> 1887 / 3 = 629
+return 629
+
+```
+
+Note: Your program should be able to handle numbers up to 6 digits long
+~~~if:python
+\* Python version 3 and above uses Banker Rounding so the expected values for those tests would be 3888 and 38 respectively
+~~~
+~~~if-not:python
+\* ignore these marks, they're for Python only
+~~~
+""""""","def permutation_average(n: int) -> int:
+""""""A number is simply made up of digits.  
+The number 1256 is made up of the digits 1, 2, 5, and 6.  
+
+Your goal is to write a program that takes a number, n, and returns the average value of all distinct permutations of the digits in n.  Your answer should be rounded to the nearest integer.  
+
+n will never be negative.  
+
+Note: Your program should be able to handle numbers up to 6 digits long  
+~~~if:python
+\* Python version 3 and above uses Banker Rounding so the expected values for those tests would be 3888 and 38 respectively
+~~~
+~~~if-not:python
+\* ignore these marks, they're for Python only
+~~~
+"""""""
+"from typing import List
+
+
+def even_position(nums: List[int]) -> bool:
+""""""
+Write a python function to check whether every even index contains even numbers of a given list.
+assert even_position([3,2,1]) == False
+""""""","from typing import List
+
+
+def even_position(nums: List[int]) -> bool:
+""""""
+Write a python function to check whether every even index contains even numbers of a given list.
+"""""""
+"from typing import List
+
+
+def sub_list(nums1: List[int], nums2: List[int]) -> List[int]:
+""""""
+Write a function to subtract two lists element-wise.
+assert sub_list([1, 2, 3],[4,5,6])==[-3,-3,-3]
+""""""","from typing import List
+
+
+def sub_list(nums1: List[int], nums2: List[int]) -> List[int]:
+""""""
+Write a function to subtract two lists element-wise.
+"""""""
+"def fibfib(n: int) -> int:
+    """"""The FibFib number sequence is a sequence similar to the Fibbonacci sequnece that's defined as follows:
+    fibfib(0) == 0
+    fibfib(1) == 0
+    fibfib(2) == 1
+    fibfib(n) == fibfib(n-1) + fibfib(n-2) + fibfib(n-3).
+    Please write a function to efficiently compute the n-th element of the fibfib number sequence.
+    >>> fibfib(1)
+    0
+    >>> fibfib(5)
+    4
+    >>> fibfib(8)
+    24
+    """"""","def fibfib(n: int) -> int:
+    """"""The FibFib number sequence is a sequence similar to the Fibbonacci sequence that's defined as follows:
+    fibfib(0) == 0
+    fibfib(1) == 0
+    fibfib(2) == 1
+    fibfib(n) == fibfib(n-1) + fibfib(n-2) + fibfib(n-3).
+    Please write a function to efficiently compute the n-th element of the fibfib number sequence.
+    """""""
+"def poohbear(s: str) -> str:
+""""""Create a function that interprets code in the esoteric language **Poohbear**
+
+## The Language
+
+Poohbear is a stack-based language largely inspired by Brainfuck. It has a maximum integer value of 255, and 30,000 cells. The original intention of Poohbear was to be able to send messages that would, to most, be completely indecipherable: 
+Poohbear Wiki
+
+* For the purposes of this kata, you will make a version of Poohbear that has **infinite** memory cells in **both directions** (so you do not need to limit cells to 30,000)
+* Cells have a default value of 0
+* Each cell can hold one byte of data.  Once a cell's value goes above 255, it wraps around to 0.  If a cell's value goes below 0, it wraps to 255.
+* If the result of an operation isn't an int, round the result down to the nearest one.
+* Your interpreter should ignore any non-command characters in the code.
+* If you come to a `W` in the code and the current cell is equal to 0, jump to the corresponding `E`.
+* If you come to an `E` in the code and the current cell is **not** 0, jump back to the corresponding `W`.
+
+Here are the Poohbear commands: 
+
+| Command | Definition
+|---| -------------------------
+| + | Add 1 to the current cell
+| - | Subtract 1 from the current cell
+| > | Move the cell pointer 1 space to the right
+| < | Move the cell pointer 1 space to the left
+| c | ""Copy"" the current cell
+| p | Paste the ""copied"" cell into the current cell
+| W | While loop - While the current cell is not equal to 0
+| E | Closing character for loops
+| P | Output the current cell's value as ascii
+| N | Output the current cell's value as an integer
+| T | Multiply the current cell by 2
+| Q | Square the current cell
+| U | Square root the current cell's value
+| L | Add 2 to the current cell
+| I | Subtract 2 from the current cell
+| V | Divide the current cell by 2
+| A | Add the copied value to the current cell's value
+| B | Subtract the copied value from the current cell's value
+| Y | Multiply the current cell's value by the copied value
+| D | Divide the current cell's value by the copied value.
+""""""","def poohbear(s: str) -> str:
+""""""Create a function that interprets code in the esoteric language **Poohbear**
+
+## The Language
+
+Poohbear is a stack-based language largely inspired by Brainfuck. It has a maximum integer value of 255, and 30,000 cells. The original intention of Poohbear was to be able to send messages that would, to most, be completely indecipherable: 
+Poohbear Wiki
+
+* For the purposes of this kata, you will make a version of Poohbear that has **infinite** memory cells in **both directions** (so you do not need to limit cells to 30,000)
+* Cells have a default value of 0
+* Each cell can hold one byte of data.  Once a cell's value goes above 255, it wraps around to 0.  If a cell's value goes below 0, it wraps to 255.
+* If the result of an operation isn't an int, round the result down to the nearest one.
+* Your interpreter should ignore any non-command characters in the code.
+* If you come to a `W` in the code and the current cell is equal to 0, jump to the corresponding `E`.
+* If you come to an `E` in the code and the current cell is **not** 0, jump back to the corresponding `W`.
+
+Here are the Poohbear commands: 
+
+| Command | Definition
+|---| -------------------------
+| + | Add 1 to the current cell
+| - | Subtract 1 from the current cell
+| > | Move the cell pointer 1 space to the right
+| < | Move the cell pointer 1 space to the left
+| c | ""Copy"" the current cell
+| p | Paste the ""copied"" cell into the current cell
+| W | While loop - While the current cell is not equal to 0
+| E | Closing character for loops
+| P | Output the current cell's value as ascii
+| N | Output the current cell's value as an integer
+| T | Multiply the current cell by 2
+| Q | Square the current cell
+| U | Square root the current cell's value
+| L | Add 2 to the current cell
+| I | Subtract 2 from the current cell
+| V | Divide the current cell by 2
+| A | Add the copied value to the current cell's value
+| B | Subtract the copied value from the current cell's value
+| Y | Multiply the current cell's value by the copied value
+| D | Divide the current cell's value by the copied value.
+"""""""
+"from typing import List
+
+
+def bar_triang(a: List[float], b: List[float], c: List[float]) -> List[float]:
+""""""The medians of a triangle are the segments that unit the vertices with the midpoint of their opposite sides.
+The three medians of a triangle intersect at the same point, called the barycenter or the centroid.
+Given a triangle, defined by the cartesian coordinates of its vertices we need to localize its barycenter or centroid.
+
+The function ```bar_triang() or barTriang or bar-triang```, receives the coordinates of the three vertices ```A, B and C ``` as three different arguments and outputs the coordinates of the barycenter ```O``` in an array ```[xO, yO]```
+
+This is how our asked function should work:
+the result of the coordinates should be expressed up to four decimals, (rounded result).
+
+You know that the coordinates of the barycenter are given by the following formulas.
+
+
+
+For additional information about this important point of a triangle see at: (https://en.wikipedia.org/wiki/Centroid)
+
+Let's see some cases:
+```python
+bar_triang([4, 6], [12, 4], [10, 10]) ------> [8.6667, 6.6667]
+
+bar_triang([4, 2], [12, 2], [6, 10] ------> [7.3333, 4.6667]
+```
+The given points form a real or a degenerate triangle but in each case the above formulas can be used.
+
+Enjoy it and happy coding!!
+""""""","from typing import List
+
+
+def bar_triang(a: List[float], b: List[float], c: List[float]) -> List[float]:
+""""""The medians of a triangle are the segments that unit the vertices with the midpoint of their opposite sides.
+The three medians of a triangle intersect at the same point, called the barycenter or the centroid.
+Given a triangle, defined by the cartesian coordinates of its vertices we need to localize its barycenter or centroid.
+
+The function ```bar_triang() or barTriang or bar-triang```, receives the coordinates of the three vertices ```A, B and C ``` as three different arguments and outputs the coordinates of the barycenter ```O``` in an array ```[xO, yO]```
+
+This is how our asked function should work:
+the result of the coordinates should be expressed up to four decimals, (rounded result).
+
+You know that the coordinates of the barycenter are given by the following formulas.
+
+
+
+For additional information about this important point of a triangle see at: (https://en.wikipedia.org/wiki/Centroid)
+
+The given points form a real or a degenerate triangle but in each case the above formulas can be used.
+
+Enjoy it and happy coding!!
+"""""""
+"def encode_shift(s: str):
+    """"""
+    returns encoded string by shifting every character by 5 in the alphabet.
+    """"""
+    return """".join([chr(((ord(ch) + 5 - ord(""a"")) % 26) + ord(""a"")) for ch in s])
+
+
+def decode_shift(s: str) -> str:
+    """"""
+    takes as input string encoded with encode_shift function. Returns decoded string.
+    """"""","def encode_shift(s: str):
+    """"""
+    returns encoded string by shifting every character by 5 in the alphabet.
+    """"""
+    return """".join([chr(((ord(ch) + 5 - ord(""a"")) % 26) + ord(""a"")) for ch in s])
+
+
+def decode_shift(s: str) -> str:
+    """"""
+    takes as input string encoded with encode_shift function. Returns decoded string.
+    """""""
+"def move_num(test_str: str) -> str:
+""""""
+Write a function to move all the numbers to the end of the given string.
+assert move_num('I1love143you55three3000thousand') == 'Iloveyouthreethousand1143553000'
+""""""","def move_num(test_str: str) -> str:
+""""""
+Write a function to move all the numbers to the end of the given string.
+"""""""

@@ -1,0 +1,712 @@
+requirement,requirement_without_examples
+"def filter_words(st: str) -> str:
+""""""Write a function taking in a string like `WOW this is REALLY          amazing` and returning `Wow this is really amazing`. String should be capitalized and properly spaced. Using `re` and `string` is not allowed.
+
+Examples:
+
+```python
+filter_words('HELLO CAN YOU HEAR ME') #=> Hello can you hear me
+filter_words('now THIS is REALLY interesting') #=> Now this is really interesting
+filter_words('THAT was EXTRAORDINARY!') #=> That was extraordinary!
+```
+""""""","def filter_words(st: str) -> str:
+""""""Write a function taking in a string like `WOW this is REALLY          amazing` and returning `Wow this is really amazing`. String should be capitalized and properly spaced. Using `re` and `string` is not allowed.
+"""""""
+"from typing import List
+
+
+def get_odd_collatz(n: int) -> List[int]:
+    """"""
+    Given a positive integer n, return a sorted list that has the odd numbers in collatz sequence.
+
+    The Collatz conjecture is a conjecture in mathematics that concerns a sequence defined
+    as follows: start with any positive integer n. Then each term is obtained from the 
+    previous term as follows: if the previous term is even, the next term is one half of 
+    the previous term. If the previous term is odd, the next term is 3 times the previous
+    term plus 1. The conjecture is that no matter what value of n, the sequence will always reach 1.
+
+    Note: 
+        1. Collatz(1) is [1].
+        2. returned list sorted in increasing order.
+
+    For example:
+    get_odd_collatz(5) returns [1, 5] # The collatz sequence for 5 is [5, 16, 8, 4, 2, 1], so the odd numbers are only 1, and 5.
+    """"""","from typing import List
+
+
+def get_odd_collatz(n: int) -> List[int]:
+    """"""
+    Given a positive integer n, return a sorted list that has the odd numbers in collatz sequence.
+
+    The Collatz conjecture is a conjecture in mathematics that concerns a sequence defined
+    as follows: start with any positive integer n. Then each term is obtained from the 
+    previous term as follows: if the previous term is even, the next term is one half of 
+    the previous term. If the previous term is odd, the next term is 3 times the previous
+    term plus 1. The conjecture is that no matter what value of n, the sequence will always reach 1.
+
+    Note: 
+        1. Collatz(1) is [1].
+        2. returned list sorted in increasing order.
+    """""""
+"def count_ways(n: int, k: int) -> int:
+""""""Bob has ladder. He wants to climb this ladder, but being a precocious child, he wonders about exactly how many ways he could to climb this `n` size ladder using jumps of up to distance `k`.
+
+Consider this example...
+
+n = 5\
+k = 3
+
+Here, Bob has ladder of length 5, and with each jump, he can ascend up to 3 steps (he can either jump step 1 or 2 or 3). This gives the below possibilities
+
+```
+1 1 1 1 1
+1 1 1 2
+1 1 2 1 
+1 2 1 1
+2 1 1 1
+1 2 2
+2 2 1
+2 1 2
+1 1 3
+1 3 1
+3 1 1
+2 3
+3 2
+```
+
+Your task to calculate number of ways to climb ladder of length `n` with upto `k` steps for Bob. (13 in above case)
+
+Constraints:
+
+```python
+1<=n<=50
+1<=k<=15
+```
+
+_Tip: try fibonacci._
+""""""","def count_ways(n: int, k: int) -> int:
+""""""Bob has ladder. He wants to climb this ladder, but being a precocious child, he wonders about exactly how many ways he could to climb this `n` size ladder using jumps of up to distance `k`.
+
+Your task to calculate number of ways to climb ladder of length `n` with upto `k` steps for Bob.
+
+Constraints:
+
+```python
+1<=n<=50
+1<=k<=15
+```
+
+_Tip: try fibonacci._
+"""""""
+"def largest_prime_factor(n: int) -> int:
+    """"""Return the largest prime factor of n. Assume n > 1 and is not a prime.
+    >>> largest_prime_factor(13195)
+    29
+    >>> largest_prime_factor(2048)
+    2
+    """"""","def largest_prime_factor(n: int) -> int:
+    """"""Return the largest prime factor of n. Assume n > 1 and is not a prime.
+    """""""
+"from typing import List
+
+
+def total(arr: List[int]) -> int:
+""""""In this Kata, you will be given an integer array and your task is to return the sum of elements occupying prime-numbered indices. 
+
+~~~if-not:fortran
+The first element of the array is at index `0`.
+~~~
+
+~~~if:fortran
+The first element of an array is at index `1`.
+~~~
+
+
+Good luck! 
+
+If you like this Kata, try:
+
+[Dominant primes](https://www.codewars.com/kata/59ce11ea9f0cbc8a390000ed). It takes this idea a step further.
+
+[Consonant value](https://www.codewars.com/kata/59c633e7dcc4053512000073)
+""""""","from typing import List
+
+
+def total(arr: List[int]) -> int:
+""""""In this Kata, you will be given an integer array and your task is to return the sum of elements occupying prime-numbered indices. 
+
+~~~if-not:fortran
+The first element of the array is at index `0`.
+~~~
+
+~~~if:fortran
+The first element of an array is at index `1`.
+~~~
+
+Good luck! 
+
+If you like this Kata, try:
+
+[Dominant primes](https://www.codewars.com/kata/59ce11ea9f0cbc8a390000ed). It takes this idea a step further.
+
+[Consonant value](https://www.codewars.com/kata/59c633e7dcc4053512000073)
+"""""""
+"def extract_even(test_tuple: tuple) -> tuple:
+""""""
+Write a function to remove uneven elements in the nested mixed tuple.
+assert extract_even((4, 5, (7, 6, (2, 4)), 6, 8)) == (4, (6, (2, 4)), 6, 8)
+""""""","def extract_even(test_tuple: tuple) -> tuple:
+""""""
+Write a function to remove uneven elements in the nested mixed tuple.
+"""""""
+"from typing import Union
+
+
+def rounded_avg(n: int, m: int) -> Union[str, int]:
+    """"""You are given two positive integers n and m, and your task is to compute the
+    average of the integers from n through m (including n and m). 
+    Round the answer to the nearest integer and convert that to binary.
+    If n is greater than m, return -1.
+    Example:
+    rounded_avg(1, 5) => ""0b11""
+    rounded_avg(7, 5) => -1
+    rounded_avg(10, 20) => ""0b1111""
+    rounded_avg(20, 33) => ""0b11010""
+    """"""","from typing import Union
+
+
+def rounded_avg(n: int, m: int) -> Union[str, int]:
+    """"""You are given two positive integers n and m, and your task is to compute the
+    average of the integers from n through m (including n and m). 
+    Round the answer to the nearest integer and convert that to binary.
+    If n is greater than m, return -1.
+    """""""
+"from typing import List
+from typing import Tuple
+
+
+def find_combinations(test_list: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+""""""
+Write a function to find the combinations of sums with tuples in the given tuple list. 
+assert find_combinations([(2, 4), (6, 7), (5, 1), (6, 10)]) == [(8, 11), (7, 5), (8, 14), (11, 8), (12, 17), (11, 11)]
+""""""","from typing import List
+from typing import Tuple
+
+
+def find_combinations(test_list: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+""""""
+Write a function to find the combinations of sums with tuples in the given tuple list. 
+"""""""
+"def sum_of_squares(n: int) -> int:
+""""""The task is simply stated. Given an integer n (3 < n < 10^(9)), find the length of the smallest list of [*perfect squares*](https://en.wikipedia.org/wiki/Square_number) which add up to n. Come up with the best algorithm you can; you'll need it!
+
+Examples:
+
+sum_of_squares(17) = 2  17 = 16 + 1 (4 and 1 are perfect squares).
+sum_of_squares(15) = 4  15 = 9 + 4 + 1 + 1. There is no way to represent 15 as the sum of three perfect squares.
+sum_of_squares(16) = 1  16 itself is a perfect square.
+
+Time constraints:
+
+5 easy (sample) test cases: n < 20
+
+5 harder test cases: 1000 < n < 15000
+
+5 maximally hard test cases: 5 * 1e8 < n < 1e9
+
+```if:java
+300 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:c#
+350 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:python
+15 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:ruby
+25  random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:javascript
+100 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:crystal
+250 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:cpp
+Random maximally hard test cases: 1e8 < n < 1e9
+```
+""""""","def sum_of_squares(n: int) -> int:
+""""""The task is simply stated. Given an integer n (3 < n < 10^(9)), find the length of the smallest list of [*perfect squares*](https://en.wikipedia.org/wiki/Square_number) which add up to n. Come up with the best algorithm you can; you'll need it!
+
+Time constraints:
+
+5 easy (sample) test cases: n < 20
+
+5 harder test cases: 1000 < n < 15000
+
+5 maximally hard test cases: 5 * 1e8 < n < 1e9
+
+```if:java
+300 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:c#
+350 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:python
+15 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:ruby
+25  random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:javascript
+100 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:crystal
+250 random maximally hard test cases: 1e8 < n < 1e9
+```
+```if:cpp
+Random maximally hard test cases: 1e8 < n < 1e9
+```
+"""""""
+"def circular_shift(x: int, shift: int) -> str:
+    """"""Circular shift the digits of the integer x, shift the digits right by shift
+    and return the result as a string.
+    If shift > number of digits, return digits reversed.
+    >>> circular_shift(12, 1)
+    ""21""
+    >>> circular_shift(12, 2)
+    ""12""
+    """"""","def circular_shift(x: int, shift: int) -> str:
+    """"""Circular shift the digits of the integer x, shift the digits right by shift
+    and return the result as a string.
+    If shift > number of digits, return digits reversed.
+    """""""
+"def spinning_rings(inner_max: int, outer_max: int) -> int:
+""""""This is the performance version of [this kata](https://www.codewars.com/kata/59afff65f1c8274f270020f5).
+
+---
+
+Imagine two rings with numbers on them. The inner ring spins clockwise and the outer ring spins anti-clockwise. We start with both rings aligned on 0 at the top, and on each move we spin each ring by 1. How many moves will it take before both rings show the same number at the top again?
+
+The inner ring has integers from 0 to innerMax and the outer ring has integers from 0 to outerMax, where innerMax and outerMax are integers >= 1.
+
+
+
+```
+e.g. if innerMax is 2 and outerMax is 3 then after
+1 move: inner = 2, outer = 1
+2 moves: inner = 1, outer = 2
+3 moves: inner = 0, outer = 3
+4 moves: inner = 2, outer = 0
+5 moves: inner = 1, outer = 1
+Therefore it takes 5 moves for the two rings to reach the same number
+Therefore spinningRings(2, 3) = 5
+```
+```
+e.g. if innerMax is 3 and outerMax is 2 then after
+1 move: inner = 3, outer = 1
+2 moves: inner = 2, outer = 2
+Therefore it takes 2 moves for the two rings to reach the same number
+spinningRings(3, 2) = 2
+```
+
+---
+
+Test input range:
+
+- `100` tests with `1 <= innerMax, outerMax <= 10000`
+- `400` tests with `1 <= innerMax, outerMax <= 2^48`
+""""""","def spinning_rings(inner_max: int, outer_max: int) -> int:
+""""""This is the performance version of [this kata](https://www.codewars.com/kata/59afff65f1c8274f270020f5).
+
+---
+
+Imagine two rings with numbers on them. The inner ring spins clockwise and the outer ring spins anti-clockwise. We start with both rings aligned on 0 at the top, and on each move we spin each ring by 1. How many moves will it take before both rings show the same number at the top again?
+
+The inner ring has integers from 0 to innerMax and the outer ring has integers from 0 to outerMax, where innerMax and outerMax are integers >= 1.
+
+---
+
+Test input range:
+
+- `100` tests with `1 <= innerMax, outerMax <= 10000`
+- `400` tests with `1 <= innerMax, outerMax <= 2^48`
+"""""""
+"from typing import Set
+
+
+def count_Set_Bits(n: int) -> int:
+""""""
+Write a python function to count the number of set bits (binary digits with value 1) in a given number.
+assert count_Set_Bits(2) == 1
+""""""","from typing import Set
+
+
+def count_Set_Bits(n: int) -> int:
+""""""
+Write a python function to count the number of set bits (binary digits with value 1) in a given number.
+"""""""
+"from typing import List
+
+
+def specialFilter(nums: List[int]) -> int:
+    """"""Write a function that takes an array of numbers as input and returns 
+    the number of elements in the array that are greater than 10 and both 
+    first and last digits of a number are odd (1, 3, 5, 7, 9).
+    For example:
+    specialFilter([15, -73, 14, -15]) => 1 
+    specialFilter([33, -2, -3, 45, 21, 109]) => 2
+    """"""","from typing import List
+
+
+def specialFilter(nums: List[int]) -> int:
+    """"""Write a function that takes an array of numbers as input and returns 
+    the number of elements in the array that are greater than 10 and both 
+    first and last digits of a number are odd (1, 3, 5, 7, 9).
+    """""""
+"from typing import List
+
+
+def second_smallest(numbers: List[int]) -> Optional[int]:
+""""""
+Write a function to find the second smallest number in a list.
+assert second_smallest([1, 2, -8, -2, 0, -2])==-2
+""""""","from typing import List
+
+
+def second_smallest(numbers: List[int]) -> Optional[int]:
+""""""
+Write a function to find the second smallest number in a list.
+"""""""
+"from typing import Tuple
+
+
+def add_pairwise(test_tup: Tuple[int, ...]) -> Tuple[int, ...]:
+""""""
+Write a function to find the pairwise addition of the neighboring elements of the given tuple.
+assert add_pairwise((1, 5, 7, 8, 10)) == (6, 12, 15, 18)
+""""""","from typing import Tuple
+
+
+def add_pairwise(test_tup: Tuple[int, ...]) -> Tuple[int, ...]:
+""""""
+Write a function to find the pairwise addition of the neighboring elements of the given tuple.
+"""""""
+"def say_hello(name: str) -> str:
+""""""## Debugging sayHello function
+
+The starship Enterprise has run into some problem when creating a program to greet everyone as they come aboard. It is your job to fix the code and get the program working again!
+
+Example output: 
+```
+Hello, Mr. Spock
+```
+""""""","def say_hello(name: str) -> str:
+""""""## Debugging sayHello function
+
+The starship Enterprise has run into some problem when creating a program to greet everyone as they come aboard. It is your job to fix the code and get the program working again!
+"""""""
+"from typing import List
+
+
+def max_sum_list(lists: List[List[int]]) -> List[int]:
+""""""
+Write a function that returns the list in a list of lists whose sum of elements is the highest.
+assert max_sum_list([[1,2,3], [4,5,6], [10,11,12], [7,8,9]])==[10, 11, 12]
+""""""","from typing import List
+
+
+def max_sum_list(lists: List[List[int]]) -> List[int]:
+""""""
+Write a function that returns the list in a list of lists whose sum of elements is the highest.
+"""""""
+"def is_letter(s: str) -> bool:
+""""""Complete the code which should return `true` if the given object is a single ASCII letter (lower or upper case), `false` otherwise.
+""""""","def is_letter(s: str) -> bool:
+""""""Complete the code which should return `true` if the given object is a single ASCII letter (lower or upper case), `false` otherwise.
+"""""""
+"def is_decimal(num: str) -> bool:
+""""""
+Write a function to check whether a given string is a decimal number with a precision of 2.
+assert is_decimal('123.11')==True
+""""""","def is_decimal(num: str) -> bool:
+""""""
+Write a function to check whether a given string is a decimal number with a precision of 2.
+"""""""
+"from typing import Union
+
+
+def compare_one(a: Union[int, float, str], b: Union[int, float, str]) -> Union[int, float, str, None]:
+    """"""
+    Create a function that takes integers, floats, or strings representing
+    real numbers, and returns the larger variable in its given variable type.
+    Return None if the values are equal.
+    Note: If a real number is represented as a string, the floating point might be . or ,
+
+    compare_one(1, 2.5) ➞ 2.5
+    compare_one(1, ""2,3"") ➞ ""2,3""
+    compare_one(""5,1"", ""6"") ➞ ""6""
+    compare_one(""1"", 1) ➞ None
+    """"""","from typing import Union
+
+
+def compare_one(a: Union[int, float, str], b: Union[int, float, str]) -> Union[int, float, str, None]:
+    """"""
+    Create a function that takes integers, floats, or strings representing
+    real numbers, and returns the larger variable in its given variable type.
+    Return None if the values are equal.
+    Note: If a real number is represented as a string, the floating point might be . or ,
+    """""""
+"def stairs(n: int) -> str:
+""""""Raj was to move up through a pattern of stairs of a given number **(n)**. Help him to get to the    top using the function **stairs**.
+
+##Keep in mind :
+  * If **n<1** then return ' ' .
+  * There are a lot of spaces before the stair starts except for **pattern(1)**
+
+
+##Examples :
+  pattern(1)
+
+          1 1
+
+  pattern(6)
+
+                          1 1
+                      1 2 2 1  
+                  1 2 3 3 2 1
+              1 2 3 4 4 3 2 1
+          1 2 3 4 5 5 4 3 2 1
+      1 2 3 4 5 6 6 5 4 3 2 1
+
+pattern(12)
+
+                                                  1 1
+                                              1 2 2 1
+                                          1 2 3 3 2 1
+                                      1 2 3 4 4 3 2 1
+                                  1 2 3 4 5 5 4 3 2 1
+                              1 2 3 4 5 6 6 5 4 3 2 1
+                          1 2 3 4 5 6 7 7 6 5 4 3 2 1
+                      1 2 3 4 5 6 7 8 8 7 6 5 4 3 2 1
+                  1 2 3 4 5 6 7 8 9 9 8 7 6 5 4 3 2 1
+              1 2 3 4 5 6 7 8 9 0 0 9 8 7 6 5 4 3 2 1
+          1 2 3 4 5 6 7 8 9 0 1 1 0 9 8 7 6 5 4 3 2 1
+      1 2 3 4 5 6 7 8 9 0 1 2 2 1 0 9 8 7 6 5 4 3 2 1
+""""""","def stairs(n: int) -> str:
+""""""Raj was to move up through a pattern of stairs of a given number **(n)**. Help him to get to the    top using the function **stairs**.
+
+##Keep in mind :
+  * If **n<1** then return ' ' .
+  * There are a lot of spaces before the stair starts except for **pattern(1)**
+"""""""
+"def words_in_sentence(sentence: str) -> str:
+    """"""
+    You are given a string representing a sentence,
+    the sentence contains some words separated by a space,
+    and you have to return a string that contains the words from the original sentence,
+    whose lengths are prime numbers,
+    the order of the words in the new string should be the same as the original one.
+
+    Example 1:
+        Input: sentence = ""This is a test""
+        Output: ""is""
+
+    Example 2:
+        Input: sentence = ""lets go for swimming""
+        Output: ""go for""
+
+    Constraints:
+        * 1 <= len(sentence) <= 100
+        * sentence contains only letters
+    """"""","def words_in_sentence(sentence: str) -> str:
+    """"""
+    You are given a string representing a sentence,
+    the sentence contains some words separated by a space,
+    and you have to return a string that contains the words from the original sentence,
+    whose lengths are prime numbers,
+    the order of the words in the new string should be the same as the original one.
+
+    Constraints:
+        * 1 <= len(sentence) <= 100
+        * sentence contains only letters
+    """""""
+"from typing import List
+
+
+def double_the_difference(lst: List[int]) -> int:
+    '''
+    Given a list of numbers, return the sum of squares of the numbers
+    in the list that are odd. Ignore numbers that are negative or not integers.
+    
+    double_the_difference([1, 3, 2, 0]) == 1 + 9 + 0 + 0 = 10
+    double_the_difference([-1, -2, 0]) == 0
+    double_the_difference([9, -2]) == 81
+    double_the_difference([0]) == 0  
+   
+    If the input list is empty, return 0.
+    '''","from typing import List
+
+
+def double_the_difference(lst: List[int]) -> int:
+    '''
+    Given a list of numbers, return the sum of squares of the numbers
+    in the list that are odd. Ignore numbers that are negative or not integers.
+
+    If the input list is empty, return 0.
+    '''"
+"def correct(string: str) -> str:
+""""""Character recognition software is widely used to digitise printed texts. Thus the texts can be edited, searched and stored on a computer.
+
+When documents (especially pretty old ones written with a typewriter), are digitised character recognition softwares often make mistakes.
+
+Your task is correct the errors in the digitised text. You only have to handle the following mistakes:
+
+* `S`  is misinterpreted as `5`
+* `O` is misinterpreted as `0`
+* `I` is misinterpreted as `1`
+
+The test cases contain numbers only by mistake.
+""""""","def correct(string: str) -> str:
+""""""Character recognition software is widely used to digitise printed texts. Thus the texts can be edited, searched and stored on a computer.
+
+When documents (especially pretty old ones written with a typewriter), are digitised character recognition softwares often make mistakes.
+
+Your task is correct the errors in the digitised text. You only have to handle the following mistakes:
+
+* `S`  is misinterpreted as `5`
+* `O` is misinterpreted as `0`
+* `I` is misinterpreted as `1`
+
+The test cases contain numbers only by mistake.
+"""""""
+"def armstrong_number(number: int) -> bool:
+""""""
+Write a function to check whether the given number is armstrong or not.
+assert armstrong_number(153)==True
+""""""","def armstrong_number(number: int) -> bool:
+""""""
+Write a function to check whether the given number is armstrong or not.
+"""""""
+"def sumofFactors(n: int) -> int:
+""""""
+Write a python function to find the sum of even factors of a number.
+assert sumofFactors(18) == 26
+""""""","def sumofFactors(n: int) -> int:
+""""""
+Write a python function to find the sum of even factors of a number.
+"""""""
+"from typing import Tuple
+
+
+def even_odd_palindrome(n: int) -> Tuple[int, int]:
+    """"""
+    Given a positive integer n, return a tuple that has the number of even and odd
+    integer palindromes that fall within the range(1, n), inclusive.
+
+    Example 1:
+
+        Input: 3
+        Output: (1, 2)
+        Explanation:
+        Integer palindrome are 1, 2, 3. one of them is even, and two of them are odd.
+
+    Example 2:
+
+        Input: 12
+        Output: (4, 6)
+        Explanation:
+        Integer palindrome are 1, 2, 3, 4, 5, 6, 7, 8, 9, 11. four of them are even, and 6 of them are odd.
+
+    Note:
+        1. 1 <= n <= 10^3
+        2. returned tuple has the number of even and odd integer palindromes respectively.
+    """"""","from typing import Tuple
+
+
+def even_odd_palindrome(n: int) -> Tuple[int, int]:
+    """"""
+    Given a positive integer n, return a tuple that has the number of even and odd
+    integer palindromes that fall within the range(1, n), inclusive.
+
+    Note:
+        1. 1 <= n <= 10^3
+        2. returned tuple has the number of even and odd integer palindromes respectively.
+    """""""
+"def solve(s: str) -> str:
+    """"""You are given a string s.
+    if s[i] is a letter, reverse its case from lower to upper or vise versa, 
+    otherwise keep it as it is.
+    If the string contains no letters, reverse the string.
+    The function should return the resulted string.
+    Examples
+    solve(""1234"") = ""4321""
+    solve(""ab"") = ""AB""
+    solve(""#a@C"") = ""#A@c""
+    """"""","def solve(s: str) -> str:
+    """"""You are given a string s.
+    if s[i] is a letter, reverse its case from lower to upper or vise versa, 
+    otherwise keep it as it is.
+    If the string contains no letters, reverse the string.
+    The function should return the resulted string.
+    """""""
+"def volume_cone(r: float, h: float) -> float:
+""""""
+Write a function to find the volume of a cone.
+assert math.isclose(volume_cone(5,12), 314.15926535897927, rel_tol=0.001)
+""""""","def volume_cone(r: float, h: float) -> float:
+""""""
+Write a function to find the volume of a cone.
+"""""""
+"from typing import List
+
+
+def reverse(lst: List[int]) -> List[int]:
+""""""If this challenge is too easy for you, check out: 
+https://www.codewars.com/kata/5cc89c182777b00001b3e6a2
+
+___
+
+Upside-Down Pyramid Addition is the process of taking a list of numbers and consecutively adding them together until you reach one number.
+
+When given the numbers `2, 1, 1` the following process occurs:
+```
+ 2   1   1
+   3   2 
+     5
+```
+
+This ends in the number `5`.
+
+___
+
+### YOUR TASK
+
+Given the right side of an Upside-Down Pyramid (Ascending), write a function that will return the original list.
+
+### EXAMPLE
+
+```python
+reverse([5, 2, 1]) == [2, 1, 1]
+```
+
+NOTE: The Upside-Down Pyramid will never be empty and will always consist of positive integers ONLY.
+""""""","from typing import List
+
+
+def reverse(lst: List[int]) -> List[int]:
+""""""If this challenge is too easy for you, check out: 
+https://www.codewars.com/kata/5cc89c182777b00001b3e6a2
+
+___
+
+Upside-Down Pyramid Addition is the process of taking a list of numbers and consecutively adding them together until you reach one number.
+
+___
+
+### YOUR TASK
+
+Given the right side of an Upside-Down Pyramid (Ascending), write a function that will return the original list.
+
+NOTE: The Upside-Down Pyramid will never be empty and will always consist of positive integers ONLY.
+"""""""

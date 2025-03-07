@@ -219,3 +219,55 @@ def function_name(argument: type_hint) -> return_type_hint:
 {programs_str}
 ```
 """
+
+
+instruction_repair_largest_cluster_requirement = "You are an assistant that repairs ambiguous requirements based on the correct implementation."
+
+
+def prompt_repair_largest_cluster_requirement(requirement, entry_point, programs, specified_programs):
+    programs_str = ""
+    for i, p in enumerate(programs):
+        programs_str += f"### Incorrect program {i}\n{p}\n"
+
+    return f"""
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+2. One correct implementation reflecting the intended behavior.
+3. Multiple incorrect implementations demonstrating alternative behaviors.
+
+Your task is to:
+1. **Analyze** the correct program to clearly identify the intended behavior.
+2. **Compare** this correct behavior with the incorrect implementations to pinpoint specific functional differences, such as:
+   - **Input/output handling** (e.g., format differences, varying data types).
+   - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
+3. **Revise** the identified functional differences. The revised description should guide an LLM to generate code matching exactly the behavior of the provided correct program.
+
+Important notes:
+- Ensure to preserve all original examples, illustrations, input/output samples, and intermediate explanations included in the original description.
+- If there is a contradiction between the correct program and the examples, prioritize the examples.
+- If the description contains references to other functions, leave those sections unchanged.
+
+Format your revised, unambiguous requirement explicitly in Python function syntax with type hints and a clear, concise docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
+
+```
+<requirement>
+def function_name(argument: type_hint) -> return_type_hint:
+    \"\"\"Revised description.\"\"\"
+</requirement>
+```
+
+**Ambiguous Problem Description:**
+```
+{requirement}
+```
+
+**Correct Program:**
+```
+{specified_programs}
+```
+
+**Incorrect Programs:**
+```
+{programs_str}
+```
+"""

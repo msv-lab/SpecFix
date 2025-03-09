@@ -8,6 +8,8 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     program_clusters.set_llm_generated_inputs(test_inputs)
     # Test each generated program against the reference
     for program_str in generated_programs:
+        if program_str == "":
+            continue
         result_list = execute_inputs(program_str, test_inputs, entry_point)
 
         # Use class Cluster to add program to cluster
@@ -28,11 +30,11 @@ def differential_tester(generated_programs, test_inputs, entry_point):
     return program_clusters
 
 
-def differential_tester_crosshair(generated_programs,entry_point):
+def differential_tester_crosshair(generated_programs, entry_point):
     program_clusters = Clusters()
     for program_str in generated_programs:
         for cluster in program_clusters.get_cluster_list():
-            if crosshair_compare(cluster.programs_str[0], program_str,entry_point):
+            if crosshair_compare(cluster.programs_str[0], program_str, entry_point):
                 cluster.add_program_str(program_str)
                 break
         else:
@@ -49,12 +51,11 @@ def ground_truth_tester(clusters, entry_point):
         program_str = cluster.programs_str[0]
         inputs, outputs = clusters.input_output_examples
         result_list = execute_inputs(program_str, inputs, entry_point)
-        failed_input_output_examples, t_consistency = get_failed_input_output(result_list,
-                                                                              inputs, outputs)
+        failed_input_output_examples, test_consistency = get_failed_input_output(result_list,
+                                                                                 inputs, outputs)
         cluster.failed_input_output_examples = failed_input_output_examples
-        cluster.test_consistency = t_consistency
-        if t_consistency == 1:
+        cluster.test_consistency = test_consistency
+        if test_consistency == 1:
             cluster.align()
     clusters.set_at_least_one_align()
     return clusters
-

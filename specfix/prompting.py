@@ -1,3 +1,4 @@
+
 instruction_generate_code = "You are an assistant that generates Python code based on requirement."
 
 
@@ -221,13 +222,101 @@ def function_name(argument: type_hint) -> return_type_hint:
 """
 
 
-instruction_repair_largest_cluster_requirement = "You are an assistant that repairs ambiguous requirements based on the correct implementation."
+instruction_ambiguity_localization = "You are an assistant that localizes the ambiguity in the requirement based on reference implementation."
 
 
-def prompt_repair_largest_cluster_requirement(requirement, entry_point, programs, specified_programs):
+def prompt_ambiguity_localization(requirement, entry_point, program):
+    return f"""
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+2. Reference implementation reflecting the intended behavior.
+
+Your task is to:
+1. **Analyze** the reference implementation to:
+    - Determine exact input requirements and output expectations
+    - Identify implicit constraints and edge case handling
+
+2. **Compare** each ambiguous sentence against the reference implementation to find:
+    - Mismatches in data types/structures or I/O formats
+    - Discrepancies in assumed vs actual behavior
+    - Missing critical implementation details
+   
+3. **Identify** the sentences or phrases in the ambiguous requirement 
+    - That led to the ambiguity in the incorrect implementations
+    - Only output the sentences or phrases that need revision
+
+Wrap each ambiguous sentence or phrase in <sentence></sentence> tag. Wrap all previous ambiguous sentences or phrases in <sentences><sentences>
+
+**Ambiguous Problem Description:**
+```
+{requirement}
+```
+
+**Reference implementation:**
+```
+{program}
+```
+"""
+
+
+instruction_ambiguous_sentence_repair = "You are an assistant that repairs ambiguous sentences based on the reference implementation."
+
+
+def prompt_ambiguous_sentence_repair(requirement, entry_point, sentences, program):
+    sentence_str = ""
+    for i, sentence in enumerate(sentences):
+        sentence_str += f"Identified ambiguous sentence {i}: {sentence}\n"
+    return f"""
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+2. Identified ambiguous sentences or phrases extracted from the ambiguous description, which cause divergent interpretations.
+2. Reference implementation reflecting the intended behavior.
+
+Your task is to:
+1. **Analyze** the reference implementation to:
+   - Determine exact input requirements and output expectations
+   - Identify implicit constraints and edge case handling
+
+2. **Compare** each ambiguous sentence against the reference implementation to find:
+   - Mismatches in data types/structures or I/O formats
+   - Discrepancies in assumed vs actual behavior
+   - Missing critical implementation details
+
+3. **Revise** ambiguous sentences to:
+   - Explicitly specify requirements demonstrated in the reference implementation
+   - Remove any interpretation possibilities conflicting with the reference implementation
+   - Maintain original sentence order and scope
+
+Output Requirements:
+- Return ONLY revised sentences wrapped in `<revised_sentence>` tags
+- Preserve original sentence order
+- Enclose all revisions in `<revised_sentences>`
+- Never include the full problem description
+
+**Ambiguous Problem Description:**
+```
+{requirement}
+```
+
+**Identified ambiguous sentences:**
+```
+{sentence_str}
+```
+
+**Reference implementation:**
+```
+{program}
+```
+"""
+
+
+instruction_ambiguity_localization_largest_cluster = "You are an assistant that localizes the ambiguity in the requirement based on correct implementation."
+
+
+def prompt_ambiguity_localization_largest_cluster(requirement, entry_point, programs, specified_program):
     programs_str = ""
     for i, p in enumerate(programs):
-        programs_str += f"### Incorrect program {i}\n{p}\n"
+        programs_str += f"Incorrect program {i}\n{p}\n"
 
     return f"""
 You are provided with:
@@ -236,38 +325,94 @@ You are provided with:
 3. Multiple incorrect implementations demonstrating alternative behaviors.
 
 Your task is to:
-1. **Analyze** the correct program to clearly identify the intended behavior.
-2. **Compare** this correct behavior with the incorrect implementations to pinpoint specific functional differences, such as:
-   - **Input/output handling** (e.g., format differences, varying data types).
-   - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
-3. **Revise** the identified functional differences. The revised description should guide an LLM to generate code matching exactly the behavior of the provided correct program.
+1. **Analyze** the reference implementation to:
+    - Determine exact input requirements and output expectations
+    - Identify implicit constraints and edge case handling
 
-Important notes:
-- Ensure to preserve all original examples, illustrations, input/output samples, and intermediate explanations included in the original description.
-- If there is a contradiction between the correct program and the examples, prioritize the examples.
-- If the description contains references to other functions, leave those sections unchanged.
+2. **Compare** each ambiguous sentence against the correct implementation and incorrect implementations to find:
+    - Mismatches in data types/structures or I/O formats
+    - Discrepancies in assumed vs actual behavior
+    - Missing critical implementation details
+   
+3. **Identify** the sentences or phrases in the ambiguous requirement 
+    - That led to the ambiguity in the incorrect implementations
+    - Only output the sentences or phrases that need revision
 
-Format your revised, unambiguous requirement explicitly in Python function syntax with type hints and a clear, concise docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
-
-```
-<requirement>
-def function_name(argument: type_hint) -> return_type_hint:
-    \"\"\"Revised description.\"\"\"
-</requirement>
-```
+Wrap your output in <sentence></sentence> tag.
 
 **Ambiguous Problem Description:**
 ```
 {requirement}
 ```
 
-**Correct Program:**
+**Correct implementation:**
 ```
-{specified_programs}
+{specified_program}
 ```
 
-**Incorrect Programs:**
+**Incorrect implementation:**
 ```
 {programs_str}
+``` 
+"""
+
+
+instruction_ambiguous_sentence_repair_largest_cluster = "You are an assistant that repairs ambiguous sentences based on the reference implementation."
+
+
+def prompt_ambiguous_sentence_repair_largest_cluster(requirement, entry_point, sentences, programs, specified_program):
+    sentence_str = ""
+    for i, sentence in enumerate(sentences):
+        sentence_str += f"Identified ambiguous sentence {i}: {sentence}\n"
+    programs_str = ""
+    for i, p in enumerate(programs):
+        programs_str += f"Incorrect program {i}\n{p}\n"
+
+    return f"""
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+2. Identified ambiguous sentences or phrases extracted from the ambiguous description, which cause divergent interpretations.
+3. One correct implementation reflecting the intended behavior.
+4. Multiple incorrect implementations demonstrating alternative behaviors.
+
+Your task is to:
+1. **Analyze** the reference implementation to:
+   - Determine exact input requirements and output expectations
+   - Identify implicit constraints and edge case handling
+
+2. **Compare** each ambiguous sentence against the correct implementation and incorrect implementations to find:
+   - Mismatches in data types/structures or I/O formats
+   - Discrepancies in assumed vs actual behavior
+   - Missing critical implementation details
+
+3. **Revise** ambiguous sentences to:
+   - Explicitly specify requirements demonstrated in the correct implementations
+   - Remove any interpretation possibilities conflicting with the correct implementations
+   - Maintain original sentence order and scope
+
+Output Requirements:
+- Return ONLY revised sentences wrapped in `<revised_sentence>` tags
+- Preserve original sentence order
+- Enclose all revisions in `<revised_sentences>`
+- Never include the full problem description
+
+**Ambiguous Problem Description:**
 ```
+{requirement}
+```
+
+**Identified ambiguous sentences:**
+```
+{sentence_str}
+```
+
+**Correct implementation:**
+```
+{specified_program}
+```
+
+**Incorrect implementation:**
+```
+{programs_str}
+``` 
 """

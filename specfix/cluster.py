@@ -42,7 +42,8 @@ class Clusters:
         total = sum([cluster.probability for cluster in self.cluster_list])
         entropy = sum(
             [-cluster.probability / total * math.log(cluster.probability / total) for cluster in self.cluster_list])
-        self.entropy = 0 if len(self.cluster_list) == 1 else entropy / math.log(len(self.cluster_list))
+        self.entropy = 0 if (len(self.cluster_list) == 1 or len(self.cluster_list) == 0) else entropy / math.log(
+            len(self.cluster_list))
 
     def get_largest_cluster(self):
         return max(self.cluster_list, key=lambda cluster: cluster.probability)
@@ -110,4 +111,3 @@ class Cluster:
         self.test_consistency = data['test_consistency']
         # self.failed_input_output_examples = ast.literal_eval(data['failed_input_output_examples'])
         return self
-

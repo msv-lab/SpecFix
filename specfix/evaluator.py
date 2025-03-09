@@ -5,7 +5,7 @@ from time import sleep
 from specfix.prompting import *
 from specfix.model import Model
 from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare, get_entry_point, \
-    get_failed_input_output
+    get_failed_input_output, calculate_pass_k
 
 
 class SpecFixAccuracyEvaluator:
@@ -33,7 +33,7 @@ class SpecFixAccuracyEvaluator:
         self.ground_truth_tester(clusters, entry_point)
         clusters.calculate_ambiguity()
 
-    def parallel_generate_programs(self, requirement, n_programs, entry_point, max_workers=10):
+    def parallel_generate_programs(self, requirement, n_programs, entry_point, max_workers=20):
         generated_programs = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(self.generate_program, requirement, entry_point)
@@ -44,18 +44,20 @@ class SpecFixAccuracyEvaluator:
         return generated_programs
 
     def generate_programs(self, requirement, n_programs, entry_point):
-        generated_programs = []
-        for _ in range(n_programs):
-            program = self.generate_program(requirement, entry_point)
-            generated_programs.append(program)
+        response = self.model.get_response_sample(instruction_generate_code,
+                                                  prompt_generate_code(requirement, entry_point), n_programs)
+        generated_programs = [unwrap(prog, "code") for prog in response if unwrap(prog, "code") != ""]
+        if len(generated_programs) < n_programs:
+            for _ in range(n_programs - len(generated_programs)):
+                generated_programs.append(self.generate_program(requirement, entry_point))
         return generated_programs
 
-    def generate_program(self, requirements, entry_point):
-        for i in range(10):
+    def generate_program(self, requirement, entry_point):
+        for i in range(5):
             try:
                 print("GENERATE PROGRAM ATTEMPT", i)
                 response = self.model.get_response(instruction_generate_code,
-                                                   prompt_generate_code(requirements, entry_point))
+                                                   prompt_generate_code(requirement, entry_point))
                 code = unwrap(response, "code")
                 if code == "":
                     raise Exception
@@ -97,14 +99,42 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
 
-    def repair_requirement(self, requirement, entry_point, code):
+    def repair_requirement(self, requirement, entry_point, program):
         for i in range(10):
             print("REPAIR REQUIREMENT", i)
             response = self.model.get_response(instruction_repair_requirement,
-                                               prompt_repair_requirement(requirement, entry_point, code))
+                                               prompt_repair_requirement(requirement, entry_point, program))
             repaired_requirement = unwrap(response, "requirement")
             if repaired_requirement != "":
                 return repaired_requirement
+
+    def repair_requirement_localization(self, requirement, entry_point, program):
+        for i in range(10):
+            print("REPAIR REQUIREMENT WITH LOCALIZATION", i)
+            identified_response = self.model.get_response(instruction_ambiguity_localization,
+                                                          prompt_ambiguity_localization(requirement, entry_point,
+                                                                                        program))
+            identified_sentences = unwrap(identified_response, "sentences")
+            identified_sentences_list = []
+            for sentence in identified_sentences.splitlines():
+                if sentence != "":
+                    sentence = unwrap(sentence, "sentence")
+                    if sentence in requirement:
+                        identified_sentences_list.append(sentence)
+            if not identified_sentences_list:
+                return self.repair_requirement(requirement, entry_point, program)
+            revised_response = self.model.get_response(instruction_ambiguous_sentence_repair,
+                                                       prompt_ambiguous_sentence_repair(requirement, entry_point,
+                                                                                        identified_sentences_list,
+                                                                                        program))
+            revised_sentences = unwrap(revised_response, "revised_sentences")
+            revised_sentences_list = [unwrap(sentence, "revised_sentence") for sentence in
+                                      revised_sentences.splitlines()]
+            for (identified_sentence, revised_sentence) in zip(identified_sentences_list, revised_sentences_list):
+                revised_sentence = (revised_sentence[0].upper() if identified_sentence[0].isupper() else
+                                    revised_sentence[0].lower()) + revised_sentence[1:]
+                requirement = requirement.replace(identified_sentence, revised_sentence)
+            return requirement
 
     def test_based_repair(self, requirement, entry_point, program, failed_input_output_examples):
         for i in range(10):
@@ -117,12 +147,14 @@ class SpecFixAccuracyEvaluator:
                 return repaired_program
 
     def classification(self, requirements):
-        print("CLASSIFICATION")
-        response = self.model.get_response(instruction_classification,
-                                           prompt_classification(requirements))
-        answer = unwrap(response, "answer")
-        reason = unwrap(response, "reasoning")
-        return answer, reason
+        for i in range(10):
+            print("CLASSIFICATION", i)
+            response = self.model.get_response(instruction_classification,
+                                               prompt_classification(requirements))
+            answer = unwrap(response, "answer")
+            reason = unwrap(response, "reasoning")
+            if answer == "Yes" or reason == "No":
+                return answer, reason
 
     def repair_largest_cluster_requirement(self, requirement, entry_point, programs, specified_programs):
         for i in range(10):
@@ -135,13 +167,56 @@ class SpecFixAccuracyEvaluator:
             if repaired_requirement != "":
                 return repaired_requirement
 
-    def pass_k(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
-        if entry_point == "combinations_colors":
-            return True, True, [[], [], [], []]
+    def repair_largest_cluster_requirement_localization(self, requirement, entry_point, programs, specified_programs):
+        for i in range(10):
+            print("REPAIR LARGEST CLUSTER REQUIREMENT WITH LOCALIZATION", i)
+            identified_response = self.model.get_response(instruction_ambiguity_localization_largest_cluster,
+                                                          prompt_ambiguity_localization_largest_cluster(requirement,
+                                                                                                        entry_point,
+                                                                                                        programs,
+                                                                                                        specified_programs))
+            identified_sentences = unwrap(identified_response, "sentences")
+            identified_sentences_list = []
+            for sentence in identified_sentences.splitlines():
+                if sentence != "":
+                    sentence = unwrap(sentence, "sentence")
+                    if sentence in requirement:
+                        identified_sentences_list.append(sentence)
+            if not identified_sentences_list:
+                return self.repair_largest_cluster_requirement(requirement, entry_point, programs, specified_programs)
+            revised_response = self.model.get_response(instruction_ambiguous_sentence_repair_largest_cluster,
+                                                       prompt_ambiguous_sentence_repair_largest_cluster(requirement,
+                                                                                                        entry_point,
+                                                                                                        identified_sentences_list,
+                                                                                                        programs,
+                                                                                                        specified_programs))
+            revised_sentences = unwrap(revised_response, "revised_sentences")
+            revised_sentences_list = [unwrap(sentence, "revised_sentence") for sentence in
+                                      revised_sentences.splitlines()]
+            for (identified_sentence, revised_sentence) in zip(identified_sentences_list, revised_sentences_list):
+                revised_sentence = (revised_sentence[0].upper() if identified_sentence[0].isupper() else
+                                    revised_sentence[0].lower()) + revised_sentence[1:]
+                requirement = requirement.replace(identified_sentence, revised_sentence)
+            return requirement
+
+    def pass_k_sample(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k, sample):
         original_results = []
         repaired_results = []
-        original_failed_inputs_outputs = []
-        repaired_failed_inputs_outputs = []
+        for _ in range(sample):
+            original_result, repaired_result = self.pass_k(original_requirement,
+                                                           repaired_requirement, inputs,
+                                                           outputs, entry_point, k)
+            original_results.append(original_result)
+            repaired_results.append(repaired_result)
+        return calculate_pass_k(sample, sum(original_results), k), calculate_pass_k(sample, sum(repaired_results),
+                                                                                    k)
+
+    def pass_k(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
+        if entry_point == "combinations_colors":
+            return True, True
+        original_results = []
+        repaired_results = []
+
         original_programs = []
         repaired_programs = []
         for _ in range(k):
@@ -154,8 +229,8 @@ class SpecFixAccuracyEvaluator:
                 if compare(original_result, outputs):
                     original_results.append(True)
                 else:
-                    original_failed_input_output, _ = get_failed_input_output(original_result, inputs, outputs)
-                    original_failed_inputs_outputs.append(original_failed_input_output)
+                    # original_failed_input_output, _ = get_failed_input_output(original_result, inputs, outputs)
+                    # original_failed_inputs_outputs.append(original_failed_input_output)
                     original_results.append(False)
 
             if repaired_requirement is not None:
@@ -169,11 +244,8 @@ class SpecFixAccuracyEvaluator:
                     if compare(repaired_result, outputs):
                         repaired_results.append(True)
                     else:
-                        repaired_failed_input_output, _ = get_failed_input_output(repaired_result, inputs, outputs)
-                        repaired_failed_inputs_outputs.append(repaired_failed_input_output)
+                        # repaired_failed_input_output, _ = get_failed_input_output(repaired_result, inputs, outputs)
+                        # repaired_failed_inputs_outputs.append(repaired_failed_input_output)
                         repaired_results.append(False)
-                        # if original_results[-1]:
-                        #     a = 1
         return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
-            original_results), [original_programs, original_failed_inputs_outputs, repaired_programs,
-                                repaired_failed_inputs_outputs]
+            original_results)

@@ -154,15 +154,21 @@ def wilson_lower(p_obs, n, z=1.96):
     return max(lower_bound, 0.0)
 
 
-def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
+def construct_output_file(cwd, model_name, dataset, threshold, wo_example, localization, task):
     if not os.path.exists(f"{cwd}/{task}/{model_name}"):
         os.makedirs(f"{cwd}/{task}/{model_name}")
 
-    # Open dataset and output JSONL in one place
-    if threshold is None:
-        output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}.jsonl"
+    if localization:
+        localization = "_localization"
     else:
-        output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}_{str(threshold)}.jsonl"
+        localization = ""
+
+    if threshold:
+        threshold = f"_{threshold}"
+    else:
+        threshold = ""
+
+    output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}{localization}{threshold}.jsonl"
     return output_file
 
 
@@ -311,8 +317,8 @@ def count_passk_ambiguous(label, model, dataset):
     repaired_result_list = []
     for result in results:
         if result["repaired_requirement"] is not None:
-            origin_result_list.append(result["original_result"])
-            repaired_result_list.append(result["repaired_result"])
+            origin_result_list.append(result["original_passk"])
+            repaired_result_list.append(result["repaired_passk"])
     print(
         f"{dataset} original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
 
@@ -334,8 +340,78 @@ def count_passk(label, model, dataset):
     original_results = []
     repaired_results = []
     for result in results:
-        original_results.append(result["original_result"])
-        repaired_results.append(result["repaired_result"])
+        original_results.append(result["original_passk"])
+        repaired_results.append(result["repaired_passk"])
     print(
         f"{dataset} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
 
+
+def count_overall_passk(label, model):
+    original_results = []
+    repaired_results = []
+    for filepath, dirname, filenames in os.walk(f"{label}/{model}/"):
+        for filename in filenames:
+            if "localization" in filename:
+                continue
+            results = read_jsonl(f"{filepath}{filename}")
+            for result in results:
+                original_results.append(result["original_passk"])
+                repaired_results.append(result["repaired_passk"])
+    print(
+        f"Overall original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+
+
+def count_overall_passk_ambiguous(label, model):
+    origin_result_list = []
+    repaired_result_list = []
+    for filepath, dirname, filenames in os.walk(f"{label}/{model}/"):
+        for filename in filenames:
+            results = read_jsonl(f"{filepath}{filename}")
+            for result in results:
+                if result["repaired_requirement"] is not None:
+                    origin_result_list.append(result["original_passk"])
+                    repaired_result_list.append(result["original_passk"])
+    print(
+        f"Overall original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
+
+
+def count_overall_ambiguity(label, model):
+    original_ambiguity = []
+    repaired_ambiguity = []
+    for filepath, dirname, filenames in os.walk(f"{label}/{model}/"):
+        for filename in filenames:
+            results = read_jsonl(f"{filepath}{filename}")
+            for result in results:
+                if result["repaired_clusters"] is not None:
+                    original_ambiguity.append(result["original_clusters"]["ambiguity"])
+                    repaired_ambiguity.append(result["repaired_clusters"]["ambiguity"])
+    print(
+        f"Overall original ambiguity: {sum(original_ambiguity) / len(original_ambiguity)}, repaired ambiguity: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
+
+
+def calculate_pass_k(n, c, k):
+    """
+       Computes pass@k metric for code generation tasks.
+
+       Args:
+           n: Total number of generated samples.
+           c: Number of correct samples that pass the tests.
+           k: The k in pass@k (number of attempts allowed).
+
+       Returns:
+           The estimated pass@k metric.
+
+       Raises:
+           ValueError: If the inputs are invalid.
+       """
+    if c == 0:
+        return 0.0
+
+    if (n - c) < k:
+        return 1.0
+
+    prob_no_pass = 1.0
+    for i in range(k):
+        prob_no_pass *= (n - c - i) / (n - i)
+
+    return 1 - prob_no_pass

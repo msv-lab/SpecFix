@@ -67,7 +67,7 @@ class SpecFixAccuracyEvaluator:
             return generated_programs
 
     def generate_program(self, requirement, entry_point):
-        for i in range(5):
+        for i in range(2):
             try:
                 print("GENERATE PROGRAM ATTEMPT", i)
                 response = self.model.get_response(instruction_generate_code,
@@ -167,7 +167,7 @@ class SpecFixAccuracyEvaluator:
                                                prompt_classification(requirements))
             answer = unwrap(response, "answer")
             reason = unwrap(response, "reasoning")
-            if answer == "Yes" or reason == "No":
+            if answer == "Yes" or answer == "No":
                 return answer, reason
 
     def repair_largest_cluster_requirement(self, requirement, entry_point, programs, specified_programs):

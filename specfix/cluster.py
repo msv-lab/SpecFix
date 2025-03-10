@@ -39,11 +39,11 @@ class Clusters:
             cluster.probability = len(cluster.programs_str) / total
 
     def calculate_entropy(self):
-        total = sum([cluster.probability for cluster in self.cluster_list])
-        entropy = sum(
-            [-cluster.probability / total * math.log(cluster.probability / total) for cluster in self.cluster_list])
-        self.entropy = 0 if (len(self.cluster_list) == 1 or len(self.cluster_list) == 0) else entropy / math.log(
-            len(self.cluster_list))
+        if len(self.cluster_list) == 1 or len(self.cluster_list) == 0:
+            self.entropy = 0
+        else:
+            entropy = sum([-cluster.probability * math.log(cluster.probability) for cluster in self.cluster_list])
+            self.entropy = entropy / math.log(len(self.cluster_list))
 
     def get_largest_cluster(self):
         return max(self.cluster_list, key=lambda cluster: cluster.probability)

@@ -1,5 +1,6 @@
 import ast
 import concurrent.futures
+import math
 from time import sleep
 
 from specfix.prompting import *
@@ -33,7 +34,7 @@ class SpecFixAccuracyEvaluator:
         self.ground_truth_tester(clusters, entry_point)
         clusters.calculate_ambiguity()
 
-    def parallel_generate_programs(self, requirement, n_programs, entry_point, max_workers=20):
+    def parallel_generate_programs(self, requirement, entry_point, n_programs, max_workers=10):
         generated_programs = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(self.generate_program, requirement, entry_point)
@@ -43,14 +44,27 @@ class SpecFixAccuracyEvaluator:
                 generated_programs.append(prog)
         return generated_programs
 
-    def generate_programs(self, requirement, n_programs, entry_point):
-        response = self.model.get_response_sample(instruction_generate_code,
-                                                  prompt_generate_code(requirement, entry_point), n_programs)
-        generated_programs = [unwrap(prog, "code") for prog in response if unwrap(prog, "code") != ""]
-        if len(generated_programs) < n_programs:
-            for _ in range(n_programs - len(generated_programs)):
-                generated_programs.append(self.generate_program(requirement, entry_point))
-        return generated_programs
+    def generate_programs(self, requirement, entry_point, n_programs):
+        if "deepseek" in self.model.model:
+            generated_programs = []
+            for _ in range(math.ceil(n_programs / 5)):
+                response = self.model.get_response_sample(instruction_generate_code,
+                                                          prompt_generate_code(requirement, entry_point), 5)
+                generated_programs.extend([unwrap(prog, "code") for prog in response if unwrap(prog, "code") != ""])
+            if len(generated_programs) < n_programs:
+                for _ in range(n_programs - len(generated_programs)):
+                    generated_programs.append(self.generate_program(requirement, entry_point))
+            elif len(generated_programs) > n_programs:
+                generated_programs = generated_programs[: n_programs]
+            return generated_programs
+        else:
+            response = self.model.get_response_sample(instruction_generate_code,
+                                                      prompt_generate_code(requirement, entry_point), n_programs)
+            generated_programs = [unwrap(prog, "code") for prog in response if unwrap(prog, "code") != ""]
+            if len(generated_programs) < n_programs:
+                for _ in range(n_programs - len(generated_programs)):
+                    generated_programs.append(self.generate_program(requirement, entry_point))
+            return generated_programs
 
     def generate_program(self, requirement, entry_point):
         for i in range(5):
@@ -199,53 +213,26 @@ class SpecFixAccuracyEvaluator:
                 requirement = requirement.replace(identified_sentence, revised_sentence)
             return requirement
 
-    def pass_k_sample(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k, sample):
-        original_results = []
-        repaired_results = []
-        for _ in range(sample):
-            original_result, repaired_result = self.pass_k(original_requirement,
-                                                           repaired_requirement, inputs,
-                                                           outputs, entry_point, k)
-            original_results.append(original_result)
-            repaired_results.append(repaired_result)
-        return calculate_pass_k(sample, sum(original_results), k), calculate_pass_k(sample, sum(repaired_results),
-                                                                                    k)
-
-    def pass_k(self, original_requirement, repaired_requirement, inputs, outputs, entry_point, k):
+    def pass_k_sample(self, requirement, inputs, outputs, entry_point, k, sample):
         if entry_point == "combinations_colors":
-            return True, True
-        original_results = []
-        repaired_results = []
+            return calculate_pass_k(sample, sample, k), [], []
+        if requirement is None:
+            return None, [], []
+        passes = 0
+        generated_programs = []
+        actual_outputs = []
+        for _ in range(sample):
+            passed = False
+            for _ in range(k):
+                program = self.generate_program(requirement, entry_point)
+                if not program:
+                    continue
+                generated_programs.append(program)
+                result = execute_inputs(program, inputs, entry_point)
+                actual_outputs.append(result)
+                if compare(result, outputs):
+                    passed = True
+                    break
+            passes += int(passed)
 
-        original_programs = []
-        repaired_programs = []
-        for _ in range(k):
-            original_program = self.generate_program(original_requirement, entry_point)
-            original_programs.append(original_program)
-            if original_program == "":
-                original_results.append(False)
-            else:
-                original_result = execute_inputs(original_program, inputs, entry_point)
-                if compare(original_result, outputs):
-                    original_results.append(True)
-                else:
-                    # original_failed_input_output, _ = get_failed_input_output(original_result, inputs, outputs)
-                    # original_failed_inputs_outputs.append(original_failed_input_output)
-                    original_results.append(False)
-
-            if repaired_requirement is not None:
-                repaired_entry_point = get_entry_point(repaired_requirement)
-                repaired_program = self.generate_program(repaired_requirement, repaired_entry_point)
-                repaired_programs.append(repaired_program)
-                if repaired_program == "":
-                    repaired_results.append(False)
-                else:
-                    repaired_result = execute_inputs(repaired_program, inputs, repaired_entry_point)
-                    if compare(repaired_result, outputs):
-                        repaired_results.append(True)
-                    else:
-                        # repaired_failed_input_output, _ = get_failed_input_output(repaired_result, inputs, outputs)
-                        # repaired_failed_inputs_outputs.append(repaired_failed_input_output)
-                        repaired_results.append(False)
-        return any(original_results), any(repaired_results) if repaired_requirement is not None else any(
-            original_results)
+        return calculate_pass_k(sample, passes, k), generated_programs, actual_outputs

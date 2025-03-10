@@ -7,7 +7,7 @@ import types
 import random
 from os.path import dirname, abspath
 from typing import List, Dict, Set, Tuple
-
+from copy import deepcopy
 import math
 import re
 import jsonlines
@@ -72,12 +72,17 @@ def execute(func_str, func_args, entry_point):
             return e.__class__.__name__
 
 
+def deepcopy_arguments(arguments):
+    return deepcopy(arguments)
+
+
 def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
     for i in trange(len(inputs_list)):
         try:
-            # results.append([execute(func_str, inputs_list[i], entry_point)])
-            results.append([func_timeout(timeout, execute, args=(func_str, inputs_list[i], entry_point))])
+            # results.append([execute(func_str, deepcopy_arguments(inputs_list[i]), entry_point)])
+            results.append(
+                [func_timeout(timeout, execute, args=(func_str, deepcopy_arguments(inputs_list[i]), entry_point))])
         except FunctionTimedOut:
             results.append(["Timeout"])
     return results
@@ -222,7 +227,7 @@ def get_entry_point(requirement):
     return None
 
 
-def deepcopy(program, entry_point):
+def deepcopy_crosshair(program, entry_point):
     try:
         namespace = {}
         exec(program, namespace)
@@ -278,12 +283,12 @@ def f({', '.join(type_hints)}):
 def crosshair_compare(program1, program2, entry_point):
     with tempfile.TemporaryDirectory(delete=True) as tmpdirname:
         with open(f"{tmpdirname}/program1.py", "w") as f:
-            program1 = deepcopy(program1, entry_point).strip()
+            program1 = deepcopy_crosshair(program1, entry_point).strip()
             if program1 == "":
                 return False
             f.write(program1)
         with open(f"{tmpdirname}/program2.py", "w") as f:
-            program2 = deepcopy(program2, entry_point).strip()
+            program2 = deepcopy_crosshair(program2, entry_point).strip()
             if program2 == "":
                 return False
             f.write(program2)

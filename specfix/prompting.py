@@ -110,9 +110,9 @@ Below is a Python program along with:
     - Expected (canonical) output.
 
 Your task is to:
-• Understand the task requirement and python program.
-• Compare the actual output with the canonical output to determine why the program is faulty. Identify logical errors, syntax issues, or edge-case handling flaws.
-• Provide a corrected version of the Python code that, when run on the given test input, will produce the expected (canonical) output.
+• **Analyze** the task requirement carefully to understand the intended behavior of the function.
+• **Examine** the provided test cases, comparing the actual output with the expected output to clearly identify the underlying issue(s) such as logic errors, incorrect calculations, edge-case mishandling, or syntax issues.
+• **Fix** the Python function, ensuring the revised code passes all the provided test cases by generating the correct outputs.
 
 Requirement:
 {requirement}
@@ -146,8 +146,9 @@ Your task is to follow these steps:
 
 Important notes:
 - Ensure to preserve all original examples, illustrations, input/output samples, and intermediate explanations included in the original description.
-- If there is a contradiction between the correct program and the examples, prioritize the examples.
+- If there is a contradiction between the correct program and examples, **prioritize the examples**.
 - If the description contains references to other functions, leave those sections unchanged.
+- Don't generate code, only repair the requirement.
 
 Format your revised, unambiguous requirement explicitly in Python function syntax with type hints and a clear, concise docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
 
@@ -193,8 +194,9 @@ Your task is to:
 
 Important notes:
 - Ensure to preserve all original examples, illustrations, input/output samples, and intermediate explanations included in the original description.
-- If there is a contradiction between the correct program and the examples, prioritize the examples.
+- If there is a contradiction between the correct program and the examples, **prioritize the examples**.
 - If the description contains references to other functions, leave those sections unchanged.
+- Don't generate code, only repair the requirement.
 
 Format your revised, unambiguous requirement explicitly in Python function syntax with type hints and a clear, concise docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
 

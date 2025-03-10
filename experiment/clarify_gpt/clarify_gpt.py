@@ -1,91 +1,41 @@
 import argparse
-import random
 import concurrent.futures
 import jsonlines
 import configparser
-import re
-from scipy.stats import pointbiserialr
-from specfix.differential import differential_tester, calculate_accuracy_ground_truth_testing
+from os.path import dirname, abspath
+
+from specfix.differential import differential_tester, ground_truth_tester
 from specfix.evaluator import SpecFixAccuracyEvaluator
-from specfix.utils import construct_requirement
+from specfix.utils import get_evalplus_inputs_outputs, get_taco_lite_inputs_outputs, construct_output_file
 
-def extract_taco_tests(requirement_text):
 
-    # find blocks that begin with Example
-    pattern1 = r"(Example\s*\d*:\s*.*?)(?=(?:Example\s*\d*:|Your Task:|$))"
-    examples = re.findall(pattern1, requirement_text, re.DOTALL)
-    if examples and any(example.strip() for example in examples):
-        return "\n\n".join(example.strip() for example in examples)
-    
-    # try to find a markdown ## Examples section
-    if "## Examples" in requirement_text:
-        # This pattern captures from "## Examples" until the next markdown header ("## ") or end-of-text.
-        pattern2 = r"(## Examples\s*.*?)(?=\n##\s|$)"
-        md_examples = re.findall(pattern2, requirement_text, re.DOTALL)
-        if md_examples and any(section.strip() for section in md_examples):
-            return "\n\n".join(section.strip() for section in md_examples)
-    
-    # capture any lines containing "Input:" or "Output:"
-    lines = requirement_text.splitlines()
-    test_lines = [line for line in lines if re.search(r'Input:|Output:', line)]
-    return "\n".join(test_lines)
-
-def extract_humaneval_tests(requirement):
-
-    pattern = re.compile(r'^( {4}>>>.*(?:\n(?! {4}>>>).*)*)', re.MULTILINE)
-    matches = pattern.findall(requirement)
-    
-    # Join each block with a blank line between them
-    return "\n\n".join(match.strip() for match in matches)
-
-def extract_mbpp_tests(requirement):
-    # We don't want to use private tests like ClarifyGPT did: only public
-    match = re.search(r'assert.*', requirement)
-    return match.group(0) if match else None
-
-def parse_problem(problem, dataset):
-    # ORIGINAL clarifyGPT, with private tests exposed
-    # if dataset == "clarify_mbpp":
-    #     # Exact dataset clarifyGPT used, for exact replica. Tests are PRIVATE
-    #     requirement = problem['prompt']
-    #     tests = problem['tests']
-    #     canonical_solution = problem['canonical_solution']
-    
-    if dataset == "taco_lite":
-        requirement = construct_requirement(problem['requirement'], problem['starter_code'])
-        canonical_solution = random.choice(problem['solutions'])   
-    else:
-        requirement = problem['requirement']
-        canonical_solution = problem['canonical_solution']
-        
+def parse_problem(problem):
+    requirement = problem['requirement']
+    examples = problem['input_output_examples']
     entry_point = problem['entry_point']
-    return requirement, canonical_solution, entry_point
+    task_id = problem['task_id']
+    return requirement, entry_point, examples, task_id
 
 
-def generate_and_test(specfix_evaluator, requirement, test_inputs, entry_point, canonical_solution, n_programs, n_shot, initial=False):
+def generate_programs(specfix_evaluator, requirement, n_programs, n_shot, initial=False):
     generated_programs = []
-
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        evaluator = specfix_evaluator.generate_initial_programs_clarify_gpt if initial else specfix_evaluator.generate_programs_clarify_gpt 
+        evaluator = specfix_evaluator.generate_initial_program_clarify_gpt if initial else specfix_evaluator.generate_program_clarify_gpt 
         futures = [executor.submit(evaluator, requirement, n_shot)
                    for _ in range(n_programs)]
         for future in concurrent.futures.as_completed(futures):
             prog = future.result()
             generated_programs.append(prog)
 
-    print("Differential Testing")
-    clusters = differential_tester(generated_programs, test_inputs, entry_point)
-    calculate_accuracy_ground_truth_testing(canonical_solution, clusters, test_inputs, entry_point)
-    return clusters
+    return generated_programs
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset", dest="dataset",
                         help="Name of dataset: taco_lite, humaneval, mbpp")
-    parser.add_argument("-p", "--dataset_path", dest="dataset_path",
-                        help="Path to dataset")
-    parser.add_argument("-n", "--program_number", dest="number", type=int, default=50)
+    parser.add_argument("-m", "--model", dest="model")
+    parser.add_argument("-n", "--program_number", dest="number", type=int, default=20)
     parser.add_argument("-woe", "--without_example", dest="without_example", action='store_true')
     parser.add_argument("-ns", "--nshot", dest="n_shot", default="zero_shot",
                         help="Number of shots (demonstrations) given to LLM before prompt: one_shot, two_shot, three_shot")
@@ -95,7 +45,11 @@ def main():
     config = configparser.ConfigParser()
     config.read('../../.config')
 
-    model_name = "qwen2.5-coder-14b-instruct"
+    # model_name = "qwen2.5-coder-32b-instruct"
+    model_name = options.model
+    # if ("deepseek" in model_name):
+    #     api_key = config['API_KEY']['deepseek_key']
+    # else:
     api_key = config['API_KEY']['qwen_key']
 
     # For all LLMs, we set the top p to 0.95, the frequency_penalty to 0. The max_tokens represents the maximum
@@ -113,37 +67,65 @@ def main():
         temperature=0,
         top_p=0.95
     )
-    # ONLY TESTED FOR CLARIFY_MBPP
+
     dataset = options.dataset
-    dataset_path = options.dataset_path
-    n_programs = options.number
     wo_example = "_woe" if options.without_example else ""
+    dataset_path = f"../../dataset/{dataset}{wo_example}.jsonl"
+    n_programs = options.number
     n_shot = options.n_shot
-    entropy_list = []
+    threshold = 0
+    original_results = []
+    repaired_results = []
+
+    if dataset == "humaneval" or dataset == "mbpp":
+        inputs, outputs = get_evalplus_inputs_outputs(dataset)
+    else:
+        inputs, outputs = get_taco_lite_inputs_outputs()
 
     # Open dataset and output JSONL in one place
-    output_file = f"{dataset}{wo_example}_clarify_gpt_{n_shot}.jsonl"
+    results_path = "results.jsonl"
+    
+    output_file = construct_output_file(dirname(abspath(__file__)), model_name, dataset, threshold, wo_example,
+                                        f"clarify_gpt_{n_shot}")
+    # output_file = f"/{model_name}/{dataset}{wo_example}_clarify_gpt_{n_shot}.jsonl"
     with jsonlines.open(dataset_path) as reader, jsonlines.open(output_file, mode='w', flush=True) as writer:
         for i, problem in enumerate(reader):
-            requirement, canonical_solution, entry_point = parse_problem(problem, dataset)
+            # Ignore the first 50 entries in the dataset, as we have used these for tuning our threshold
+            if (i < 50):
+                continue
+            
+            requirement, entry_point, examples, task_id = parse_problem(problem)
+            
+            # Skip extremely computationally expensive case and broken test inputs case
+            if (task_id == "Mbpp/255" or task_id == "TACO_lite/1691"):
+                continue
+            
 
-            print(f"Case {i}: {requirement}")
+            print(f"Case {task_id}:\n {requirement}")
 
-            test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
+            # test_inputs = specfix_accuracy_evaluator.generate_tests_clarify_gpt(requirement, n_shot)
+            # Use the same generated inputs for all tests to eliminate randomness for better result reproduction
+            # print(problem['qwen2.5-coder-32b-instruct'])
+            test_inputs = problem['llm_generated_inputs'][model_name]
             mutated_test_inputs = specfix_accuracy_evaluator.type_aware_mutation(test_inputs)
-            print(f"Test inputs: {test_inputs}")
-            print(f"Mutated test inputs: {mutated_test_inputs}")
-            clusters = generate_and_test(
+            print(f"Mutated test inputs:\n {mutated_test_inputs}")
+            
+            generated_programs = generate_programs(
                 specfix_evaluator=specfix_accuracy_evaluator,
                 requirement=requirement,
-                test_inputs=mutated_test_inputs,
-                entry_point=entry_point,
-                canonical_solution=canonical_solution,
                 n_programs=n_programs,
                 n_shot=n_shot,
                 initial=True
             )
-            print(f"Case {i}: clusters entropy: {clusters.entropy}")
+            
+            print("Differential Testing:\n")
+            clusters = differential_tester(generated_programs, mutated_test_inputs, entry_point)
+            clusters.set_input_output_examples(examples)
+            ground_truth_tester(clusters, entry_point)
+            
+            repaired_requirement = None
+            repaired_clusters = None
+            print(f"Clusters entropy: {clusters.entropy}")
             # Note: in ClarifyGPT's case, our threshold is 0. They think a solution is ambiguous if there are ANY non identical solutions
             # see quote:
             
@@ -158,56 +140,48 @@ def main():
             # whether they produce identical outputs when tested with the generated input. If the outputs are
             # not identical, ClarifyGPT determines that the requirement requires further clarification; and vice
             # versa
-            threshold = 0
+
             if clusters.entropy > threshold:
                 
                 # Generate clarifying questions using requirements and clusters
-                inconsistent_solutions = [c.programs_str[0] for c in clusters.clusters]
+                inconsistent_solutions = [c.programs_str[0] for c in clusters.get_cluster_list()]
                 clarifying_questions = specfix_accuracy_evaluator.generate_clarifying_question_clarify_gpt(requirement, inconsistent_solutions, n_shot)
-                
+                print(f"Clarifying Questions:\n{clarifying_questions}")
                 # Repair requirement 
                 repaired_requirement = specfix_accuracy_evaluator.repair_requirements_clarify_gpt(requirement, clarifying_questions, n_shot)
-                print(f"Case {i}: Repaired requirement: {repaired_requirement}")
+                print(f"Repaired requirement:\n{repaired_requirement}")
 
-                repaired_clusters = generate_and_test(
+                generated_programs = generate_programs(
                     specfix_evaluator=specfix_accuracy_evaluator,
                     requirement=repaired_requirement,
-                    test_inputs=mutated_test_inputs,
-                    entry_point=entry_point,
-                    canonical_solution=canonical_solution,
                     n_programs=n_programs,
                     n_shot=n_shot
                 )
-                entropy_diff = clusters.entropy - repaired_clusters.entropy
-                result = {
-                    'original_requirement': requirement,
-                    'original_clusters': clusters.serialize(),
-                    'repaired_requirement': repaired_requirement,
-                    'repaired_clusters': repaired_clusters.serialize(),
-                    'entropy_diff': entropy_diff
-                }
-            else:
-                result = {
-                    'original_requirement': requirement,
-                    'original_clusters': clusters.serialize(),
-                }
-            writer.write(result)
-            entropy_list.append(clusters.entropy)
+                
+                print("Differential Testing:\n")
+                repaired_clusters = differential_tester(generated_programs, mutated_test_inputs, entry_point)
+                repaired_clusters.set_input_output_examples(examples)
+                ground_truth_tester(clusters, entry_point)
+            
+            original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k_clarify_gpt(requirement, repaired_requirement, inputs[i], outputs[i], entry_point, n_shot, 1)
+            # original_result, repaired_result, failed_inputs_ouputs = specfix_accuracy_evaluator.pass_k_(requirement, repaired_requirement, inputs[i], outputs[i], entry_point, 1)
 
-    with jsonlines.open(f"{dataset}{wo_example}_pilot_correlation.jsonl", mode='w', flush=True) as writer, \
-            jsonlines.open(f"../ambiguity_classification/{dataset}_pilot_classification.jsonl") as pilot:
-        labels = [1 if problem['label'] == 'Yes' else 0 for problem in pilot]
-
-        # The point biserial correlation is used to measure the relationship between a binary variable, x, and a continuous variable, y. Like other correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. Correlations of -1 or +1 imply a determinative relationship.
-        correlation, p_value = pointbiserialr(entropy_list, labels)
-
-        result = {
-            'entropy': entropy_list,
-            'labels': labels,
-            'correlation': correlation,
-            'p_value': p_value
-        }
-        writer.write(result)
+            writer.write({
+                "requirement": requirement,
+                "repaired_requirement": repaired_requirement,
+                "original_clusters": clusters.serialize(),
+                "repaired_clusters": repaired_clusters.serialize() if repaired_clusters is not None else None,
+                "original_result": original_result,
+                "repaired_result": repaired_result,
+                "original_failed_inputs_outputs": str(failed_inputs_ouputs[0]),
+                "repaired_failed_inputs_outputs": str(failed_inputs_ouputs[1])
+            })
+            original_results.append(original_result)
+            repaired_results.append(repaired_result)
+            print(
+                f"By case {task_id}, original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+        print(
+            f"{dataset}{wo_example} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
 
 
 if __name__ == "__main__":

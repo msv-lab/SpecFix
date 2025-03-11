@@ -46,7 +46,16 @@ class Clusters:
             self.entropy = entropy / math.log(len(self.cluster_list))
 
     def get_largest_cluster(self):
-        return max(self.cluster_list, key=lambda cluster: cluster.probability)
+        # first find the largest cluster with test_consistency=1, if not found, return the largest cluster.
+        cluster_1 = []
+        for cluster in self.cluster_list:
+            if cluster.test_consistency == 1:
+                cluster_1.append(cluster)
+        if cluster_1:
+            largest_cluster = max(cluster_1, key=lambda x: len(x.programs_str))
+        else:
+            largest_cluster = max(self.cluster_list, key=lambda x: len(x.programs_str))
+        return largest_cluster
 
     def serialize(self):
         return {

@@ -5,6 +5,7 @@ import sys
 import tempfile
 import types
 import random
+from datetime import datetime
 from os.path import dirname, abspath
 from typing import List, Dict, Set, Tuple
 from copy import deepcopy
@@ -72,17 +73,14 @@ def execute(func_str, func_args, entry_point):
             return e.__class__.__name__
 
 
-def deepcopy_arguments(arguments):
-    return deepcopy(arguments)
-
-
 def execute_inputs(func_str, inputs_list, entry_point, timeout=1):
     results = []
     for i in trange(len(inputs_list)):
         try:
             # results.append([execute(func_str, deepcopy_arguments(inputs_list[i]), entry_point)])
+            deepcopy_argument = deepcopy(inputs_list[i])
             results.append(
-                [func_timeout(timeout, execute, args=(func_str, deepcopy_arguments(inputs_list[i]), entry_point))])
+                [func_timeout(timeout, execute, args=(func_str, deepcopy_argument, entry_point))])
         except FunctionTimedOut:
             results.append(["Timeout"])
     return results
@@ -100,8 +98,8 @@ def unwrap(string: str, label: str) -> str:
     if label == 'code':
         try:
             cleaned = remove_comments_and_asserts(extracted)
-            # return transform_code(cleaned).strip()
-            return cleaned.strip()
+            return transform_code(cleaned).strip()
+            # return cleaned.strip()
         except Exception as e:
             print("AST parsing error")
             print(extracted)
@@ -116,6 +114,8 @@ def get_failed_input_output(result_list, inputs, outputs):
     failed_input_output_examples = []
     for i in range(len(inputs)):
         if not compare(result_list[i], outputs[i]):
+            if len(str(result_list[i])) > 100 or len(str(outputs[i])) > 100:
+                continue
             failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
     return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
 
@@ -159,21 +159,21 @@ def wilson_lower(p_obs, n, z=1.96):
     return max(lower_bound, 0.0)
 
 
-def construct_output_file(cwd, model_name, dataset, threshold, wo_example, localization, task):
-    if not os.path.exists(f"{cwd}/{task}/{model_name}"):
-        os.makedirs(f"{cwd}/{task}/{model_name}")
-
-    if localization:
-        localization = "_localization"
-    else:
-        localization = ""
+def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
+    # timestamp by minute
+    time_stamp = datetime.now().strftime("%Y%m%d%H%M")
+    if not os.path.exists(f"{cwd}/{task}/{model_name}/{time_stamp}"):
+        os.makedirs(f"{cwd}/{task}/{model_name}/{time_stamp}")
 
     if threshold:
         threshold = f"_{threshold}"
     else:
         threshold = ""
 
-    output_file = f"{cwd}/{task}/{model_name}/{dataset}{wo_example}{localization}{threshold}.jsonl"
+    if wo_example is None:
+        wo_example = ""
+
+    output_file = f"{cwd}/{task}/{model_name}/{time_stamp}/{dataset}{wo_example}{threshold}.jsonl"
     return output_file
 
 
@@ -218,6 +218,13 @@ def get_taco_lite_inputs_outputs():
     path = dirname(abspath(__file__)) + '/../dataset/' + "taco_lite.jsonl"
     problems = read_jsonl(path)
     return [problem['inputs'] for problem in problems], [problem['outputs'] for problem in problems]
+
+
+def get_inputs_outputs(data_name):
+    if data_name == "humaneval" or data_name == "mbpp":
+        return get_evalplus_inputs_outputs(data_name)
+    else:
+        return get_taco_lite_inputs_outputs()
 
 
 def get_entry_point(requirement):

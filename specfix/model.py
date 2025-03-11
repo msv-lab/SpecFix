@@ -8,12 +8,10 @@ config.read(dirname(abspath(__file__)) + '/../.config')
 
 
 class Model:
-    def __init__(self, model, temperature=1, top_p=1, frequency_penalty=0):
+    def __init__(self, model, temperature=0):
         self.model = model
         self.client = self.model_setup()
         self.temperature = temperature
-        self.top_p = top_p
-        self.frequency_penalty = frequency_penalty
 
     def model_setup(self):
         if "qwen" in self.model:
@@ -81,8 +79,6 @@ class Model:
                         ],
                         model=self.model,
                         temperature=self.temperature,
-                        top_p=self.top_p,
-                        frequency_penalty=self.frequency_penalty,
                         n=n
                     )
                     responses = [chat_completion.choices[i].message.content for i in range(n)]
@@ -110,8 +106,6 @@ class Model:
                         ],
                         model=self.model,
                         temperature=self.temperature,
-                        top_p=self.top_p,
-                        frequency_penalty=self.frequency_penalty
                     )
                 response = chat_completion.choices[0].message.content
                 if response:

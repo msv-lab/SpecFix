@@ -117,7 +117,7 @@ class SpecFixAccuracyEvaluator:
         for i in range(10):
             print("REPAIR REQUIREMENT", i)
             response = self.model.get_response(instruction_repair_requirement,
-                                               prompt_repair_requirement(requirement, entry_point, program))
+                                               prompt_repair_requirement(requirement, entry_point, program), True)
             repaired_requirement = unwrap(response, "requirement")
             if repaired_requirement != "":
                 return repaired_requirement
@@ -155,7 +155,7 @@ class SpecFixAccuracyEvaluator:
             print("TEST BASED REPAIR", i)
             response = self.model.get_response(instruction_test_based_repair,
                                                prompt_test_based_repair(requirement, entry_point, program,
-                                                                        failed_input_output_examples))
+                                                                        failed_input_output_examples), True)
             repaired_program = unwrap(response, "code")
             if repaired_program != "":
                 return repaired_program
@@ -176,7 +176,7 @@ class SpecFixAccuracyEvaluator:
             response = self.model.get_response(instruction_repair_largest_cluster_requirement,
                                                prompt_repair_largest_cluster_requirement(requirement, entry_point,
                                                                                          programs,
-                                                                                         specified_programs))
+                                                                                         specified_programs), True)
             repaired_requirement = unwrap(response, "requirement")
             if repaired_requirement != "":
                 return repaired_requirement
@@ -220,19 +220,22 @@ class SpecFixAccuracyEvaluator:
             return None, [], []
         passes = 0
         generated_programs = []
-        actual_outputs = []
+        failed_inputs_outputs = []
+        actual_sample = sample
         for _ in range(sample):
             passed = False
             for _ in range(k):
                 program = self.generate_program(requirement, entry_point)
                 if not program:
+                    actual_sample -= 1
                     continue
                 generated_programs.append(program)
                 result = execute_inputs(program, inputs, entry_point)
-                actual_outputs.append(result)
+                failed_input_output, _ = get_failed_input_output(result, inputs, outputs)
+                failed_inputs_outputs.append(failed_input_output)
                 if compare(result, outputs):
                     passed = True
                     break
             passes += int(passed)
 
-        return calculate_pass_k(sample, passes, k), generated_programs, actual_outputs
+        return calculate_pass_k(actual_sample, passes, k), generated_programs, failed_inputs_outputs

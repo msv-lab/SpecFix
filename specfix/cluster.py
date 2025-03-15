@@ -3,7 +3,7 @@ import ast
 import math
 import sys
 
-from specfix.utils import wilson_lower
+from specfix.utils import get_exception_list, compare, get_inputs_outputs
 
 sys.set_int_max_str_digits(0)
 
@@ -17,23 +17,29 @@ class Clusters:
         self.at_least_one_align = None  # whether at least one cluster is aligned with the examples.
         self.weighted_test_consistency = 0  # weighted test consistency for semantic measure.
         self.ambiguity = 0  # ambiguity of the clusters.
+        self.requirement = ""  # requirement for the clusters.
+        self.entry_point = ""
 
     def add_cluster(self, cluster):
         self.cluster_list.append(cluster)
 
-    def get_cluster_list(self):
-        return self.cluster_list
+    def set_requirement(self, requirement):
+        self.requirement = requirement
+
+    def set_entry_point(self, entry_point):
+        self.entry_point = entry_point
 
     def set_llm_generated_inputs(self, llm_generated_inputs):
         self.llm_generated_inputs = llm_generated_inputs
 
     def set_input_output_examples(self, input_output_examples):
-        self.input_output_examples = eval(input_output_examples)
+        if input_output_examples:
+            self.input_output_examples = ast.literal_eval(input_output_examples)
 
     def set_at_least_one_align(self):
         self.at_least_one_align = True if any([cluster.is_align_req for cluster in self.cluster_list]) else False
 
-    def calculate_distribution(self):
+    def calculate_probability(self):
         total = sum([len(cluster.programs_str) for cluster in self.cluster_list])
         for cluster in self.cluster_list:
             cluster.probability = len(cluster.programs_str) / total
@@ -56,6 +62,28 @@ class Clusters:
         else:
             largest_cluster = max(self.cluster_list, key=lambda x: len(x.programs_str))
         return largest_cluster
+
+    def get_other_clusters_and_diff_outputs(self, inputs, cluster):
+        cluster_1 = []
+        for cluster1 in self.cluster_list:
+            if cluster1.test_consistency == 1 and cluster1 != cluster:
+                cluster_1.append(cluster1)
+        if cluster_1:
+            other_clusters = cluster_1
+        else:
+            other_clusters = [c for c in self.cluster_list if c != cluster]
+        final_clusters = []
+        exception_list = get_exception_list()
+        for o_cluster in other_clusters:
+            if not all(output in exception_list for output in o_cluster.entropy_outputs):
+                final_clusters.append(o_cluster)
+        diff_outputs = []
+        for o_cluster in final_clusters:
+            for i in range(len(o_cluster.entropy_outputs)):
+                if "Error" not in o_cluster.entropy_outputs[i]:
+                    if not compare(o_cluster.entropy_outputs[i], cluster.entropy_outputs[i]):
+                        diff_outputs.append([inputs[i], o_cluster.entropy_outputs[i], cluster.entropy_outputs[i]])
+        return final_clusters, diff_outputs
 
     def serialize(self):
         return {

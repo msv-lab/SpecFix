@@ -159,21 +159,13 @@ def wilson_lower(p_obs, n, z=1.96):
     return max(lower_bound, 0.0)
 
 
-def construct_output_file(cwd, model_name, dataset, threshold, wo_example, task):
+def construct_output_file(cwd, model_name, dataset, task):
     # timestamp by minute
     time_stamp = datetime.now().strftime("%Y%m%d%H%M")
     if not os.path.exists(f"{cwd}/{task}/{model_name}/{time_stamp}"):
         os.makedirs(f"{cwd}/{task}/{model_name}/{time_stamp}")
 
-    if threshold:
-        threshold = f"_{threshold}"
-    else:
-        threshold = ""
-
-    if wo_example is None:
-        wo_example = ""
-
-    output_file = f"{cwd}/{task}/{model_name}/{time_stamp}/{dataset}{wo_example}{threshold}.jsonl"
+    output_file = f"{cwd}/{task}/{model_name}/{time_stamp}/{dataset}.jsonl"
     return output_file
 
 
@@ -288,6 +280,7 @@ def f({', '.join(type_hints)}):
 
 
 def crosshair_compare(program1, program2, entry_point):
+    print("Crosshair compare")
     with tempfile.TemporaryDirectory(delete=True) as tmpdirname:
         with open(f"{tmpdirname}/program1.py", "w") as f:
             program1 = deepcopy_crosshair(program1, entry_point).strip()
@@ -302,7 +295,7 @@ def crosshair_compare(program1, program2, entry_point):
         try:
             result = subprocess.run(
                 ["crosshair", "diffbehavior", f"program1.f", f"program2.f", "--exception_equivalence", "SAME_TYPE",
-                 "--per_condition_timeout", "1"],
+                 "--per_condition_timeout", "10"],
                 capture_output=True, text=True, cwd=f"{tmpdirname}")
             if result.returncode != 0:
                 return False
@@ -328,23 +321,37 @@ def count_passk_ambiguous(label, model, dataset):
     origin_result_list = []
     repaired_result_list = []
     for result in results:
-        if result["repaired_requirement"] is not None:
+        if "repaired_requirement" in result:
             origin_result_list.append(result["original_passk"])
             repaired_result_list.append(result["repaired_passk"])
     print(
         f"{dataset} original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
 
 
-def count_ambiguity(label, model, dataset):
+def count_entropy(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_ambiguity = []
+    repaired_ambiguity = []
+    for result in results:
+        original_ambiguity.append(result["original_clusters"]["entropy"])
+        if result["repaired_clusters"] is not None:
+            repaired_ambiguity.append(result["repaired_clusters"]["entropy"])
+        else:
+            repaired_ambiguity.append(result["original_clusters"]["entropy"])
+    print(
+        f"{dataset} original entropy: {sum(original_ambiguity) / len(original_ambiguity)}, repaired entropy: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
+
+
+def count_entropy_ambiguous(label, model, dataset):
     results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
     original_ambiguity = []
     repaired_ambiguity = []
     for result in results:
         if result["repaired_clusters"] is not None:
-            original_ambiguity.append(result["original_clusters"]["ambiguity"])
-            repaired_ambiguity.append(result["repaired_clusters"]["ambiguity"])
+            original_ambiguity.append(result["original_clusters"]["entropy"])
+            repaired_ambiguity.append(result["repaired_clusters"]["entropy"])
     print(
-        f"{dataset} original ambiguity: {sum(original_ambiguity) / len(original_ambiguity)}, repaired ambiguity: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
+        f"{dataset} original entropy: {sum(original_ambiguity) / len(original_ambiguity)}, repaired entropy: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
 
 
 def count_passk(label, model, dataset):
@@ -427,3 +434,20 @@ def calculate_pass_k(n, c, k):
         prob_no_pass *= (n - c - i) / (n - i)
 
     return 1 - prob_no_pass
+
+
+def calculate_test_consistency(program_str, entry_point, inputs, outputs):
+    result_list = execute_inputs(program_str, inputs, entry_point)
+    failed_input_output_examples, test_consistency = get_failed_input_output(result_list,
+                                                                             inputs, outputs)
+    return failed_input_output_examples, test_consistency
+
+
+def get_exception_list():
+    # list of major exception types
+    exception_type = [["TypeError"], ["ValueError"], ["SyntaxError"], ["NameError"], ["IndexError"],
+                      ["KeyError"], ["AttributeError"], ["ImportError"], ["ModuleNotFoundError"], ["MemoryError"],
+                      ["RecursionError"], ["ZeroDivisionError"], ["FileNotFoundError"],
+                      ["NotImplementedError"], ["RuntimeError"], ["AssertionError"], ["OverflowError"],
+                      ["FloatingPointError"], ["IndentationError"]]
+    return exception_type

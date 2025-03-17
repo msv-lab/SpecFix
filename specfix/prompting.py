@@ -127,10 +127,10 @@ Please return the **repaired Python code**, wrapped in <code></code> tags.
 """
 
 
-instruction_repair_requirement = "You are an assistant that repairs ambiguous requirements based on the reference implementation."
+instruction_reverse_requirement = "You are an assistant that repairs ambiguous requirements based on the reference implementation."
 
 
-def prompt_repair_requirement(requirement, entry_point, program):
+def prompt_reverse_requirement(requirement, entry_point, program):
     return f"""
 You are provided with:
 1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
@@ -146,7 +146,7 @@ Your task is to follow these steps:
 Important notes:
 - **Do NOT change** any example, illustration, input/output sample, and intermediate explanation included in the original description.
 - If there is a contradiction between the correct program and examples, **prioritize the examples**.
-- If the description contains references to other functions, leave those sections unchanged.
+- If the description contains implementation of other functions, remain those sections unchanged.
 - Do NOT generate any implementation.
 
 Format the requirement explicitly in Python function signature with type hints and a docstring. Enclose your repaired requirement within `<requirement></requirement>` tags as follows:
@@ -170,10 +170,10 @@ def function_name(argument: type_hint) -> return_type_hint:
 """
 
 
-instruction_requirement_repair = "You are an assistant that repairs ambiguous requirements based on the identified ambiguity and analysis."
+instruction_largest_cluster_repair = "You are an assistant that repairs ambiguous requirements based on the identified ambiguity and analysis."
 
 
-def prompt_requirement_repair(requirement, entry_point, ambiguity, analysis, input_output_examples):
+def prompt_largest_cluster_repair(requirement, entry_point, ambiguity, analysis, input_output_examples):
     tests_str = ""
     for i, (inp, output) in enumerate(zip(input_output_examples[0], input_output_examples[1])):
         tests_str += f"### Test {i + 1}\nInput: {str(inp)[1:-1]}\nExpected Output: {str(output)[1:-1]}\n"
@@ -186,7 +186,7 @@ An ambiguous requirement:
 {requirement}
 Identified ambiguity location that need revision:
 {ambiguity}
-Step-by-step analysis of the execution:
+Step-by-step analysis:
 {analysis}
 Correct input-output examples explicitly stated in the requirement:
 {tests_str}
@@ -195,16 +195,17 @@ Your task:
 1. Based on the identified ambiguity location and step-by-step analysis, revise the requirement to remove ambiguity and align with the correct output.
 2. Ensure that the revised requirement explicitly reflects the correct behavior demonstrated by the provided input-output examples.
 
+If the description contains implementation of other functions, remain those sections unchanged.
 DO NOT output the implementation, only the requirement.
 
 Format the revised requirement explicitly in Python function syntax with type hints and a docstring, wrapped in <requirement></requirement> tags.
 """
 
 
-instruction_ambiguity_localization_largest_cluster = "You are an assistant that localizes the ambiguity in the requirement based on major implementation."
+instruction_largest_cluster_localization = "You are an assistant that localizes the ambiguity in the requirement based on major implementation."
 
 
-def prompt_repair_largest_cluster_localization(requirement, entry_point, specified_program, programs, diff_outputs):
+def prompt_largest_cluster_localization(requirement, entry_point, specified_program, programs, diff_outputs):
     programs_str = ""
     for i, (p, diff_output) in enumerate(zip(programs, diff_outputs)):
         programs_str += f"### Minor implementation {i}\n{p}\n"
@@ -319,6 +320,9 @@ Your task:
 1. Based on the identified ambiguity location and step-by-step analysis, revise the requirement to remove ambiguity and align with the correct output.
 2. Ensure that the revised requirement explicitly reflects the correct behavior demonstrated by the provided input-output examples.
 
+If the description contains implementation of other functions, remain those sections unchanged.
+Don't output the implementation, only the requirement.
+
 Format the revised requirement explicitly in Python function syntax with type hints and a docstring, wrapped in <requirement></requirement> tags.
 """
 
@@ -348,11 +352,65 @@ Correct input-output examples explicitly stated in the requirement and the incor
 {tests}
 
 Your task:
-1. Carefully analyze the provided requirement, identifying and clearly stating the specific wording or phrases that could be interpreted in multiple ways.
+1. Carefully analyze the provided requirement, summarize the intended functionality. Identify and clearly state the specific wording or phrases that could be interpreted in multiple ways.
 2. Perform a step-by-step execution of the provided program using the explicitly stated input-output examples. At each step, note precisely how the ambiguous wording influenced the program’s logic and behavior. Here are potential sources of ambiguity:
     - **Input/output handling** (e.g., format differences, varying data ranges).
     - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
-3. Clearly pinpoint the exact moment during execution where ambiguity in the requirement caused the deviation from the correct output.
+3. Compare the incorrect execution trace with the intended functionality. Clearly pinpoint the exact moment during execution where ambiguity in the requirement caused the deviation from the correct output.
 
 Wrap your identified ambiguity location in <ambiguity></ambiguity> tags. Wrap your step-by-step analysis in <analysis></analysis> tags.
+"""
+
+
+instruction_cluster_localization = "You are an assistant that localizes the ambiguity in the requirement based on the different programs."
+
+
+def prompt_cluster_localization(requirement, entry_point, programs):
+    return f"""
+You are provided with:
+1. An ambiguous description of a code generation task involving the function `{entry_point}`, which has led to multiple interpretations and consequently different generated implementations.
+{requirement}
+2. Multiple programs generated from the ambiguous description, demonstrating alternative behaviors.
+{programs}
+
+Your task is to:
+1. Carefully analyze the provided requirement, summarize the intended functionality, and identify the potential ambiguous phrases that could be interpreted in multiple ways.
+2. Analyze the provided programs and summarize the functionality of each implementation. Identify the specific differences in behavior between the programs.
+3. Compare the different programs to the requirement and identify the specific phrases or sections that led to the divergence in behavior. Here are potential sources of ambiguity:
+    - **Input/output handling** (e.g., format differences, varying data ranges).
+    - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
+
+Do not output the implementation, only the requirement.
+
+Wrap your identified ambiguity location in <ambiguity></ambiguity> tags. Wrap your step-by-step analysis in <analysis></analysis> tags.
+"""
+
+
+instruction_cluster_repair = "You are an assistant that repairs ambiguous requirements based on the identified ambiguity and analysis."
+
+
+def prompt_cluster_repair(requirement, entry_point, ambiguity, analysis, input_output_examples):
+    tests_str = ""
+    for i, (inp, output) in enumerate(zip(input_output_examples[0], input_output_examples[1])):
+        tests_str += f"### Test {i + 1}\nInput: {str(inp)[1:-1]}\nExpected Output: {str(output)[1:-1]}\n"
+    return f"""
+You are tasked with repairing ambiguities in code-generation task requirements involving the function `{entry_point}` that have led to incorrectly generated code.
+You will precisely repair the ambiguity in the requirement.
+
+Given:
+An ambiguous requirement:
+{requirement}
+Identified ambiguity location that need revision:
+{ambiguity}
+Step-by-step analysis:
+{analysis}
+
+Your task:
+1. Based on the identified ambiguity location and step-by-step analysis, revise the requirement to remove ambiguity and align with the correct output.
+2. Ensure that the revised requirement explicitly reflects the correct behavior demonstrated by the provided input-output examples.
+
+If the description contains implementation of other functions, remain those sections unchanged.
+DO NOT output the implementation, only the requirement.
+
+Format the revised requirement explicitly in Python function syntax with type hints and a docstring, wrapped in <requirement></requirement> tags.
 """

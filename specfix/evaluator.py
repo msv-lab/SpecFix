@@ -6,8 +6,8 @@ from copy import deepcopy
 
 from specfix.prompting import *
 from specfix.model import Model
-from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare, get_entry_point, \
-    get_failed_input_output, calculate_pass_k, calculate_test_consistency, unify_model_name
+from specfix.utils import unwrap, get_parameter_number, execute_inputs, compare, get_failed_input_output, \
+    calculate_pass_k, unify_model_name
 
 
 class SpecFixAccuracyEvaluator:
@@ -45,34 +45,32 @@ class SpecFixAccuracyEvaluator:
             for future in concurrent.futures.as_completed(futures):
                 prog = future.result()
                 generated_programs.append(prog)
+        generated_programs = [prog for prog in generated_programs if prog != ""]
         return generated_programs
 
     def generate_programs(self, requirement, entry_point, n_programs):
         if "deepseek" in self.model.model_name:
+            batch_size = 5
             generated_programs = []
-            for _ in range(math.ceil(n_programs / 5)):
+            for _ in range(math.ceil(n_programs / batch_size)):
                 response = self.model.get_response_sample(instruction_generate_code,
-                                                          prompt_generate_code(requirement, entry_point), 5)
-                generated_programs.extend([unwrap(prog, "code") for prog in response if unwrap(prog, "code") != ""])
-            if len(generated_programs) < n_programs:
-                for _ in range(n_programs - len(generated_programs)):
-                    generated_programs.append(self.generate_program(requirement, entry_point))
-            elif len(generated_programs) > n_programs:
+                                                          prompt_generate_code(requirement, entry_point), batch_size)
+                generated_programs.extend([unwrap(prog, "code") for prog in response])
+            if len(generated_programs) > n_programs:
                 generated_programs = generated_programs[: n_programs]
+            generated_programs = [prog for prog in generated_programs if prog != ""]
             return generated_programs
         elif "gpt" in self.model.model_name:
             response = self.model.get_response_sample(instruction_generate_code,
                                                       prompt_generate_code(requirement, entry_point), n_programs)
-            generated_programs = [unwrap(prog, "code") for prog in response if unwrap(prog, "code") != ""]
-            if len(generated_programs) < n_programs:
-                for _ in range(n_programs - len(generated_programs)):
-                    generated_programs.append(self.generate_program(requirement, entry_point))
+            generated_programs = [unwrap(prog, "code") for prog in response]
+            generated_programs = [prog for prog in generated_programs if prog != ""]
             return generated_programs
         else:
             return self.parallel_generate_programs(requirement, entry_point, n_programs)
 
     def generate_program(self, requirement, entry_point):
-        for i in range(5):
+        for i in range(2):
             try:
                 print("GENERATE PROGRAM ATTEMPT", i)
                 response = self.model.get_response(instruction_generate_code,
@@ -118,11 +116,11 @@ class SpecFixAccuracyEvaluator:
                                            prompt_vanilla_repair(requirements))
         return unwrap(response, "requirement")
 
-    def repair_requirement(self, requirement, entry_point, program):
+    def reverse_repair(self, requirement, entry_point, program):
         for i in range(10):
-            print("TEST BASED REPAIR REQUIREMENT", i)
-            response = self.model.get_response(instruction_repair_requirement,
-                                               prompt_repair_requirement(requirement, entry_point, program), True)
+            print("REVERSE REPAIR REQUIREMENT", i)
+            response = self.model.get_response(instruction_reverse_requirement,
+                                               prompt_reverse_requirement(requirement, entry_point, program), True)
             repaired_requirement = unwrap(response, "requirement")
             if repaired_requirement != "":
                 return repaired_requirement
@@ -147,31 +145,31 @@ class SpecFixAccuracyEvaluator:
             if answer == "Yes" or answer == "No":
                 return answer, reason
 
-    def repair_largest_cluster_requirement(self, requirement, entry_point, specified_programs, programs, diff_outputs,
-                                           input_output_examples):
+    def largest_cluster_repair(self, requirement, entry_point, specified_programs, programs, diff_outputs,
+                               input_output_examples):
         for i in range(10):
             print("REPAIR LARGEST CLUSTER REQUIREMENT", i)
-            ambiguity, analysis = self.repair_largest_cluster_requirement_localization(requirement, entry_point,
-                                                                                       specified_programs, programs,
-                                                                                       diff_outputs)
-            response = self.model.get_response(instruction_requirement_repair,
-                                               prompt_requirement_repair(requirement, entry_point,
-                                                                         ambiguity, analysis, input_output_examples
-                                                                         ), True)
+            ambiguity, analysis = self.largest_cluster_localization(requirement, entry_point,
+                                                                    specified_programs, programs,
+                                                                    diff_outputs)
+            response = self.model.get_response(instruction_largest_cluster_repair,
+                                               prompt_largest_cluster_repair(requirement, entry_point,
+                                                                             ambiguity, analysis, input_output_examples
+                                                                             ), True)
             repaired_requirement = unwrap(response, "requirement")
             if repaired_requirement != "":
                 return repaired_requirement
 
-    def repair_largest_cluster_requirement_localization(self, requirement, entry_point, specified_programs, programs,
-                                                        diff_outputs):
+    def largest_cluster_localization(self, requirement, entry_point, specified_programs, programs,
+                                     diff_outputs):
         for i in range(10):
             print("REPAIR LARGEST CLUSTER REQUIREMENT WITH LOCALIZATION", i)
-            ambiguity_response = self.model.get_response(instruction_ambiguity_localization_largest_cluster,
-                                                         prompt_repair_largest_cluster_localization(requirement,
-                                                                                                    entry_point,
-                                                                                                    programs,
-                                                                                                    specified_programs,
-                                                                                                    diff_outputs))
+            ambiguity_response = self.model.get_response(instruction_largest_cluster_localization,
+                                                         prompt_largest_cluster_localization(requirement,
+                                                                                             entry_point,
+                                                                                             programs,
+                                                                                             specified_programs,
+                                                                                             diff_outputs))
             ambiguity = unwrap(ambiguity_response, "ambiguity")
             analysis = unwrap(ambiguity_response, "analysis")
             return ambiguity, analysis
@@ -182,27 +180,22 @@ class SpecFixAccuracyEvaluator:
         if requirement is None:
             return None, [], []
         passes = 0
-        programs = self.generate_programs(requirement, entry_point, k * sample)
+        programs = self.generate_programs(requirement, entry_point, sample)
         generated_programs = []
         failed_inputs_outputs = []
-        actual_sample = sample
         for i in range(sample):
             passed = False
-            for j in range(k):
-                program = programs[i * k + j]
-                if not program:
-                    actual_sample -= 1
-                    continue
-                generated_programs.append(program)
-                result = execute_inputs(program, inputs, entry_point)
+            program = programs[i]
+            generated_programs.append(program)
+            result = execute_inputs(program, inputs, entry_point)
+            if compare(result, outputs):
+                passed = True
+            else:
                 failed_input_output, _ = get_failed_input_output(result, inputs, outputs)
                 failed_inputs_outputs.append(failed_input_output)
-                if compare(result, outputs):
-                    passed = True
-                    break
             passes += int(passed)
 
-        return calculate_pass_k(actual_sample, passes, k), generated_programs, failed_inputs_outputs
+        return calculate_pass_k(sample, passes, k), generated_programs, failed_inputs_outputs
 
     def remove_example(self, problem, repaired_requirement):
         problem_woe = deepcopy(problem)
@@ -216,9 +209,11 @@ class SpecFixAccuracyEvaluator:
         print(F"SPECFIX DETECT {task_id}")
         test_inputs = ast.literal_eval(problem["llm_generated_inputs"][unify_model_name(self.model.model_name)])
         programs = self.generate_programs(requirement, entry_point, n_programs)
+        if not programs:
+            return False, None
         clusters = self.get_clusters(requirement, programs, test_inputs, entry_point, examples)
         self.calculate_ambiguity(clusters)
-        if clusters.entropy > 0 or clusters.weighted_test_consistency != 1:
+        if clusters.entropy > 0 or 0 < clusters.weighted_test_consistency < 1:
             return True, clusters
         return False, clusters
 
@@ -231,36 +226,29 @@ class SpecFixAccuracyEvaluator:
         repaired_requirement = None
         while True:
             repair_attempts += 1
-            largest_cluster = clusters.get_largest_cluster()
-            if largest_cluster.test_consistency != 1:
-                #         while True:
-                #             repaired_program = self.hoare_logic_repair(
-                #                 requirement, entry_point,
-                #                 largest_cluster.programs_str[0],
-                #                 largest_cluster.failed_input_output_examples
-                #             )
-                #             failed_input_output_examples, test_consistency = calculate_test_consistency(repaired_program,
-                #                                                                                         entry_point,
-                #                                                                                         examples[0],
-                #                                                                                         examples[1])
-                #             if test_consistency == 1:
-                #                 break
-                repaired_requirement = self.execution_repair(requirement, entry_point, largest_cluster.programs_str[0],
-                                                             largest_cluster.failed_input_output_examples,
-                                                             repaired_requirement)
-            else:
-                other_clusters, diff_outputs = clusters.get_other_clusters_and_diff_outputs(
-                    clusters.llm_generated_inputs,
-                    largest_cluster)
-                if not other_clusters:
-                    repaired_requirement = self.repair_requirement(requirement, entry_point,
-                                                                   largest_cluster.programs_str[0])
-                else:
+            repair_method, largest_cluster = clusters.select_repair_method()
+            match repair_method:
+                case 0:  # if 0 cluster passed example
+                    repaired_requirement = self.execution_repair(requirement, entry_point,
+                                                                 largest_cluster.programs_str[0],
+                                                                 largest_cluster.failed_input_output_examples,
+                                                                 repaired_requirement)
+                case 1:  # if 1 cluster passed example
+                    repaired_requirement = self.reverse_repair(requirement, entry_point,
+                                                               largest_cluster.programs_str[0])
+                case 2:  # if more than 1 cluster passed example and the largest cluster is significantly larger than other clusters
+                    other_clusters, diff_outputs = clusters.get_other_clusters_and_diff_outputs(
+                        clusters.llm_generated_inputs,
+                        largest_cluster)
                     other_programs = [cluster.programs_str[0] for cluster in other_clusters]
-                    repaired_requirement = self.repair_largest_cluster_requirement(
+                    repaired_requirement = self.largest_cluster_repair(
                         requirement, entry_point, largest_cluster.programs_str[0], other_programs, diff_outputs,
                         examples
                     )
+                case 3:  # if more than 1 cluster passed example and the largest cluster is not significantly larger than other clusters
+                    other_clusters = largest_cluster
+                    programs = [cluster.programs_str[0] for cluster in other_clusters]
+                    repaired_requirement = self.cluster_repair(requirement, entry_point, programs, examples)
 
             repaired_programs = self.generate_programs(repaired_requirement, entry_point, n_programs)
             repaired_clusters = self.get_clusters(repaired_requirement, repaired_programs, test_inputs, entry_point,
@@ -306,3 +294,23 @@ class SpecFixAccuracyEvaluator:
             ambiguity = unwrap(ambiguity_response, "ambiguity")
             analysis = unwrap(ambiguity_response, "analysis")
             return ambiguity, analysis
+
+    def cluster_localization(self, requirement, entry_point, programs):
+        for i in range(10):
+            print("CLUSTER LOCALIZATION", i)
+            response = self.model.get_response(instruction_cluster_localization,
+                                               prompt_cluster_localization(requirement, entry_point, programs))
+            ambiguity = unwrap(response, "ambiguity")
+            analysis = unwrap(response, "analysis")
+            return ambiguity, analysis
+
+    def cluster_repair(self, requirement, entry_point, programs, input_output_examples):
+        for i in range(10):
+            print("REPAIR CLUSTER", i)
+            ambiguity, analysis = self.cluster_localization(requirement, entry_point, programs)
+            response = self.model.get_response(instruction_cluster_repair,
+                                               prompt_cluster_repair(requirement, entry_point, ambiguity,
+                                                                     analysis, input_output_examples))
+            repaired_requirement = unwrap(response, "requirement")
+            if repaired_requirement != "":
+                return repaired_requirement

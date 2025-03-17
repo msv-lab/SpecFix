@@ -103,7 +103,7 @@ def unwrap(string: str, label: str) -> str:
         except Exception as e:
             print("AST parsing error")
             print(extracted)
-            return ''
+            return ""
 
     return extracted
 
@@ -321,7 +321,7 @@ def count_passk_ambiguous(label, model, dataset):
     origin_result_list = []
     repaired_result_list = []
     for result in results:
-        if "repaired_requirement" in result:
+        if "repaired_requirement" in result and result["repaired_requirement"] is not None:
             origin_result_list.append(result["original_passk"])
             repaired_result_list.append(result["repaired_passk"])
     print(
@@ -451,3 +451,15 @@ def get_exception_list():
                       ["NotImplementedError"], ["RuntimeError"], ["AssertionError"], ["OverflowError"],
                       ["FloatingPointError"], ["IndentationError"]]
     return exception_type
+
+
+def is_significant_large(prob_list):  # max_val > second_max_val * (n / (n - 1))
+    prob_list = [prob / sum(prob_list) for prob in prob_list]
+    sorted_prob_list = sorted(prob_list, reverse=True)
+    max_val = sorted_prob_list[0]
+    second_max_val = sorted_prob_list[1]
+    if max_val == second_max_val:
+        return False
+    n = len(prob_list)
+    threshold = second_max_val * (1 + 1 / (n - 1))
+    return max_val > threshold

@@ -3,7 +3,7 @@ import ast
 import math
 import sys
 
-from specfix.utils import get_exception_list, compare, get_inputs_outputs
+from specfix.utils import get_exception_list, compare, is_significant_large
 
 sys.set_int_max_str_digits(0)
 
@@ -34,10 +34,10 @@ class Clusters:
 
     def set_input_output_examples(self, input_output_examples):
         if input_output_examples:
-            self.input_output_examples = ast.literal_eval(input_output_examples)
+            self.input_output_examples = eval(input_output_examples)
 
     def set_at_least_one_align(self):
-        self.at_least_one_align = True if any([cluster.is_align_req for cluster in self.cluster_list]) else False
+        self.at_least_one_align = True if any([cluster.is_align_req == 1 for cluster in self.cluster_list]) else False
 
     def calculate_probability(self):
         total = sum([len(cluster.programs_str) for cluster in self.cluster_list])
@@ -51,30 +51,35 @@ class Clusters:
             entropy = sum([-cluster.probability * math.log(cluster.probability) for cluster in self.cluster_list])
             self.entropy = entropy / math.log(len(self.cluster_list))
 
-    def get_largest_cluster(self):
-        # first find the largest cluster with test_consistency=1, if not found, return the largest cluster.
+    def select_repair_method(self):
         cluster_1 = []
+        other_clusters = []
         for cluster in self.cluster_list:
             if cluster.test_consistency == 1:
                 cluster_1.append(cluster)
-        if cluster_1:
-            largest_cluster = max(cluster_1, key=lambda x: len(x.programs_str))
-        else:
-            largest_cluster = max(self.cluster_list, key=lambda x: len(x.programs_str))
-        return largest_cluster
+            else:
+                other_clusters.append(cluster)
+        if self.weighted_test_consistency == -1: # No example in requirement
+            return 3, other_clusters
+        if not cluster_1:  # no cluster with test consistency 1
+            largest_cluster = max(other_clusters, key=lambda x: x.probability)
+            return 0, largest_cluster
+        if len(cluster_1) == 1:  # only one cluster with test consistency 1
+            return 1, cluster_1[0]
+        prob_list = [cluster.probability for cluster in cluster_1]
+        if is_significant_large(
+                prob_list):  # multiple clusters with test consistency 1 and significant large probabilities
+            return 2, max(cluster_1, key=lambda x: x.probability)
+        return 3, cluster_1  # multiple clusters with test consistency 1 and no significant large probabilities
 
     def get_other_clusters_and_diff_outputs(self, inputs, cluster):
         cluster_1 = []
         for cluster1 in self.cluster_list:
             if cluster1.test_consistency == 1 and cluster1 != cluster:
                 cluster_1.append(cluster1)
-        if cluster_1:
-            other_clusters = cluster_1
-        else:
-            other_clusters = [c for c in self.cluster_list if c != cluster]
         final_clusters = []
         exception_list = get_exception_list()
-        for o_cluster in other_clusters:
+        for o_cluster in cluster_1:
             if not all(output in exception_list for output in o_cluster.entropy_outputs):
                 final_clusters.append(o_cluster)
         diff_outputs = []
@@ -118,7 +123,7 @@ class Clusters:
 class Cluster:
     def __init__(self):
         self.programs_str = []  # list of programs in the cluster.
-        self.is_align_req = False  # whether the requirement is aligned with the examples.
+        self.is_align_req = 0  # whether the requirement is aligned with the examples.
         self.entropy_outputs = []  # the corresponding outputs for LLM generated test inputs in entropy measure.
         self.failed_input_output_examples = []  # failed input output examples in semantic measure. (input, output, expected)
         self.test_consistency = 0  # test consistency for semantic measure.
@@ -126,9 +131,6 @@ class Cluster:
 
     def add_program_str(self, program_str):
         self.programs_str.append(program_str)
-
-    def align(self):
-        self.is_align_req = True
 
     def serialize(self):
         return {

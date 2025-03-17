@@ -50,12 +50,16 @@ def ground_truth_tester(clusters):
     for cluster in clusters.cluster_list:
         program_str = cluster.programs_str[0]
         inputs, outputs = clusters.input_output_examples
-        result_list = execute_inputs(program_str, inputs, clusters.entry_point)
-        failed_input_output_examples, test_consistency = get_failed_input_output(result_list,
-                                                                                 inputs, outputs)
-        cluster.failed_input_output_examples = failed_input_output_examples
-        cluster.test_consistency = test_consistency
-        if test_consistency == 1:
-            cluster.align()
+        if inputs == [] or outputs == []:
+            cluster.test_consistency = -1
+            cluster.is_align_req = -1
+        else:
+            result_list = execute_inputs(program_str, inputs, clusters.entry_point)
+            failed_input_output_examples, test_consistency = get_failed_input_output(result_list,
+                                                                                     inputs, outputs)
+            cluster.failed_input_output_examples = failed_input_output_examples
+            cluster.test_consistency = test_consistency
+            if test_consistency == 1:
+                cluster.is_align_req = 1
     clusters.set_at_least_one_align()
     return clusters

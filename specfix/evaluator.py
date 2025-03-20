@@ -22,8 +22,8 @@ class SpecFixAccuracyEvaluator:
         print("GET CLUSTERS")
         clusters = self.differential_tester(programs, test_inputs, entry_point)
         clusters.set_requirement(requirement)
-        clusters.set_input_output_examples(examples)
         clusters.set_entry_point(entry_point)
+        clusters.set_input_output_examples(examples)
         return clusters
 
     def get_clusters_crosshair(self, programs, entry_point, examples):
@@ -32,10 +32,10 @@ class SpecFixAccuracyEvaluator:
         clusters.set_input_output_examples(examples)
         return clusters
 
-    def calculate_ambiguity(self, clusters):
-        print("CALCULATE AMBIGUITY")
+    def get_test_consistency(self, clusters):
+        print("CALCULATE TEST CONSISTENCY")
         self.ground_truth_tester(clusters)
-        clusters.calculate_ambiguity()
+        clusters.calculate_test_consistency()
 
     def parallel_generate_programs(self, requirement, entry_point, n_programs, max_workers=10):
         generated_programs = []
@@ -174,34 +174,42 @@ class SpecFixAccuracyEvaluator:
             analysis = unwrap(ambiguity_response, "analysis")
             return ambiguity, analysis
 
-    def pass_k_sample(self, requirement, inputs, outputs, entry_point, k, sample):
+    def pass_k_and_pass_rate(self, requirement, inputs, outputs, entry_point, k, sample):
         if entry_point == "combinations_colors":
-            return calculate_pass_k(sample, sample, k), [], []
+            return calculate_pass_k(sample, sample, k), 1, [], []
         if requirement is None:
-            return None, [], []
+            return None, None, [], []
         passes = 0
         programs = self.generate_programs(requirement, entry_point, sample)
+        if len(programs) == 0:
+            return None, [], []
         generated_programs = []
         failed_inputs_outputs = []
-        for i in range(sample):
+        pass_rates = []
+        for i in range(len(programs)):
             passed = False
             program = programs[i]
             generated_programs.append(program)
             result = execute_inputs(program, inputs, entry_point)
             if compare(result, outputs):
                 passed = True
+                failed_inputs_outputs.append([])
+                pass_rates.append(1)
             else:
-                failed_input_output, _ = get_failed_input_output(result, inputs, outputs)
-                failed_inputs_outputs.append(failed_input_output)
+                failed_input_output, pass_rate = get_failed_input_output(result, inputs, outputs)
+                if len(failed_input_output) < 300:
+                    failed_inputs_outputs.append(failed_input_output)
+                pass_rates.append(pass_rate)
             passes += int(passed)
 
-        return calculate_pass_k(sample, passes, k), generated_programs, failed_inputs_outputs
+        return calculate_pass_k(len(programs), passes, k), sum(pass_rates) / len(
+            pass_rates), generated_programs, failed_inputs_outputs
 
     def remove_example(self, problem, repaired_requirement):
         problem_woe = deepcopy(problem)
         response = self.model.get_response(instruction_remove_example, prompt_remove_example(repaired_requirement))
         problem_woe["requirement"] = unwrap(response, "requirement")
-        return problem
+        return problem_woe
 
     def specfix_detect(self, problem, n_programs):
         requirement, entry_point, examples, task_id = problem['requirement'], problem['entry_point'], problem[
@@ -209,11 +217,11 @@ class SpecFixAccuracyEvaluator:
         print(F"SPECFIX DETECT {task_id}")
         test_inputs = ast.literal_eval(problem["llm_generated_inputs"][unify_model_name(self.model.model_name)])
         programs = self.generate_programs(requirement, entry_point, n_programs)
-        if not programs:
+        if len(programs) == 0:
             return False, None
         clusters = self.get_clusters(requirement, programs, test_inputs, entry_point, examples)
-        self.calculate_ambiguity(clusters)
-        if clusters.entropy > 0 or 0 < clusters.weighted_test_consistency < 1:
+        self.get_test_consistency(clusters)
+        if clusters.entropy > 0 or 0 <= clusters.weighted_test_consistency < 1:
             return True, clusters
         return False, clusters
 
@@ -229,31 +237,33 @@ class SpecFixAccuracyEvaluator:
             repair_method, largest_cluster = clusters.select_repair_method()
             match repair_method:
                 case 0:  # if 0 cluster passed example
-                    repaired_requirement = self.execution_repair(requirement, entry_point,
-                                                                 largest_cluster.programs_str[0],
-                                                                 largest_cluster.failed_input_output_examples,
-                                                                 repaired_requirement)
+                    repaired_program = self.test_based_repair_program(requirement, entry_point,
+                                                                      largest_cluster.programs_str[0],
+                                                                      largest_cluster.failed_input_output_examples)
+                    repaired_requirement = self.largest_cluster_repair(requirement, entry_point, repaired_program,
+                                                                       [largest_cluster.programs_str[0]],
+                                                                       largest_cluster.failed_input_output_examples,
+                                                                       examples)
                 case 1:  # if 1 cluster passed example
                     repaired_requirement = self.reverse_repair(requirement, entry_point,
                                                                largest_cluster.programs_str[0])
                 case 2:  # if more than 1 cluster passed example and the largest cluster is significantly larger than other clusters
                     other_clusters, diff_outputs = clusters.get_other_clusters_and_diff_outputs(
-                        clusters.llm_generated_inputs,
                         largest_cluster)
-                    other_programs = [cluster.programs_str[0] for cluster in other_clusters]
+                    other_programs = [cluster.get_min_length_program() for cluster in other_clusters]
                     repaired_requirement = self.largest_cluster_repair(
                         requirement, entry_point, largest_cluster.programs_str[0], other_programs, diff_outputs,
                         examples
                     )
                 case 3:  # if more than 1 cluster passed example and the largest cluster is not significantly larger than other clusters
                     other_clusters = largest_cluster
-                    programs = [cluster.programs_str[0] for cluster in other_clusters]
+                    programs = [cluster.get_min_length_program() for cluster in other_clusters]
                     repaired_requirement = self.cluster_repair(requirement, entry_point, programs, examples)
 
             repaired_programs = self.generate_programs(repaired_requirement, entry_point, n_programs)
             repaired_clusters = self.get_clusters(repaired_requirement, repaired_programs, test_inputs, entry_point,
                                                   str(examples))
-            self.calculate_ambiguity(repaired_clusters)
+            self.calculate_test_consistency(repaired_clusters)
             if (
                     repaired_clusters.entropy == 0 and repaired_clusters.weighted_test_consistency == 1) or repair_attempts >= 3:
                 break
@@ -261,14 +271,14 @@ class SpecFixAccuracyEvaluator:
             clusters = repaired_clusters
         return repaired_requirement, repaired_clusters
 
-    def test_based_repair_requirement(self, requirement, entry_point, failed_input_output_examples):
+    def test_based_repair_program(self, requirement, entry_point, program, failed_input_output_examples):
         for i in range(10):
-            print("REPAIR REQUIREMENT TEST", i)
-            response = self.model.get_response(instruction_repair_requirement_test_based,
-                                               prompt_test_based_repair_requirement(requirement, entry_point,
-                                                                                    failed_input_output_examples))
-            repaired_requirement = unwrap(response, "requirement")
-            return repaired_requirement
+            print("TEST REPAIR PROGRAM", i)
+            response = self.model.get_response(instruction_test_based_repair_program,
+                                               prompt_test_based_repair_program(requirement, entry_point, program,
+                                                                                failed_input_output_examples))
+            repaired_program = unwrap(response, "code")
+            return repaired_program
 
     def execution_repair(self, requirement, entry_point, program, failed_input_output_examples, incorrect_repair=None):
         for i in range(10):
@@ -314,3 +324,11 @@ class SpecFixAccuracyEvaluator:
             repaired_requirement = unwrap(response, "requirement")
             if repaired_requirement != "":
                 return repaired_requirement
+
+    def solved_with_majority_vote(self, clusters, inputs, outputs):
+        cluster = max(clusters.cluster_list, key=lambda c: c.probability)
+        program = cluster.programs_str[0]
+        result = execute_inputs(program, inputs, clusters.entry_point)
+        if compare(result, outputs):
+            return True
+        return False

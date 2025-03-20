@@ -16,7 +16,6 @@ class Clusters:
         self.input_output_examples = []  # input output examples for semantic measure
         self.at_least_one_align = None  # whether at least one cluster is aligned with the examples.
         self.weighted_test_consistency = 0  # weighted test consistency for semantic measure.
-        self.ambiguity = 0  # ambiguity of the clusters.
         self.requirement = ""  # requirement for the clusters.
         self.entry_point = ""
 
@@ -59,7 +58,7 @@ class Clusters:
                 cluster_1.append(cluster)
             else:
                 other_clusters.append(cluster)
-        if self.weighted_test_consistency == -1: # No example in requirement
+        if self.weighted_test_consistency == -1:  # No example in requirement
             return 3, other_clusters
         if not cluster_1:  # no cluster with test consistency 1
             largest_cluster = max(other_clusters, key=lambda x: x.probability)
@@ -72,33 +71,46 @@ class Clusters:
             return 2, max(cluster_1, key=lambda x: x.probability)
         return 3, cluster_1  # multiple clusters with test consistency 1 and no significant large probabilities
 
-    def get_other_clusters_and_diff_outputs(self, inputs, cluster):
-        cluster_1 = []
-        for cluster1 in self.cluster_list:
-            if cluster1.test_consistency == 1 and cluster1 != cluster:
-                cluster_1.append(cluster1)
-        final_clusters = []
+    def get_other_clusters_and_diff_outputs(self, cluster, cluster_limit=5):
+        filtered_clusters = [
+            c for c in self.cluster_list
+            if c.test_consistency == 1 and c != cluster
+        ]
+
         exception_list = get_exception_list()
-        for o_cluster in cluster_1:
-            if not all(output in exception_list for output in o_cluster.entropy_outputs):
-                final_clusters.append(o_cluster)
+        filtered_clusters = [
+            c for c in filtered_clusters
+            if not all(output in exception_list for output in c.entropy_outputs)
+        ]
+
+        final_clusters = []
         diff_outputs = []
-        for o_cluster in final_clusters:
-            for i in range(len(o_cluster.entropy_outputs)):
-                if "Error" not in o_cluster.entropy_outputs[i]:
-                    if not compare(o_cluster.entropy_outputs[i], cluster.entropy_outputs[i]):
-                        diff_outputs.append([inputs[i], o_cluster.entropy_outputs[i], cluster.entropy_outputs[i]])
+
+        for candidate in filtered_clusters:
+            for i, candidate_output in enumerate(candidate.entropy_outputs):
+                if "Error" not in candidate_output:
+                    if not compare(candidate_output, cluster.entropy_outputs[i]):
+                        final_clusters.append(candidate)
+                        diff_outputs.append([
+                            self.llm_generated_inputs[i],
+                            candidate_output,
+                            cluster.entropy_outputs[i]
+                        ])
+                        if len(final_clusters) == cluster_limit:
+                            return final_clusters, diff_outputs
+                        break
         return final_clusters, diff_outputs
 
     def serialize(self):
         return {
+            'requirement': self.requirement,
+            'entry_point': self.entry_point,
             'cluster_list': [cluster.serialize() for cluster in self.cluster_list],
             'entropy': self.entropy,
             'llm_generated_inputs': str(self.llm_generated_inputs),
             'input_output_examples': str(self.input_output_examples),
             'weighted_test_consistency': self.weighted_test_consistency,
             'at_least_one_align': self.at_least_one_align,
-            'ambiguity': self.ambiguity
         }
 
     def deserialize(self, data):
@@ -108,16 +120,13 @@ class Clusters:
         self.input_output_examples = ast.literal_eval(data['input_output_examples'])
         self.at_least_one_align = data['at_least_one_align']
         self.weighted_test_consistency = data["weighted_test_consistency"]
-        self.ambiguity = data['ambiguity']
+        self.requirement = data['requirement']
+        self.entry_point = data['entry_point']
         return self
 
-    def calculate_ambiguity(self):
-        # self.weighted_t_consistency = sum(
-        #     [wilson_lower(cluster.test_consistency, len(self.input_output_examples)) * cluster.probability for cluster
-        #      in self.cluster_list])
+    def calculate_test_consistency(self):
         self.weighted_test_consistency = sum(
             [cluster.test_consistency * cluster.probability for cluster in self.cluster_list])
-        self.ambiguity = (self.entropy + (1 - self.weighted_test_consistency)) / 2
 
 
 class Cluster:
@@ -142,11 +151,14 @@ class Cluster:
             'failed_input_output_examples': str(self.failed_input_output_examples)
         }
 
+    def get_min_length_program(self):
+        return min(self.programs_str, key=len)
+
     def deserialize(self, data):
         self.programs_str = data['programs_str']
         self.entropy_outputs = data['outputs']
         self.probability = data['probability']
         self.is_align_req = data['is_align_req']
         self.test_consistency = data['test_consistency']
-        # self.failed_input_output_examples = ast.literal_eval(data['failed_input_output_examples'])
+        self.failed_input_output_examples = ast.literal_eval(data['failed_input_output_examples'])
         return self

@@ -114,8 +114,6 @@ def get_failed_input_output(result_list, inputs, outputs):
     failed_input_output_examples = []
     for i in range(len(inputs)):
         if not compare(result_list[i], outputs[i]):
-            if len(str(result_list[i])) > 100 or len(str(outputs[i])) > 100:
-                continue
             failed_input_output_examples.append([inputs[i], result_list[i], outputs[i]])
     return failed_input_output_examples, 1 - (len(failed_input_output_examples) / len(inputs))
 
@@ -215,8 +213,10 @@ def get_taco_lite_inputs_outputs():
 def get_inputs_outputs(data_name):
     if data_name == "humaneval" or data_name == "mbpp":
         return get_evalplus_inputs_outputs(data_name)
-    else:
+    elif data_name == "taco_lite":
         return get_taco_lite_inputs_outputs()
+    else:
+        raise ValueError("Invalid data_name")
 
 
 def get_entry_point(requirement):
@@ -316,18 +316,6 @@ def unify_model_name(model_name):
     return model_name
 
 
-def count_passk_ambiguous(label, model, dataset):
-    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
-    origin_result_list = []
-    repaired_result_list = []
-    for result in results:
-        if "repaired_requirement" in result and result["repaired_requirement"] is not None:
-            origin_result_list.append(result["original_passk"])
-            repaired_result_list.append(result["repaired_passk"])
-    print(
-        f"{dataset} original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
-
-
 def count_entropy(label, model, dataset):
     results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
     original_ambiguity = []
@@ -359,10 +347,45 @@ def count_passk(label, model, dataset):
     original_results = []
     repaired_results = []
     for result in results:
-        original_results.append(result["original_passk"])
-        repaired_results.append(result["repaired_passk"])
+        original_results.append(result["result"]["original_passk"])
+        repaired_results.append(result["result"]["repaired_passk"])
     print(
         f"{dataset} original pass@1: {sum(original_results) / len(original_results)}, repaired pass@1: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+
+
+def count_passk_ambiguous(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    origin_result_list = []
+    repaired_result_list = []
+    for result in results:
+        if result["repaired_requirement"] is not None:
+            origin_result_list.append(result["result"]["original_passk"])
+            repaired_result_list.append(result["result"]["repaired_passk"])
+    print(
+        f"{dataset} AMBIGUOUS original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
+
+
+def count_pass_rate(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        original_results.append(result["result"]["original_pass_rate"])
+        repaired_results.append(result["result"]["repaired_pass_rate"])
+    print(
+        f"{dataset} original pass rate: {sum(original_results) / len(original_results)}, repaired pass rate: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+
+
+def count_pass_rate_ambiguous(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        if result["repaired_requirement"] is not None:
+            original_results.append(result["result"]["original_pass_rate"])
+            repaired_results.append(result["result"]["repaired_pass_rate"])
+    print(
+        f"{dataset} AMBIGUOUS original pass rate: {sum(original_results) / len(original_results)}, repaired pass rate: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
 
 
 def count_overall_passk(label, model):
@@ -394,18 +417,50 @@ def count_overall_passk_ambiguous(label, model):
         f"Overall original pass@1: {sum(origin_result_list) / len(origin_result_list)}, repaired pass@1: {sum(repaired_result_list) / len(repaired_result_list)}, Improvement: {sum(repaired_result_list) / len(repaired_result_list) - sum(origin_result_list) / len(origin_result_list)}")
 
 
-def count_overall_ambiguity(label, model):
-    original_ambiguity = []
-    repaired_ambiguity = []
-    for filepath, dirname, filenames in os.walk(f"{label}/{model}/"):
-        for filename in filenames:
-            results = read_jsonl(f"{filepath}{filename}")
-            for result in results:
-                if result["repaired_clusters"] is not None:
-                    original_ambiguity.append(result["original_clusters"]["ambiguity"])
-                    repaired_ambiguity.append(result["repaired_clusters"]["ambiguity"])
+def count_passk_bigger_than_0(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        original_results.append(result["result"]["original_passk_bigger_than_0"])
+        repaired_results.append(result["result"]["repaired_passk_bigger_than_0"])
     print(
-        f"Overall original ambiguity: {sum(original_ambiguity) / len(original_ambiguity)}, repaired ambiguity: {sum(repaired_ambiguity) / len(repaired_ambiguity)}, Improvement: {sum(repaired_ambiguity) / len(repaired_ambiguity) - sum(original_ambiguity) / len(original_ambiguity)}")
+        f"{dataset} original pass@1 bigger than 0: {sum(original_results) / len(original_results)}, repaired pass@1 bigger than 0: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+
+
+def count_passk_bigger_than_0_ambiguous(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        if result["repaired_requirement"] is not None:
+            original_results.append(result["result"]["original_passk_bigger_than_0"])
+            repaired_results.append(result["result"]["repaired_passk_bigger_than_0"])
+    print(
+        f"{dataset} AMBIGUOUS original pass@1 bigger than 0: {sum(original_results) / len(original_results)}, repaired pass@1 bigger than 0: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+
+
+def count_solved_with_majority_vote(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        original_results.append(result["result"]["original_solved_with_majority_vote"])
+        repaired_results.append(result["result"]["repaired_solved_with_majority_vote"])
+    print(
+        f"{dataset} original solved with majority vote: {sum(original_results) / len(original_results)}, repaired solved with majority vote: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
+
+
+def count_solved_with_majority_vote_ambiguous(label, model, dataset):
+    results = read_jsonl(f"{label}/{model}/{dataset}.jsonl")
+    original_results = []
+    repaired_results = []
+    for result in results:
+        if result["repaired_requirement"] is not None:
+            original_results.append(result["result"]["original_solved_with_majority_vote"])
+            repaired_results.append(result["result"]["repaired_solved_with_majority_vote"])
+    print(
+        f"{dataset} AMBIGUOUS original solved with majority vote: {sum(original_results) / len(original_results)}, repaired solved with majority vote: {sum(repaired_results) / len(repaired_results)}, Improvement: {sum(repaired_results) / len(repaired_results) - sum(original_results) / len(original_results)}")
 
 
 def calculate_pass_k(n, c, k):

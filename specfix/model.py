@@ -24,25 +24,23 @@ class Model:
             )
         elif "deepseek" in self.model_name:
             # api_key = config['API_KEY']['deepseek_key']
-            # api_key = config['API_KEY']['fireworksai_key']
-            # api_key = config['API_KEY']['aliyun_key']
-            api_key = config['API_KEY']['bytedance_key']
-            # api_key = config['API_KEY']['closeai_key']
+            # api_key = config['API_KEY']['bytedance_key']
+            api_key = config['API_KEY']['pll_key']
             client = OpenAI(
                 api_key=api_key,
                 # base_url="https://api.deepseek.com"
-                # base_url="https://api.fireworks.ai/inference/v1"
-                # base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
-                base_url="https://ark.cn-beijing.volces.com/api/v3"
-                # base_url="https://api.openai-proxy.org/v1",
+                # base_url="https://ark.cn-beijing.volces.com/api/v3"
+                base_url="https://llm.xmcp.ltd/",
             )
         elif "gpt" in self.model_name or "o1" in self.model_name or "o3" in self.model_name:  # based on the transit of the model
             # api_key = config['API_KEY']['xiaoai_key']
-            api_key = config['API_KEY']['closeai_key']
+            # api_key = config['API_KEY']['closeai_key']
+            api_key = config['API_KEY']['pll_key']
             client = OpenAI(
                 api_key=api_key,
                 # base_url="https://xiaoai.plus/v1",
-                base_url="https://api.openai-proxy.org/v1",
+                # base_url="https://api.openai-proxy.org/v1",
+                base_url="https://llm.xmcp.ltd/",
             )
         elif "llama" in self.model_name:
             api_key = config['API_KEY']['fireworksai_key']

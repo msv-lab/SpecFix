@@ -195,8 +195,10 @@ Your task:
 1. Based on the identified ambiguity location and step-by-step analysis, revise the requirement to remove ambiguity and align with the correct output.
 2. Ensure that the revised requirement explicitly reflects the correct behavior demonstrated by the provided input-output examples.
 
-If the description contains implementation of other functions, remain those sections unchanged.
-DO NOT output the implementation, only the requirement.
+Important notes:
+- **Do NOT change** any example, illustration, input/output sample, and intermediate explanation included in the original description.
+- If the description contains implementation of other functions, remain those sections unchanged.
+- Don't output the implementation, only the requirement.
 
 Format the revised requirement explicitly in Python function syntax with type hints and a docstring, wrapped in <requirement></requirement> tags.
 """
@@ -237,19 +239,22 @@ instruction_remove_example = "You are an assistant that removes examples from th
 def prompt_remove_example(requirement):
     prompt = f"""
     Remove all examples from the provided programming problem description, including sample inputs/outputs, and standalone example sections (including assertion statement). 
-    Retain all other content such as the problem statement, constraints, notes, and explanations that are not explicitly part of an example. 
-    Don't delete function signature at the beginning of requirement. Do not modify, rephrase, or delete any non-example text.
+    
+    Do not modify, rephrase, or delete any non-example text.
+    Don't delete function signature or imports at the beginning of requirement. 
+    
     Wrap the modified description in <requirement></requirement> tags.
+    
     Here is the given programming requirement:
     {requirement}
     """
     return prompt
 
 
-instruction_repair_requirement_test_based = "You are an assistant that repairs contradictory requirements based on the input output examples."
+instruction_test_based_repair_program = "You are an assistant that repairs program based on the input output examples."
 
 
-def prompt_test_based_repair_requirement(requirement, program, failed_input_output_examples):
+def prompt_test_based_repair_program(requirement, entry_point, program, failed_input_output_examples):
     formatted_tests = "\n".join(
         f"""### Test {i + 1}
         Input: {str(inp)[1:-1]}
@@ -259,28 +264,26 @@ def prompt_test_based_repair_requirement(requirement, program, failed_input_outp
     )
     return f"""
 You are provided with:
-- A incorrect programming task requirement which includes contradictory descriptions of the function's behavior.
+- An ambiguous requirement involving the function `{entry_point}` that have led to incorrectly generated code.
 {requirement}
-- Generated code based on the requirement
+- Incorrect generated program based on the ambiguous requirement:
 {program}
-- Examples of inputs with actual outputs from the generated code and the expected correct outputs
+- Input-output examples explicitly stated in the requirement and the incorrect output produced by the program:
 {formatted_tests}
 
-Instructions:
-1. Analyze the provided input, actual output, and expected output examples.
-2. Identify where and why the generated code's output diverges from the expected results.
+Your task is to:
+1. Carefully analyze the provided requirement, summarize the intended functionality. Identify and clearly state the specific wording or phrases that could be interpreted in multiple ways.
+2. Perform a step-by-step execution of the provided program using the explicitly stated input-output examples. At each step, note precisely how the ambiguous wording influenced the program’s logic and behavior. Here are potential sources of ambiguity:
     - **Input/output handling** (e.g., format differences, varying data ranges).
     - **Assumptions made** (e.g., implicit constraints or unstated preconditions).
-3. Clearly inferred contradictions in the task description, specifying exactly which details or assumptions are conflict with examples.
-4. Rewrite the contradictory requirement to ensure alignment with provided examples. Explicitly incorporate any necessary assumptions derived from analyzing the examples.
+3. Compare the incorrect execution trace with the intended functionality. Repair the incorrect program to align with the correct output.
 
-Format your final rewrote requirement with Python function syntax with type hints and a concise docstring, wrapped in <requirement></requirement> tags.
-Don't output the implementation, only the requirement.
+Format your repaired program with original function signature with type hints, wrapped in <code></code> tags.
 
-<requirement>
-def function_name(argument: type hint):->type hint 
-        \"\"\"revised requirement\"\"\"
-</requirement>
+<code>
+def function_name(argument: type hint) -> return type hint:
+    \"\"\"Repaired program\"\"\"
+</code>
 """
 
 
@@ -320,8 +323,10 @@ Your task:
 1. Based on the identified ambiguity location and step-by-step analysis, revise the requirement to remove ambiguity and align with the correct output.
 2. Ensure that the revised requirement explicitly reflects the correct behavior demonstrated by the provided input-output examples.
 
-If the description contains implementation of other functions, remain those sections unchanged.
-Don't output the implementation, only the requirement.
+Important notes:
+- **Do NOT change** any example, illustration, input/output sample, and intermediate explanation included in the original description.
+- If the description contains implementation of other functions, remain those sections unchanged.
+- Don't output the implementation, only the requirement.
 
 Format the revised requirement explicitly in Python function syntax with type hints and a docstring, wrapped in <requirement></requirement> tags.
 """
@@ -382,7 +387,7 @@ Your task is to:
 
 Do not output the implementation, only the requirement.
 
-Wrap your identified ambiguity location in <ambiguity></ambiguity> tags. Wrap your step-by-step analysis in <analysis></analysis> tags.
+Wrap your identified ambiguity locations in <ambiguity></ambiguity> tags. Wrap your step-by-step analysis in <analysis></analysis> tags.
 """
 
 
@@ -409,8 +414,10 @@ Your task:
 1. Based on the identified ambiguity location and step-by-step analysis, revise the requirement to remove ambiguity and align with the correct output.
 2. Ensure that the revised requirement explicitly reflects the correct behavior demonstrated by the provided input-output examples.
 
-If the description contains implementation of other functions, remain those sections unchanged.
-DO NOT output the implementation, only the requirement.
+Important notes:
+- **Do NOT change** any example, illustration, input/output sample, and intermediate explanation included in the original description.
+- If the description contains implementation of other functions, remain those sections unchanged.
+- Don't output the implementation, only the requirement.
 
 Format the revised requirement explicitly in Python function syntax with type hints and a docstring, wrapped in <requirement></requirement> tags.
 """

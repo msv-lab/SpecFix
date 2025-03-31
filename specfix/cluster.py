@@ -1,9 +1,9 @@
 import ast
-
+import re
 import math
 import sys
-
-from specfix.utils import get_exception_list, compare, is_significant_large
+import numpy as np
+from specfix.utils import get_exception_list, compare, is_significant_large, safe_eval
 
 sys.set_int_max_str_digits(0)
 
@@ -156,9 +156,15 @@ class Cluster:
 
     def deserialize(self, data):
         self.programs_str = data['programs_str']
-        self.entropy_outputs = data['outputs']
+        try:
+            self.entropy_outputs = ast.literal_eval(data["outputs"])
+        except Exception as e:
+            self.entropy_outputs = safe_eval(data["outputs"])
         self.probability = data['probability']
         self.is_align_req = data['is_align_req']
         self.test_consistency = data['test_consistency']
-        self.failed_input_output_examples = ast.literal_eval(data['failed_input_output_examples'])
+        try:
+            self.failed_input_output_examples = ast.literal_eval(data['failed_input_output_examples'])
+        except Exception as e:
+            self.failed_input_output_examples = safe_eval(data['failed_input_output_examples'])
         return self

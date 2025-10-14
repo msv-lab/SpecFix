@@ -1,82 +1,108 @@
-# Automated Repair of Ambiguous Natural Language Requirements
+# SpecFix
 
-SpecFix is a tool for automatically repairing ambiguous natural language requirements to improve code generation by large language models (LLMs).
+SpecFix is a Python toolkit for repairing ambiguous programming problems by combining large language models with differential testing. It detects inconsistencies in task specifications, clusters candidate solutions by behaviour, and iteratively proposes refined requirements that better match the intended solution space.
 
-## Key Features
-**Analyzing the distribution of programs** induced by a given requirement.
+This repository provides the official implementation and artifact for the ASE 2025 paper *Automated Repair of Ambiguous Problem Descriptions for LLM-Based Code Generation*.
 
-**Measuring and reducing semantic entropy**, which captures how many distinct interpretations (clusters of semantically equivalent programs) the requirement allows.
+## Table of Contents
+- [Features](#features)
+- [Repository Layout](#repository-layout)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Running SpecFix](#running-specfix)
+  - [Command-Line Arguments](#command-line-arguments)
+  - [Example](#example)
+- [Outputs](#outputs)
+- [Datasets](#datasets)
+- [Prompt Templates](#prompt-templates)
+- [Contributing](#contributing)
 
-**Ensuring example consistency**, a novel metric that quantifies how well sampled programs satisfy the clarifying examples attached to the requirement.
+## Features
+- Detect specification ambiguity via clustering of LLM-generated candidate programs.
+- Repair requirements with automated prompt sequencing and requirement refinement.
+- Evaluate repaired specifications using pass@k, majority voting, and behavioural metrics.
+- Parallel processing pipeline that scales across CPU cores for generation and testing.
 
-**Performing contrastive specification inference**, which takes the repaired (or clustered) programs and iteratively refines the original text so that the most desirable interpretations are prioritized.
+## Repository Layout
+- `specfix/`: Core library (generation, clustering, evaluation, utilities, prompts).
+- `datasets/`: JSONL datasets used in the paper and experiments.
+- `requirements.txt`: Python dependencies needed for running SpecFix.
 
-## Structure
-The repository is structured as follows:
-```
-specfix/
-    ├── main.py                 # Main script to run the tool
-    ├── cluster.py              # Clustering functions for program clustering
-    ├── evaluator.py            # Evaluation functions for repairing and measuring 
-    ├── model.py                # Model functions for interacting with LLMs
-    ├── prompt.py               # Prompts for each task
-    ├── solution_transformer.py # Functions for transforming generated programs
-    ├── testers.py              # Test functions for detecting ambiguity
-    ├── utils.py                # Utility functions for various tasks
-    ├── datasets/               # Dataset (HumanEval+ and MBPP+)
-    ├── Results/                # Directory to save results
-    ├── experiment_results/     # Directory for our experiment results
-    ├── requirements.txt        # Python package dependencies
-    └── README.md               # Documentation for the tool
-```
+## Requirements
+- Python 3.10 or newer.
+- Access to one or more supported chat-completion APIs (OpenAI-compatible endpoints).
+- System packages required by `evalplus` for executing Python reference solutions.
 
-## Installation
-1. To install SpecFix, create a virtual environment and install the required packages:
+Install Python dependencies with:
 
 ```bash
-python -m venv specfix-venv
-source specfix-venv/bin/activate  # On Windows use `specfix-venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
-2. Set up the LLM API keys in the environment variables:
-```bash
-export LLM_API_KEY="your_llm_api_key"
-```
-
-## Usage
-1. Run the tool:
-```bash
-cd specfix
-python main.py -d <dataset_name> -p <path_to_dataset> -c <clustering_sample_size> -e <evaluation_sample_size> -k <pass@k_value> -m <model_name> -t <temperature>
-```
-
-2. The results will be saved in the `Results` directory. The directory structure will be as follows:
-```
-Results/model_name/dataset_name/
-    ├── humaneval-{timestamp}.jsonl
-    └── mbpp-{timestamp}.jsonl
-```
-The jsonl files contain the following fields:
-- `original_requirement`: The original requirement text.
-- `repaired_requirement`: The repaired requirement text.
-- `original_clusters`: The clusters of programs generated from the original requirement.
-- `repaired_clusters`: The clusters of programs generated from the repaired requirement.
-- `results`: 
-  - `original_passk`: The pass@k value for the original requirement.
-  - `original_avg_pass_rate`: The average pass rate for the original requirement.
-  - `original_nzpassk`: The number of non-zero pass@k values for the original requirement.
-  - `original_majority_passk`: The majority vote pass@k value for the original requirement.
-  - `original_entropy`: The semantic entropy of the original requirement.
-  - `repaired_passk`: The pass@k value for the repaired requirement.
-  - `repaired_avg_pass_rate`: The average pass rate for the repaired requirement.
-  - `repaired_nzpassk`: The number of non-zero pass@k values for the repaired requirement.
-  - `repaired_majority_passk`: The majority vote pass@k value for the repaired requirement.
-  - `repaired_entropy`: The semantic entropy of the repaired requirement.
-
-## Example
-To run the tool on the `HumanEval+` dataset with 20 samples for clustering and Pass@1 with 10 samples for evaluation, using the `gpt-4o` model with a temperature of 0.7, you can use the following command:
+## Installation
 
 ```bash
-python main.py -d humaneval -p path/to/humaneval+.jsonl -c 20 -e 10 -k 1 -m gpt-4o -t 0.7
+git clone https://github.com/msv-lab/SpecFix.git
+cd SpecFix
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+pip install -r requirements.txt
 ```
+
+## Running SpecFix
+The entry point is `specfix/main.py`, which orchestrates generation, clustering, detection, and repair for every problem in a dataset. Use the module form to ensure the package resources resolve correctly:
+
+```bash
+python -m specfix.main \
+  -d humaneval \
+  -p datasets/humaneval.jsonl \
+  -m qwen2.5-coder-7b-instruct
+```
+
+### Command-Line Arguments
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `-d`, `--dataset` | ✓ | Dataset identifier used for bookkeeping (e.g., `humaneval`, `mbpp`, `livecodebench`). |
+| `-p`, `--path` | ✓ | Path to the JSONL file containing problems to process. The format matches the files in `dataset/`. |
+| `-m`, `--model` | ✓ | Model name understood by the configured OpenAI-compatible endpoint (e.g., `gpt-4o`, `qwen2.5-coder-7b-instruct`). |
+| `-t`, `--temperature` |  | Optional sampling temperature used when generating code (defaults to provider behaviour). |
+| `-c`, `--cluster_sample_size` |  | Number of candidate programs generated per requirement during ambiguity detection (default `20`). |
+| `-e`, `--evaluation_sample_size` |  | Number of test cases generated when evaluating repaired requirements (default `10`). |
+| `-k`, `--passk` |  | Pass@k threshold used by the evaluator when computing metrics (default `1`). |
+| `-w`, `--workers` |  | Number of worker processes for parallel execution. Defaults to sequential execution when omitted. |
+
+### Example
+
+```bash
+python -m specfix.main \
+  -d livecodebench \
+  -p datasets/livecodebench.jsonl \
+  -m deepseek-v3 \
+  -t 0.2 \
+  -c 24 \
+  -e 12 \
+  -k 5 \
+  -w 8
+```
+
+## Outputs
+- Results are written to `specfix/Results/<model>/<timestamp>/<dataset>.jsonl`.
+- Each entry includes the original requirement, detected clusters, repaired requirement (if produced), and summary metrics (`passk`, `avg_pass_rate`, majority voting outcome).
+- Intermediate logs include generated code snippets, test cases, and failure diagnostics to support manual analysis.
+
+## Datasets
+- Bundled datasets (`dataset/*.jsonl`) follow the structure documented in `dataset/README.md` and include fields such as `requirement`, `entry_point`, `input_output_examples`, `inputs`, and `outputs`.
+
+## Prompt Templates
+- Prompt templates for generation, testing, and requirement refinement live in `specfix/prompting.py`.
+- Modify these templates to experiment with alternative prompting strategies or to port SpecFix to new instruction-tuned models.
+
+
+## Contributing
+Contributions, bug reports, and feature requests are welcome! Please open issues or submit pull requests.
+
+## Citation
+If you use SpecFix or build upon this work, please cite:
+
+> *Automated Repair of Ambiguous Problem Descriptions for LLM-Based Code Generation*, Proceedings of the 40th IEEE/ACM International Conference on Automated Software Engineering (ASE 2025).
